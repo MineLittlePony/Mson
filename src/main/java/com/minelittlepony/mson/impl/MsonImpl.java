@@ -51,7 +51,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             return CompletableFuture.runAsync(() -> {
                 serverProfiler.startTick();
                 clientProfiler.push("Loading MSON models - " + key.getId());
-                foundry.loadJsonModel(sender, key);
+                foundry.loadJsonModel(sender, key.getId());
                 clientProfiler.pop();
                 serverProfiler.endTick();
             }, serverExecutor);

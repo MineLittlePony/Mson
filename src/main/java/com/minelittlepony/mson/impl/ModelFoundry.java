@@ -32,27 +32,39 @@ class ModelFoundry {
 
     private final MsonImpl mson;
 
-    private final Map<Identifier, StoredModelData> contexts = new HashMap<>();
+    private final Map<Identifier, JsonContext> contexts = new HashMap<>();
 
     public ModelFoundry(MsonImpl mson) {
         this.mson = mson;
     }
 
-    public void loadJsonModel(ResourceManager manager, ModelKey<?> key) {
+    public JsonContext loadJsonModel(ResourceManager manager, Identifier id) {
+        synchronized (contexts) {
+            if (contexts.containsKey(id)) {
+                return contexts.get(id);
+            }
+        }
 
-        Identifier id = key.getId();
-        id = new Identifier(id.getNamespace(), "models/" + id.getPath() + ".json");
+        Identifier file = new Identifier(id.getNamespace(), "models/" + id.getPath() + ".json");
 
-        try (Resource res = manager.getResource(id)) {
+        try (Resource res = manager.getResource(file)) {
             try (Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
-                contexts.put(key.getId(), new StoredModelData(GSON.fromJson(reader, JsonObject.class)));
+                JsonContext context = new StoredModelData(manager, GSON.fromJson(reader, JsonObject.class));
+
+                synchronized (contexts) {
+                    contexts.put(id, context);
+                }
+
+                return context;
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return NullContext.INSTANCE;
     }
 
-    public StoredModelData getModelData(ModelKey<?> key) {
+    public JsonContext getModelData(ModelKey<?> key) {
         return contexts.get(key.getId());
     }
 
@@ -60,11 +72,17 @@ class ModelFoundry {
 
         private final Map<String, JsonComponent<?>> elements;
 
-        StoredModelData(JsonObject json) {
+        private JsonContext parent = NullContext.INSTANCE;
+
+        StoredModelData(ResourceManager manager, JsonObject json) {
             elements = json.entrySet().stream().collect(Collectors.toMap(
                     e -> e.getKey(),
                     e -> loadComponent(e.getValue().getAsJsonObject())
             ));
+
+            if (json.has("parent")) {
+                parent = loadJsonModel(manager, new Identifier(json.get("parent").getAsString()));
+            }
         }
 
         @Override
@@ -85,8 +103,9 @@ class ModelFoundry {
             //return null; // TODO
         }
 
+        @Override
         public ModelContext createContext(Model model) {
-            return new RootContext(model);
+            return new RootContext(model, parent.createContext(model));
         }
 
         class LeafContext implements ModelContext {
@@ -142,8 +161,11 @@ class ModelFoundry {
 
             private final Map<String, Object> objectCache = new HashMap<>();
 
-            RootContext(Model model) {
+            private final ModelContext inherited;
+
+            RootContext(Model model, ModelContext inherited) {
                 this.model = model;
+                this.inherited = inherited;
             }
 
             @Override
@@ -159,12 +181,19 @@ class ModelFoundry {
             @SuppressWarnings("unchecked")
             @Override
             public <T> T findByName(String name) {
-                return (T)elements.get(name).export(this);
+                if (elements.containsKey(name)) {
+                    return (T)elements.get(name).export(this);
+                }
+                return inherited.findByName(name);
             }
 
             @Override
             public void findByName(String name, Cuboid output) {
-                elements.get(name).export(this, output);
+                if (elements.containsKey(name)) {
+                    elements.get(name).export(this, output);
+                } else {
+                    inherited.findByName(name, output);
+                }
             }
 
             @SuppressWarnings("unchecked")
