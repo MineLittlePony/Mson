@@ -1,0 +1,83 @@
+// Fabric build script
+// 03/06/2019
+// https://github.com/FabricMC/fabric-example-mod/blob/master/build.gradle
+
+plugins {
+    id 'java-library'
+    id 'fabric-loom' version '0.2.5-SNAPSHOT'
+    id 'maven-publish'
+}
+
+targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_1_8
+
+version = "${project.minecraft_version}-${project.version}"
+
+if (project.release != 'RELEASE') {
+    version += "-${project.release}"
+}
+
+group = project.group
+description = project.displayname
+archivesBaseName = project.name
+
+minecraft {
+    refmapName = 'presencefootsteps.mixin.refmap.json'
+}
+
+// check for updates every build when on CI
+if (System.env.CI) {
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+}
+
+repositories {
+    maven {
+        name = 'minelp'
+        url = 'http://repo.minelittlepony-mod.com/maven/snapshot'
+    }
+    maven {
+        name = 'minelp-release'
+        url = 'http://repo.minelittlepony-mod.com/maven/release'
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}"
+    modApi "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
+
+    modApi "net.fabricmc.fabric-api:fabric-api-base:0.1.0+"
+    modApi "net.fabricmc.fabric-api:fabric-events-lifecycle-v0:0.1.0+"
+    modApi "net.fabricmc.fabric-api:fabric-keybindings:0.1.0+"
+    modApi "net.fabricmc.fabric-api:fabric-resource-loader-v0:0.1.0+"
+
+    modImplementation "io.github.prospector.modmenu:ModMenu:1.6.2-93"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include "fabric.mod.json"
+        expand "version": project.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude "fabric.mod.json"
+    }
+
+    from 'LICENSE'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = "sources"
+    from sourceSets.main.allSource
+}
