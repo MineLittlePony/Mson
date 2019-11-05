@@ -1,15 +1,17 @@
 package com.minelittlepony.mson.impl;
 
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.minecraft.client.model.Model;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
 
 import com.minelittlepony.mson.api.ModelKey;
-import com.minelittlepony.mson.api.Model;
+import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.Mson;
 import com.minelittlepony.mson.api.event.MsonModelsReadyCallback;
 import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.impl.components.JsonBox;
 import com.minelittlepony.mson.impl.components.JsonCuboid;
 
 import java.util.HashMap;
@@ -22,7 +24,11 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     private static final Identifier ID = new Identifier("mson", "models");
 
-    public static final Mson INSTANCE = new MsonImpl();
+    static final MsonImpl INSTANCE = new MsonImpl();
+
+    public static Mson instance() {
+        return INSTANCE;
+    }
 
     private final Map<Identifier, Key<?>> registeredModels = new HashMap<>();
 
@@ -32,6 +38,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     private MsonImpl() {
         componentTypes.put(JsonCuboid.ID, JsonCuboid::new);
+        componentTypes.put(JsonBox.ID, JsonBox::new);
     }
 
     @Override
@@ -43,7 +50,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         CompletableFuture<?>[] tasks = registeredModels.values().stream().map(key -> {
             return CompletableFuture.runAsync(() -> {
                 serverProfiler.startTick();
-                clientProfiler.push("Loading MASON models - " + key.getId());
+                clientProfiler.push("Loading MSON models - " + key.getId());
                 foundry.loadJsonModel(sender, key);
                 clientProfiler.pop();
                 serverProfiler.endTick();
@@ -65,30 +72,41 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends Model> ModelKey<T> registerModel(Identifier id, Class<T> implementation) {
+    public <T extends Model & MsonModel> ModelKey<T> registerModel(Identifier id, Class<T> implementation) {
         Objects.requireNonNull(id, "Id must not be null");
         Objects.requireNonNull(implementation, "Implementation class must not be null");
+        checkNamespace(id.getNamespace());
 
         if (registeredModels.containsKey(id) && registeredModels.get(id).clazz.equals(implementation)) {
             throw new IllegalArgumentException(String.format("A model with the id `%s` was already registered", id.toString()));
-        }
-        if ("minecraft".equalsIgnoreCase(id.getNamespace())) {
-            throw new IllegalArgumentException("Id must have a namespace other than `minecraft`.");
         }
 
         return (ModelKey<T>)registeredModels.computeIfAbsent(id, i -> new Key<>(id, implementation));
     }
 
     @Override
-    public void registerComponentType(Identifier id, JsonContext.Constructor<?> loadHandler) {
+    public void registerComponentType(Identifier id, JsonContext.Constructor<?> constructor) {
         Objects.requireNonNull(id, "Id must not be null");
-        if ("minecraft".equalsIgnoreCase(id.getNamespace())) {
-            throw new IllegalArgumentException("Id must have a namespace other than `minecraft`.");
+        Objects.requireNonNull(constructor, "Constructor must not be null");
+        checkNamespace(id.getNamespace());
+
+        if (componentTypes.containsKey(id)) {
+            throw new IllegalArgumentException(String.format("A component with the id `%s` was already registered", id.toString()));
         }
-        componentTypes.put(id, loadHandler);
+
+        componentTypes.put(id, constructor);
     }
 
-    class Key<T extends Model> implements ModelKey<T> {
+    private void checkNamespace(String namespace) {
+        if ("minecraft".equalsIgnoreCase(namespace)) {
+            throw new IllegalArgumentException("Id must have a namespace other than `minecraft`.");
+        }
+        if ("mson".equalsIgnoreCase(namespace)) {
+            throw new IllegalArgumentException("`mson` is a reserved namespace.");
+        }
+    }
+
+    class Key<T extends Model & MsonModel> implements ModelKey<T> {
 
         private final Class<T> clazz;
         private final Identifier id;
@@ -107,7 +125,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         public T createModel() {
             try {
                 T t = clazz.newInstance();
-                t.init(foundry.getContext(this));
+                t.init(foundry.getModelData(this).createContext(t));
                 return t;
             } catch (InstantiationException | IllegalAccessException e) {
                 return null;

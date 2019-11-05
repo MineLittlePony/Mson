@@ -1,6 +1,11 @@
 package com.minelittlepony.mson.api;
 
 import net.minecraft.client.model.Cuboid;
+import net.minecraft.client.model.Model;
+
+import javax.annotation.Nullable;
+
+import java.util.function.Function;
 
 /**
  * The loading context for when a model is first created.
@@ -8,6 +13,25 @@ import net.minecraft.client.model.Cuboid;
  * This allows access to getting out named elements from the model json.
  */
 public interface ModelContext {
+
+    /**
+     * Gets the currently-active model instance.
+     */
+    Model getModel();
+
+    /**
+     * Gets the immediate object in this context.
+     * May be the same as the model if called on the root context.
+     */
+    Object getContext();
+
+    /**
+     * Checks if a value has been stored for the given name.
+     * If one was not found, computes one using the supplied method and returns that.
+     *
+     * Will always return a new instance if the name is empty or null.
+     */
+    <T> T computeIfAbsent(@Nullable String name, Function<String, T> supplier);
 
     /**
      * Gets the named element and returns an instance of the requested type.
@@ -22,4 +46,16 @@ public interface ModelContext {
      * @throws InvalidInputException if the named element does not exist.
      */
     void findByName(String name, Cuboid output);
+
+    /**
+     * Gets the root context.
+     * Returns `this` when called on the root context.
+     */
+    ModelContext getRoot();
+
+    /**
+     * Resolves this context against the given object.
+     * Returns a new sub-context as a child of this one where the result of `getContext()` returns the passed in object.
+     */
+    ModelContext resolve(Object child);
 }

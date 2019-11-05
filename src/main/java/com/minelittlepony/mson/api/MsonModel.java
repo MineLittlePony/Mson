@@ -3,7 +3,7 @@ package com.minelittlepony.mson.api;
 /**
  * A Mson Model.
  */
-public interface Model {
+public interface MsonModel {
 
     /**
      * Called to initialise this model with all of its contents.
