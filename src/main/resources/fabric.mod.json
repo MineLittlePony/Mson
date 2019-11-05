@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "mson",
+  "version": "${version}",
+  "name": "Mson",
+  "description": "Model + <3 + Json = Mson",
+  "authors": [
+    "Sollace"
+  ],
+  "contact": {
+  },
+  "license": "MIT",
+  "icon": "newmod_logo.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.minelittlepony.mson.impl.MsonMod"
+    ]
+  },
+  "mixins": [
+    "mson.mixin.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.4.0",
+    "fabric-api-base": ">=0.1.0",
+    "fabric-events-lifecycle-v0": ">=0.1.0",
+    "fabric-resource-loader-v0": ">=0.1.0"
+  }
+}
