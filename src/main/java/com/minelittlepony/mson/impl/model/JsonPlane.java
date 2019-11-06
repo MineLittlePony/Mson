@@ -1,13 +1,13 @@
-package com.minelittlepony.mson.impl.components;
+package com.minelittlepony.mson.impl.model;
 
 import net.minecraft.util.Identifier;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
-import com.minelittlepony.mson.model.Face;
-import com.minelittlepony.mson.model.MsonCuboid;
-import com.minelittlepony.mson.model.MsonPlane;
+import com.minelittlepony.mson.api.model.Face;
+import com.minelittlepony.mson.api.model.MsonCuboid;
+import com.minelittlepony.mson.api.model.MsonPlane;
 import com.minelittlepony.mson.util.JsonUtil;
 
 public class JsonPlane implements JsonComponent<MsonPlane> {

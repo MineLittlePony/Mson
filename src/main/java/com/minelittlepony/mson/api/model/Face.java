@@ -1,6 +1,14 @@
-package com.minelittlepony.mson.model;
+package com.minelittlepony.mson.api.model;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public enum Face {
+    NONE(Axis.Y, -1),
     UP(Axis.Y, -1),
     DOWN(Axis.Y, 1),
     WEST(Axis.X, -1),
@@ -10,6 +18,13 @@ public enum Face {
 
     private final int direction;
     private final Axis axis;
+
+    public static final Set<Face> VALUES = ImmutableSet.copyOf(values());
+    private static final Map<String, Face> REGISTRY = new HashMap<>();
+
+    static {
+        VALUES.forEach(f -> REGISTRY.put(f.name(), f));
+    }
 
     Face(Axis axis, int direction) {
         this.direction = direction;
@@ -30,6 +45,10 @@ public enum Face {
 
     public Axis getAxis() {
         return axis;
+    }
+
+    public static Face of(String s) {
+        return REGISTRY.getOrDefault(Strings.nullToEmpty(s).toUpperCase(), Face.NONE);
     }
 
     public enum Axis {

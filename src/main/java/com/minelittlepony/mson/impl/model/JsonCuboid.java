@@ -1,6 +1,5 @@
-package com.minelittlepony.mson.impl.components;
+package com.minelittlepony.mson.impl.model;
 
-import net.minecraft.client.model.Box;
 import net.minecraft.client.model.Cuboid;
 import net.minecraft.util.Identifier;
 
@@ -8,7 +7,8 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
-import com.minelittlepony.mson.model.MsonCuboid;
+import com.minelittlepony.mson.api.model.MsonBox;
+import com.minelittlepony.mson.api.model.MsonCuboid;
 import com.minelittlepony.mson.util.JsonUtil;
 import com.mojang.realmsclient.util.JsonUtils;
 
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class JsonCuboid implements JsonComponent<MsonCuboid> {
+public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
     public static final Identifier ID = new Identifier("mson", "compound");
 
     private final float[] center = new float[3];
@@ -31,7 +31,7 @@ public class JsonCuboid implements JsonComponent<MsonCuboid> {
     private final boolean[] mirror = new boolean[3];
 
     @Nullable
-    private float[] textureSize;
+    private int[] textureSize;
 
     @Nullable
     private int[] textureUv;
@@ -60,9 +60,9 @@ public class JsonCuboid implements JsonComponent<MsonCuboid> {
                     JsonUtils.getIntOr("u", tex, 0),
                     JsonUtils.getIntOr("v", tex, 0)
             };
-            textureSize = new float[] {
-                    JsonUtil.getFloatOr("w", tex, 64),
-                    JsonUtil.getFloatOr("h", tex, 32)
+            textureSize = new int[] {
+                    JsonUtils.getIntOr("w", tex, 64),
+                    JsonUtils.getIntOr("h", tex, 32)
             };
         }
 
@@ -90,9 +90,9 @@ public class JsonCuboid implements JsonComponent<MsonCuboid> {
     }
 
     @Override
-    public MsonCuboid export(ModelContext context) {
+    public MsonCuboidImpl export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            MsonCuboid cuboid = new MsonCuboid(context.getModel(), key);
+            MsonCuboidImpl cuboid = new MsonCuboidImpl(context.getModel(), key);
 
             export(context, cuboid);
 
@@ -103,31 +103,19 @@ public class JsonCuboid implements JsonComponent<MsonCuboid> {
     @Override
     public void export(ModelContext context, Cuboid cuboid) {
 
-        MsonCuboid.at(cuboid, position[0], position[1], position[2]);
-
-        cuboid.setRotationPoint(center[0], center[1], center[2]);
-
-        cuboid.pitch = rotation[0];
-        cuboid.yaw = rotation[1];
-        cuboid.roll = rotation[2];
+        ((MsonCuboid)cuboid).at(position[0], position[1], position[2]);
+        ((MsonCuboid)cuboid).around(center[0], center[1], center[2]);
+        ((MsonCuboid)cuboid).rotate(rotation[0], rotation[1], rotation[2]);
+        ((MsonCuboid)cuboid).mirror(mirror[0], mirror[1], mirror[2]);
 
         cuboid.visible = visible;
         cuboid.field_3664 = hidden;
 
-        cuboid.mirror = mirror[0];
-
-        if (cuboid instanceof MsonCuboid) {
-            MsonCuboid part = (MsonCuboid)cuboid;
-            part.mirrorY = mirror[1];
-            part.mirrorZ = mirror[2];
-        }
-
         if (textureUv != null) {
-            cuboid.setTextureOffset(textureUv[0], textureUv[1]);
+            ((MsonCuboid)cuboid).tex(textureUv[0], textureUv[1]);
         }
         if (textureSize != null) {
-            cuboid.textureWidth = textureSize[0];
-            cuboid.textureHeight = textureSize[1];
+            ((MsonCuboid)cuboid).size(textureSize[0], textureSize[1]);
         }
 
         cuboid.children.clear();
@@ -143,7 +131,7 @@ public class JsonCuboid implements JsonComponent<MsonCuboid> {
         );
         cuboid.boxes.addAll(cubes
                 .stream()
-                .map(c -> c.tryExport(subContext, Box.class))
+                .map(c -> c.tryExport(subContext, MsonBox.class))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList())

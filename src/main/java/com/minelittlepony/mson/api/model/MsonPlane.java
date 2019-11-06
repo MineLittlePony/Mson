@@ -1,4 +1,4 @@
-package com.minelittlepony.mson.model;
+package com.minelittlepony.mson.api.model;
 
 import net.minecraft.client.model.Cuboid;
 import net.minecraft.client.model.Quad;

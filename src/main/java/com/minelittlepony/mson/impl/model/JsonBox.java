@@ -1,4 +1,4 @@
-package com.minelittlepony.mson.impl.components;
+package com.minelittlepony.mson.impl.model;
 
 import net.minecraft.util.Identifier;
 
@@ -6,8 +6,8 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
-import com.minelittlepony.mson.model.MsonBox;
-import com.minelittlepony.mson.model.MsonCuboid;
+import com.minelittlepony.mson.api.model.MsonBox;
+import com.minelittlepony.mson.api.model.MsonCuboid;
 import com.minelittlepony.mson.util.JsonUtil;
 import com.mojang.realmsclient.util.JsonUtils;
 

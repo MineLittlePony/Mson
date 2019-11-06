@@ -11,9 +11,9 @@ import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.Mson;
 import com.minelittlepony.mson.api.event.MsonModelsReadyCallback;
 import com.minelittlepony.mson.api.json.JsonContext;
-import com.minelittlepony.mson.impl.components.JsonBox;
-import com.minelittlepony.mson.impl.components.JsonCuboid;
-import com.minelittlepony.mson.impl.components.JsonPlane;
+import com.minelittlepony.mson.impl.model.JsonBox;
+import com.minelittlepony.mson.impl.model.JsonCuboid;
+import com.minelittlepony.mson.impl.model.JsonPlane;
 
 import java.util.HashMap;
 import java.util.Map;
