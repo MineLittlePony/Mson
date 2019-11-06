@@ -26,6 +26,7 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 class ModelFoundry {
@@ -33,14 +34,16 @@ class ModelFoundry {
     private static final Gson GSON = new Gson();
 
     private final MsonImpl mson;
+    private final ResourceManager manager;
 
     private final Map<Identifier, JsonContext> contexts = new HashMap<>();
 
-    public ModelFoundry(MsonImpl mson) {
+    public ModelFoundry(ResourceManager manager, MsonImpl mson) {
+        this.manager = manager;
         this.mson = mson;
     }
 
-    public JsonContext loadJsonModel(ResourceManager manager, Identifier id) {
+    public JsonContext loadJsonModel(Identifier id) {
         synchronized (contexts) {
             if (contexts.containsKey(id)) {
                 return contexts.get(id);
@@ -51,7 +54,7 @@ class ModelFoundry {
 
         try (Resource res = manager.getResource(file)) {
             try (Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
-                JsonContext context = new StoredModelData(manager, GSON.fromJson(reader, JsonObject.class));
+                JsonContext context = new StoredModelData(GSON.fromJson(reader, JsonObject.class));
 
                 synchronized (contexts) {
                     contexts.put(id, context);
@@ -67,7 +70,9 @@ class ModelFoundry {
     }
 
     public JsonContext getModelData(ModelKey<?> key) {
-        return contexts.get(key.getId());
+        synchronized (contexts) {
+            return contexts.get(key.getId());
+        }
     }
 
     class StoredModelData implements JsonContext {
@@ -78,17 +83,15 @@ class ModelFoundry {
 
         private final Texture texture;
 
-        StoredModelData(ResourceManager manager, JsonObject json) {
+        StoredModelData(JsonObject json) {
+            if (json.has("parent")) {
+                parent = loadJsonModel(new Identifier(json.get("parent").getAsString()));
+            }
+            texture = new JsonTexture(json, parent.getTexture());
             elements = json.entrySet().stream().collect(Collectors.toMap(
                     e -> e.getKey(),
                     e -> loadComponent(e.getValue().getAsJsonObject())
             ));
-
-            if (json.has("parent")) {
-                parent = loadJsonModel(manager, new Identifier(json.get("parent").getAsString()));
-            }
-
-            texture = new JsonTexture(json, parent.getTexture());
         }
 
         @Override
@@ -106,7 +109,6 @@ class ModelFoundry {
             }
 
             throw new NotImplementedException("Json was not a js object");
-            //return null; // TODO
         }
 
         @Override
@@ -115,55 +117,23 @@ class ModelFoundry {
         }
 
         @Override
-        public ModelContext createContext(Model model) {
-            return new RootContext(model, parent.createContext(model));
+        public Supplier<JsonContext> resolve(JsonElement json) {
+
+            if (json.isJsonPrimitive()) {
+                Identifier id = new Identifier(json.getAsString());
+
+                loadJsonModel(id);
+                return () -> contexts.get(id);
+            }
+
+            JsonContext ctx = new StoredModelData(json.getAsJsonObject());
+
+            return () -> ctx;
         }
 
-        class LeafContext implements ModelContext {
-
-            private final ModelContext parent;
-
-            private final Object context;
-
-            LeafContext(ModelContext parent, Object context) {
-                this.parent = parent;
-                this.context = context;
-            }
-
-            @Override
-            public Model getModel() {
-                return parent.getModel();
-            }
-
-            @Override
-            public Object getContext() {
-                return context;
-            }
-
-            @Override
-            public <T> T findByName(String name) {
-                return parent.findByName(name);
-            }
-
-            @Override
-            public void findByName(String name, Cuboid output) {
-                parent.findByName(name, output);
-            }
-
-            @Override
-            public <T> T computeIfAbsent(String name, Function<String, T> supplier) {
-                return parent.computeIfAbsent(name, supplier);
-            }
-
-            @Override
-            public ModelContext resolve(Object child) {
-                return new LeafContext(this, child);
-            }
-
-            @Override
-            public ModelContext getRoot() {
-                return parent.getRoot();
-            }
+        @Override
+        public ModelContext createContext(Model model) {
+            return new RootContext(model, parent.createContext(model));
         }
 
         class RootContext implements ModelContext {
@@ -218,7 +188,7 @@ class ModelFoundry {
 
             @Override
             public ModelContext resolve(Object child) {
-                return new LeafContext(this, child);
+                return new SubContext(this, child);
             }
 
             @Override

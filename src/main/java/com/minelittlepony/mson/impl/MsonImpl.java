@@ -11,10 +11,14 @@ import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.Mson;
 import com.minelittlepony.mson.api.event.MsonModelsReadyCallback;
 import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.JsonBox;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
 import com.minelittlepony.mson.impl.model.JsonPlanar;
 import com.minelittlepony.mson.impl.model.JsonPlane;
+import com.minelittlepony.mson.impl.model.JsonSlot;
+
+import javax.annotation.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,13 +40,15 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     final Map<Identifier, JsonContext.Constructor<?>> componentTypes = new HashMap<>();
 
-    private ModelFoundry foundry = new ModelFoundry(this);
+    @Nullable
+    ModelFoundry foundry;
 
     private MsonImpl() {
         componentTypes.put(JsonCuboid.ID, JsonCuboid::new);
         componentTypes.put(JsonBox.ID, JsonBox::new);
         componentTypes.put(JsonPlane.ID, JsonPlane::new);
         componentTypes.put(JsonPlanar.ID, JsonPlanar::new);
+        componentTypes.put(JsonSlot.ID, JsonSlot::new);
     }
 
     @Override
@@ -50,12 +56,12 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             Profiler serverProfiler, Profiler clientProfiler,
             Executor serverExecutor, Executor clientExecutor) {
 
-        foundry = new ModelFoundry(this);
+        foundry = new ModelFoundry(sender, this);
         CompletableFuture<?>[] tasks = registeredModels.values().stream().map(key -> {
             return CompletableFuture.runAsync(() -> {
                 serverProfiler.startTick();
                 clientProfiler.push("Loading MSON models - " + key.getId());
-                foundry.loadJsonModel(sender, key.getId());
+                foundry.loadJsonModel(key.getId());
                 clientProfiler.pop();
                 serverProfiler.endTick();
             }, serverExecutor);
@@ -108,12 +114,14 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         if ("mson".equalsIgnoreCase(namespace)) {
             throw new IllegalArgumentException("`mson` is a reserved namespace.");
         }
+        if ("dynamic".equalsIgnoreCase(namespace)) {
+            throw new IllegalArgumentException("`dynamic` is a reserved namespace.");
+        }
     }
 
-    class Key<T extends Model & MsonModel> implements ModelKey<T> {
+    class Key<T extends Model & MsonModel> extends AbstractModelKeyImpl<T> {
 
         private final Class<T> clazz;
-        private final Identifier id;
 
         public Key(Identifier id, Class<T> clazz) {
             this.id = id;
@@ -121,13 +129,11 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         }
 
         @Override
-        public Identifier getId() {
-            return id;
-        }
-
-        @Override
         public T createModel() {
             try {
+                if (foundry == null) {
+                    throw new IllegalStateException("You're too early. Wait for Mson to load first.");
+                }
                 T t = clazz.newInstance();
                 t.init(foundry.getModelData(this).createContext(t));
                 return t;
@@ -135,6 +141,5 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
                 return null;
             }
         }
-
     }
 }

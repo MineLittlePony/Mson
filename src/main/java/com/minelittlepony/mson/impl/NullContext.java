@@ -14,6 +14,7 @@ import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 final class NullContext implements JsonContext, ModelContext {
 
@@ -29,6 +30,11 @@ final class NullContext implements JsonContext, ModelContext {
     @Override
     public Object getContext() {
         throw new NotImplementedException("getContext");
+    }
+
+    @Override
+    public Supplier<JsonContext> resolve(JsonElement json) {
+        throw new NotImplementedException("resolve");
     }
 
     @Override
