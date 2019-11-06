@@ -13,6 +13,7 @@ import com.minelittlepony.mson.api.event.MsonModelsReadyCallback;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.impl.model.JsonBox;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
+import com.minelittlepony.mson.impl.model.JsonPlanar;
 import com.minelittlepony.mson.impl.model.JsonPlane;
 
 import java.util.HashMap;
@@ -41,6 +42,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         componentTypes.put(JsonCuboid.ID, JsonCuboid::new);
         componentTypes.put(JsonBox.ID, JsonBox::new);
         componentTypes.put(JsonPlane.ID, JsonPlane::new);
+        componentTypes.put(JsonPlanar.ID, JsonPlanar::new);
     }
 
     @Override
