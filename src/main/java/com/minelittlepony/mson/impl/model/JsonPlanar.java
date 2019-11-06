@@ -14,6 +14,7 @@ import com.minelittlepony.mson.api.model.MsonPlane;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class JsonPlanar extends JsonCuboid {
     public static final Identifier ID = new Identifier("mson", "planar");
@@ -32,7 +33,7 @@ public class JsonPlanar extends JsonCuboid {
     }
 
     @Override
-    public void export(ModelContext context, Cuboid cuboid) {
+    public void export(ModelContext context, Cuboid cuboid) throws InterruptedException, ExecutionException {
         super.export(context , cuboid);
 
         ModelContext subContext = context.resolve(cuboid);

@@ -5,6 +5,7 @@ import net.minecraft.client.model.Model;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.profiler.Profiler;
 
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -25,8 +26,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 class ModelFoundry {
@@ -36,61 +38,69 @@ class ModelFoundry {
     private final MsonImpl mson;
     private final ResourceManager manager;
 
-    private final Map<Identifier, JsonContext> contexts = new HashMap<>();
+    private final Executor executor;
 
-    public ModelFoundry(ResourceManager manager, MsonImpl mson) {
+    private final Profiler serverProfiler;
+    private final Profiler clientProfiler;
+
+    private final Map<Identifier, CompletableFuture<JsonContext>> load = new HashMap<>();
+
+    public ModelFoundry(ResourceManager manager, Executor executor, Profiler serverProfiler, Profiler clientProfiler, MsonImpl mson) {
         this.manager = manager;
+        this.executor = executor;
+        this.serverProfiler = serverProfiler;
+        this.clientProfiler = clientProfiler;
         this.mson = mson;
     }
 
-    public JsonContext loadJsonModel(Identifier id) {
-        synchronized (contexts) {
-            if (contexts.containsKey(id)) {
-                return contexts.get(id);
+    public CompletableFuture<JsonContext> loadJsonModel(Identifier id) {
+        synchronized (load) {
+            if (!load.containsKey(id)) {
+                load.put(id, CompletableFuture.supplyAsync(() -> {
+                    serverProfiler.startTick();
+                    clientProfiler.push("Loading MSON model - " + id);
+
+                    Identifier file = new Identifier(id.getNamespace(), "models/" + id.getPath() + ".json");
+
+                    try (Resource res = manager.getResource(file)) {
+                        try (Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
+                            return new StoredModelData(GSON.fromJson(reader, JsonObject.class));
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } finally {
+                        clientProfiler.pop();
+                        serverProfiler.endTick();
+                    }
+
+                    return NullContext.INSTANCE;
+                }, executor));
             }
+            return load.get(id);
         }
-
-        Identifier file = new Identifier(id.getNamespace(), "models/" + id.getPath() + ".json");
-
-        try (Resource res = manager.getResource(file)) {
-            try (Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
-                JsonContext context = new StoredModelData(GSON.fromJson(reader, JsonObject.class));
-
-                synchronized (contexts) {
-                    contexts.put(id, context);
-                }
-
-                return context;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return NullContext.INSTANCE;
     }
 
-    public JsonContext getModelData(ModelKey<?> key) {
-        synchronized (contexts) {
-            return contexts.get(key.getId());
-        }
+    public JsonContext getModelData(ModelKey<?> key) throws InterruptedException, ExecutionException {
+        return load.get(key.getId()).get();
     }
 
     class StoredModelData implements JsonContext {
 
         private final Map<String, JsonComponent<?>> elements;
 
-        private JsonContext parent = NullContext.INSTANCE;
+        private CompletableFuture<JsonContext> parent = CompletableFuture.completedFuture(NullContext.INSTANCE);
 
-        private final Texture texture;
+        private final CompletableFuture<Texture> texture;
 
         StoredModelData(JsonObject json) {
             if (json.has("parent")) {
                 parent = loadJsonModel(new Identifier(json.get("parent").getAsString()));
             }
-            texture = new JsonTexture(json, parent.getTexture());
+
+            texture = parent.thenComposeAsync(JsonContext::getTexture).thenApplyAsync(t -> new JsonTexture(json, t));
             elements = json.entrySet().stream().collect(Collectors.toMap(
-                    e -> e.getKey(),
-                    e -> loadComponent(e.getValue().getAsJsonObject())
+                    entry -> entry.getKey(),
+                    entry -> loadComponent(entry.getValue().getAsJsonObject())
             ));
         }
 
@@ -112,28 +122,23 @@ class ModelFoundry {
         }
 
         @Override
-        public Texture getTexture() {
+        public CompletableFuture<Texture> getTexture() {
             return texture;
         }
 
         @Override
-        public Supplier<JsonContext> resolve(JsonElement json) {
+        public CompletableFuture<JsonContext> resolve(JsonElement json) {
 
             if (json.isJsonPrimitive()) {
-                Identifier id = new Identifier(json.getAsString());
-
-                loadJsonModel(id);
-                return () -> contexts.get(id);
+                return loadJsonModel(new Identifier(json.getAsString()));
             }
 
-            JsonContext ctx = new StoredModelData(json.getAsJsonObject());
-
-            return () -> ctx;
+            return CompletableFuture.completedFuture(new StoredModelData(json.getAsJsonObject()));
         }
 
         @Override
         public ModelContext createContext(Model model) {
-            return new RootContext(model, parent.createContext(model));
+            return new RootContext(model, parent.getNow(NullContext.INSTANCE).createContext(model));
         }
 
         class RootContext implements ModelContext {
@@ -163,7 +168,11 @@ class ModelFoundry {
             @Override
             public <T> T findByName(String name) {
                 if (elements.containsKey(name)) {
-                    return (T)elements.get(name).export(this);
+                    try {
+                        return (T)elements.get(name).export(this);
+                    } catch (InterruptedException | ExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 return inherited.findByName(name);
             }
@@ -171,7 +180,11 @@ class ModelFoundry {
             @Override
             public void findByName(String name, Cuboid output) {
                 if (elements.containsKey(name)) {
-                    elements.get(name).export(this, output);
+                    try {
+                        elements.get(name).export(this, output);
+                    } catch (InterruptedException | ExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
                 } else {
                     inherited.findByName(name, output);
                 }
@@ -179,7 +192,7 @@ class ModelFoundry {
 
             @SuppressWarnings("unchecked")
             @Override
-            public <T> T computeIfAbsent(String name, Function<String, T> supplier) {
+            public <T> T computeIfAbsent(String name, ContentSupplier<T> supplier) {
                 if (Strings.isNullOrEmpty(name)) {
                     return supplier.apply(name);
                 }

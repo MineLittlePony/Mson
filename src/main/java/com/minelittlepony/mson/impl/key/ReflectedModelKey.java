@@ -7,7 +7,7 @@ import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
 
-public class ReflectedModelKey<T extends MsonModel> extends AbstractModelKeyImpl<T> {
+public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelKeyImpl<T> {
     public static <T extends MsonModel> ModelKey<T> fromJson(JsonObject json) {
         if (!json.has("implementation")) {
             throw new JsonParseException("Slot requires an implementation");

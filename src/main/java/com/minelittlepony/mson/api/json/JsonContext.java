@@ -7,11 +7,11 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Texture;
 
-import java.util.function.Supplier;
+import java.util.concurrent.CompletableFuture;
 
 public interface JsonContext {
 
-    Texture getTexture();
+    CompletableFuture<Texture> getTexture();
 
     <T> void addNamedComponent(String name, JsonComponent<T> component);
 
@@ -19,7 +19,7 @@ public interface JsonContext {
 
     ModelContext createContext(Model model);
 
-    Supplier<JsonContext> resolve(JsonElement json);
+    CompletableFuture<JsonContext> resolve(JsonElement json);
 
     interface Constructor<T> {
         JsonComponent<? extends T> loadJson(JsonContext context, JsonObject json);

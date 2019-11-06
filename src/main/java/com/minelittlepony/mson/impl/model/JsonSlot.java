@@ -12,7 +12,7 @@ import com.minelittlepony.mson.impl.key.ReflectedModelKey;
 
 import javax.annotation.Nullable;
 
-import java.util.function.Supplier;
+import java.util.concurrent.CompletableFuture;
 
 public class JsonSlot<T extends MsonModel> implements JsonComponent<T> {
 
@@ -20,7 +20,7 @@ public class JsonSlot<T extends MsonModel> implements JsonComponent<T> {
 
     private final ModelKey<T> implementation;
 
-    private final Supplier<JsonContext> content;
+    private final CompletableFuture<JsonContext> content;
 
     @Nullable
     private String name;
@@ -29,11 +29,8 @@ public class JsonSlot<T extends MsonModel> implements JsonComponent<T> {
 
         implementation = ReflectedModelKey.fromJson(json);
         content = context.resolve(json.get("content"));
-
-        if (json.has("name")) {
-            name = json.get("name").getAsString();
-            context.addNamedComponent(name, this);
-        }
+        name = json.get("name").getAsString();
+        context.addNamedComponent(name, this);
     }
 
     @Override

@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
@@ -56,16 +57,10 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             Profiler serverProfiler, Profiler clientProfiler,
             Executor serverExecutor, Executor clientExecutor) {
 
-        foundry = new ModelFoundry(sender, this);
-        CompletableFuture<?>[] tasks = registeredModels.values().stream().map(key -> {
-            return CompletableFuture.runAsync(() -> {
-                serverProfiler.startTick();
-                clientProfiler.push("Loading MSON models - " + key.getId());
-                foundry.loadJsonModel(key.getId());
-                clientProfiler.pop();
-                serverProfiler.endTick();
-            }, serverExecutor);
-        }).toArray(i -> new CompletableFuture[i]);
+        foundry = new ModelFoundry(sender, serverExecutor, serverProfiler, clientProfiler, this);
+        CompletableFuture<?>[] tasks = registeredModels.values().stream()
+                .map(key -> foundry.loadJsonModel(key.getId()))
+                .toArray(i -> new CompletableFuture[i]);
 
         CompletableFuture<?> all = CompletableFuture.allOf(tasks);
 
@@ -137,8 +132,8 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
                 T t = clazz.newInstance();
                 t.init(foundry.getModelData(this).createContext(t));
                 return t;
-            } catch (InstantiationException | IllegalAccessException e) {
-                return null;
+            } catch (InstantiationException | IllegalAccessException | InterruptedException | ExecutionException e) {
+                throw new RuntimeException("Could not create model", e);
             }
         }
     }

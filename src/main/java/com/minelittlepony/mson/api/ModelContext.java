@@ -5,6 +5,7 @@ import net.minecraft.client.model.Model;
 
 import javax.annotation.Nullable;
 
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 /**
@@ -31,7 +32,7 @@ public interface ModelContext {
      *
      * Will always return a new instance if the name is empty or null.
      */
-    <T> T computeIfAbsent(@Nullable String name, Function<String, T> supplier);
+    <T> T computeIfAbsent(@Nullable String name, ContentSupplier<T> supplier);
 
     /**
      * Gets the named element and returns an instance of the requested type.
@@ -58,4 +59,18 @@ public interface ModelContext {
      * Returns a new sub-context as a child of this one where the result of `getContext()` returns the passed in object.
      */
     ModelContext resolve(Object child);
+
+    @FunctionalInterface
+    interface ContentSupplier<T> extends Function<String, T> {
+        @Override
+        default T apply(String key) {
+            try {
+                return get(key);
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        T get(String key) throws InterruptedException, ExecutionException;
+    }
 }

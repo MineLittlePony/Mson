@@ -13,8 +13,7 @@ import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.concurrent.CompletableFuture;
 
 final class NullContext implements JsonContext, ModelContext {
 
@@ -33,12 +32,12 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public Supplier<JsonContext> resolve(JsonElement json) {
+    public CompletableFuture<JsonContext> resolve(JsonElement json) {
         throw new NotImplementedException("resolve");
     }
 
     @Override
-    public <T> T computeIfAbsent(String name, Function<String, T> supplier) {
+    public <T> T computeIfAbsent(String name, ContentSupplier<T> supplier) {
         return supplier.apply(name);
     }
 
@@ -77,7 +76,7 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public Texture getTexture() {
-        return JsonTexture.EMPTY;
+    public CompletableFuture<Texture> getTexture() {
+        return CompletableFuture.completedFuture(JsonTexture.EMPTY);
     }
 }

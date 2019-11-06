@@ -7,12 +7,18 @@ import org.apache.commons.lang3.NotImplementedException;
 import com.minelittlepony.mson.api.ModelContext;
 
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 public interface JsonComponent<T> {
 
     @SuppressWarnings("unchecked")
     default <K> Optional<K> tryExport(ModelContext context, Class<K> type) {
-        Object s = export(context);
+        Object s;
+        try {
+            s = export(context);
+        } catch (InterruptedException | ExecutionException e) {
+            return Optional.empty();
+        }
 
         if (s != null && type.isAssignableFrom(s.getClass())) {
             return Optional.of((K)s);
@@ -20,9 +26,9 @@ public interface JsonComponent<T> {
         return Optional.empty();
     }
 
-    T export(ModelContext context);
+    T export(ModelContext context) throws InterruptedException, ExecutionException;
 
-    default void export(ModelContext context, Cuboid output) {
+    default void export(ModelContext context, Cuboid output) throws InterruptedException, ExecutionException {
         throw new NotImplementedException("I am not a cuboid");
     }
 }

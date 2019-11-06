@@ -18,6 +18,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
@@ -31,7 +33,7 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
 
     private final boolean[] mirror = new boolean[3];
 
-    private final Texture texture;
+    private final CompletableFuture<Texture> texture;
 
     private final boolean visible;
     private final boolean hidden;
@@ -51,7 +53,7 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
         visible = JsonUtils.getBooleanOr("visible", json, true);
         hidden = JsonUtils.getBooleanOr("hidden", json, false);
 
-        texture = new JsonTexture(json, context.getTexture());
+        texture = context.getTexture().thenApply(t -> new JsonTexture(json, t));
 
         if (json.has("children")) {
             json.get("children").getAsJsonArray().forEach(element -> {
@@ -88,7 +90,7 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
     }
 
     @Override
-    public void export(ModelContext context, Cuboid cuboid) {
+    public void export(ModelContext context, Cuboid cuboid) throws InterruptedException, ExecutionException {
 
         ((MsonCuboid)cuboid).at(position[0], position[1], position[2]);
         ((MsonCuboid)cuboid).around(center[0], center[1], center[2]);
@@ -98,8 +100,10 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
         cuboid.visible = visible;
         cuboid.field_3664 = hidden;
 
-        ((MsonCuboid)cuboid).tex(texture.getU(), texture.getV());
-        ((MsonCuboid)cuboid).size(texture.getWidth(), texture.getHeight());
+        Texture tex = texture.get();
+
+        ((MsonCuboid)cuboid).tex(tex.getU(), tex.getV());
+        ((MsonCuboid)cuboid).size(tex.getWidth(), tex.getHeight());
 
         cuboid.children.clear();
         cuboid.boxes.clear();

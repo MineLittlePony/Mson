@@ -5,8 +5,6 @@ import net.minecraft.client.model.Model;
 
 import com.minelittlepony.mson.api.ModelContext;
 
-import java.util.function.Function;
-
 public class SubContext implements ModelContext {
 
     private final ModelContext parent;
@@ -39,7 +37,7 @@ public class SubContext implements ModelContext {
     }
 
     @Override
-    public <T> T computeIfAbsent(String name, Function<String, T> supplier) {
+    public <T> T computeIfAbsent(String name, ContentSupplier<T> supplier) {
         return parent.computeIfAbsent(name, supplier);
     }
 
