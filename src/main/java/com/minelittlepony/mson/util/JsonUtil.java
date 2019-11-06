@@ -28,4 +28,11 @@ public class JsonUtil {
             output[i] = arr.get(i).getAsFloat();
         }
     }
+
+    public static void getBooleans(JsonObject json, String member, boolean[] output) {
+        JsonArray arr = json.get(member).getAsJsonArray();
+        for (int i = 0; i < output.length && i < arr.size(); i++) {
+            output[i] = arr.get(i).getAsBoolean();
+        }
+    }
 }

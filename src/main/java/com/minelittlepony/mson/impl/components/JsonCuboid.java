@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.model.MsonCuboid;
 import com.minelittlepony.mson.util.JsonUtil;
 import com.mojang.realmsclient.util.JsonUtils;
 
@@ -18,14 +19,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class JsonCuboid implements JsonComponent<Cuboid> {
+public class JsonCuboid implements JsonComponent<MsonCuboid> {
     public static final Identifier ID = new Identifier("mson", "compound");
 
     private final float[] center = new float[3];
 
     private final float[] rotation = new float[3];
 
-    private final float[] offset = new float[3];
+    private final float[] position = new float[3];
+
+    private final boolean[] mirror = new boolean[3];
 
     @Nullable
     private float[] textureSize;
@@ -33,7 +36,6 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
     @Nullable
     private int[] textureUv;
 
-    private final boolean mirror;
     private final boolean visible;
     private final boolean hidden;
 
@@ -46,9 +48,9 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
     public JsonCuboid(JsonContext context, JsonObject json) {
         JsonUtil.getFloats(json, "center", center);
         JsonUtil.getFloats(json, "rotation", rotation);
-        JsonUtil.getFloats(json, "offset", offset);
+        JsonUtil.getFloats(json, "position", position);
+        JsonUtil.getBooleans(json, "mirror", mirror);
 
-        mirror = JsonUtils.getBooleanOr("mirror", json, false);
         visible = JsonUtils.getBooleanOr("visible", json, true);
         hidden = JsonUtils.getBooleanOr("hidden", json, false);
 
@@ -88,9 +90,9 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
     }
 
     @Override
-    public Cuboid export(ModelContext context) {
+    public MsonCuboid export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            Cuboid cuboid = new Cuboid(context.getModel(), key);
+            MsonCuboid cuboid = new MsonCuboid(context.getModel(), key);
 
             export(context, cuboid);
 
@@ -100,9 +102,8 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
 
     @Override
     public void export(ModelContext context, Cuboid cuboid) {
-        cuboid.x = offset[0];
-        cuboid.y = offset[1];
-        cuboid.z = offset[2];
+
+        MsonCuboid.at(cuboid, position[0], position[1], position[2]);
 
         cuboid.setRotationPoint(center[0], center[1], center[2]);
 
@@ -110,9 +111,16 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
         cuboid.yaw = rotation[1];
         cuboid.roll = rotation[2];
 
-        cuboid.mirror = mirror;
         cuboid.visible = visible;
         cuboid.field_3664 = hidden;
+
+        cuboid.mirror = mirror[0];
+
+        if (cuboid instanceof MsonCuboid) {
+            MsonCuboid part = (MsonCuboid)cuboid;
+            part.mirrorY = mirror[1];
+            part.mirrorZ = mirror[2];
+        }
 
         if (textureUv != null) {
             cuboid.setTextureOffset(textureUv[0], textureUv[1]);
