@@ -3,6 +3,7 @@ package com.minelittlepony.mson.impl.model;
 import net.minecraft.client.model.Cuboid;
 import net.minecraft.util.Identifier;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
@@ -55,27 +56,27 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
 
         texture = context.getTexture().thenApply(t -> new JsonTexture(json, t));
 
-        if (json.has("children")) {
-            json.get("children").getAsJsonArray().forEach(element -> {
+        JsonUtil.accept(json, "children").map(JsonElement::getAsJsonArray).ifPresent(el -> {
+            el.forEach(element -> {
                 JsonComponent<?> component = context.loadComponent(element);
                 if (component != null) {
                     children.add(component);
                 }
             });
-        }
-        if (json.has("cubes")) {
-            json.get("cubes").getAsJsonArray().forEach(element -> {
+        });
+        JsonUtil.accept(json, "cubes").map(JsonElement::getAsJsonArray).ifPresent(el -> {
+            el.forEach(element -> {
                 JsonComponent<?> component = context.loadComponent(element);
                 if (component != null) {
                     cubes.add(component);
                 }
             });
-        }
+        });
 
-        if (json.has("name")) {
-            name = json.get("name").getAsString();
+        JsonUtil.accept(json, "name").map(JsonElement::getAsString).ifPresent(name -> {
+            this.name = name;
             context.addNamedComponent(name, this);
-        }
+        });
     }
 
     @Override

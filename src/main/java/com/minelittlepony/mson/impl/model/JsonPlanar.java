@@ -4,6 +4,7 @@ import net.minecraft.client.model.Cuboid;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
@@ -11,6 +12,7 @@ import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Face;
 import com.minelittlepony.mson.api.model.MsonCuboid;
 import com.minelittlepony.mson.api.model.MsonPlane;
+import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -25,10 +27,9 @@ public class JsonPlanar extends JsonCuboid {
         super(context, json);
 
         Face.VALUES.forEach(face -> {
-            String key = face.name().toLowerCase();
-            if (json.has(key)) {
-                faces.put(face, new JsonFace(context, json.get(key).getAsJsonArray(), face));
-            }
+            JsonUtil.accept(json, face.name().toLowerCase())
+                .map(JsonElement::getAsJsonArray)
+                .ifPresent(el -> faces.put(face, new JsonFace(context, el, face)));
         });
     }
 

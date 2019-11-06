@@ -9,6 +9,7 @@ import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.impl.key.ReflectedModelKey;
+import com.minelittlepony.mson.util.JsonUtil;
 
 import javax.annotation.Nullable;
 
@@ -26,10 +27,9 @@ public class JsonSlot<T extends MsonModel> implements JsonComponent<T> {
     private String name;
 
     public JsonSlot(JsonContext context, JsonObject json) {
-
         implementation = ReflectedModelKey.fromJson(json);
         content = context.resolve(json.get("content"));
-        name = json.get("name").getAsString();
+        name = JsonUtil.require(json, "name").getAsString();
         context.addNamedComponent(name, this);
     }
 

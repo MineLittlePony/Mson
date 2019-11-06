@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.impl.model;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -22,9 +21,7 @@ public class JsonTexture implements Texture {
 
     private JsonTexture(JsonObject json, int... inherited) {
         parameters = inherited;
-
-        if (json.has("texture")) {
-            JsonElement el = json.get("texture");
+        JsonUtil.accept(json, "texture").ifPresent(el -> {
             if (el.isJsonObject()) {
                 JsonObject tex = el.getAsJsonObject();
                 parameters = new int[] {
@@ -36,7 +33,7 @@ public class JsonTexture implements Texture {
             } else if (el.isJsonArray()) {
                 JsonUtil.getInts(json, "texture", parameters);
             }
-        }
+        });
     }
 
     @Override

@@ -22,7 +22,7 @@ public class JsonPlane implements JsonComponent<MsonPlane> {
     public JsonPlane(JsonContext context, JsonObject json) {
         JsonUtil.getFloats(json, "position", position);
         JsonUtil.getInts(json, "size", size);
-        face = Face.valueOf(json.get("face").getAsString().toUpperCase());
+        face = Face.valueOf(JsonUtil.require(json, "face").getAsString().toUpperCase());
     }
 
     @Override
