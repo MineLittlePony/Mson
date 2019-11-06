@@ -9,6 +9,7 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.MsonBox;
 import com.minelittlepony.mson.api.model.MsonCuboid;
+import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.util.JsonUtil;
 import com.mojang.realmsclient.util.JsonUtils;
 
@@ -30,11 +31,7 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
 
     private final boolean[] mirror = new boolean[3];
 
-    @Nullable
-    private int[] textureSize;
-
-    @Nullable
-    private int[] textureUv;
+    private final Texture texture;
 
     private final boolean visible;
     private final boolean hidden;
@@ -54,17 +51,7 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
         visible = JsonUtils.getBooleanOr("visible", json, true);
         hidden = JsonUtils.getBooleanOr("hidden", json, false);
 
-        if (json.has("texture")) {
-            JsonObject tex = json.get("texture").getAsJsonObject();
-            textureUv = new int[] {
-                    JsonUtils.getIntOr("u", tex, 0),
-                    JsonUtils.getIntOr("v", tex, 0)
-            };
-            textureSize = new int[] {
-                    JsonUtils.getIntOr("w", tex, 64),
-                    JsonUtils.getIntOr("h", tex, 32)
-            };
-        }
+        texture = new JsonTexture(json, context.getTexture());
 
         if (json.has("children")) {
             json.get("children").getAsJsonArray().forEach(element -> {
@@ -111,12 +98,8 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
         cuboid.visible = visible;
         cuboid.field_3664 = hidden;
 
-        if (textureUv != null) {
-            ((MsonCuboid)cuboid).tex(textureUv[0], textureUv[1]);
-        }
-        if (textureSize != null) {
-            ((MsonCuboid)cuboid).size(textureSize[0], textureSize[1]);
-        }
+        ((MsonCuboid)cuboid).tex(texture.getU(), texture.getV());
+        ((MsonCuboid)cuboid).size(texture.getWidth(), texture.getHeight());
 
         cuboid.children.clear();
         cuboid.boxes.clear();

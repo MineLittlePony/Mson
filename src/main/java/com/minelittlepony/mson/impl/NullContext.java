@@ -10,6 +10,8 @@ import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.impl.model.JsonTexture;
 
 import java.util.function.Function;
 
@@ -66,5 +68,10 @@ final class NullContext implements JsonContext, ModelContext {
     @Override
     public ModelContext createContext(Model model) {
         return this;
+    }
+
+    @Override
+    public Texture getTexture() {
+        return JsonTexture.EMPTY;
     }
 }

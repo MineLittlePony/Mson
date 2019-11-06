@@ -17,6 +17,8 @@ import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.impl.model.JsonTexture;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -74,6 +76,8 @@ class ModelFoundry {
 
         private JsonContext parent = NullContext.INSTANCE;
 
+        private final Texture texture;
+
         StoredModelData(ResourceManager manager, JsonObject json) {
             elements = json.entrySet().stream().collect(Collectors.toMap(
                     e -> e.getKey(),
@@ -83,6 +87,8 @@ class ModelFoundry {
             if (json.has("parent")) {
                 parent = loadJsonModel(manager, new Identifier(json.get("parent").getAsString()));
             }
+
+            texture = new JsonTexture(json, parent.getTexture());
         }
 
         @Override
@@ -101,6 +107,11 @@ class ModelFoundry {
 
             throw new NotImplementedException("Json was not a js object");
             //return null; // TODO
+        }
+
+        @Override
+        public Texture getTexture() {
+            return texture;
         }
 
         @Override
