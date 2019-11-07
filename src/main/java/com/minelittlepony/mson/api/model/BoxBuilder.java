@@ -9,22 +9,28 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.util.Qbit;
 
+/**
+ * A builder for building boxes.
+ *
+ * Holds all the parameters so we don't have to shove them into a Box sub-class.
+ *
+ */
 public final class BoxBuilder {
 
     public final MsonCuboid cuboid;
 
-    public float xMin;
-    public float yMin;
-    public float zMin;
+    public float x;
+    public float y;
+    public float z;
 
     public int dx;
     public int dy;
     public int dz;
 
-    public int texU;
-    public int texV;
+    public int u;
+    public int v;
 
-    public float scale;
+    public float stretch;
 
     public boolean mirrorX;
     public boolean mirrorY;
@@ -33,10 +39,10 @@ public final class BoxBuilder {
     public BoxBuilder(ModelContext context) {
         this.cuboid = (MsonCuboid)context.getContext();
 
-        scale = context.getScale();
+        stretch = context.getScale();
 
-        texU = cuboid.getTextureOffsetU();
-        texV = cuboid.getTextureOffsetV();
+        u = cuboid.getTextureOffsetU();
+        v = cuboid.getTextureOffsetV();
 
         mirrorX = cuboid.getMirrorX();
         mirrorY = cuboid.getMirrorY();
@@ -44,9 +50,9 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder pos(float... pos) {
-        xMin = pos[0] + cuboid.getModelOffsetX();
-        yMin = pos[1] + cuboid.getModelOffsetY();
-        zMin = pos[2] + cuboid.getModelOffsetZ();
+        x = pos[0] + cuboid.getModelOffsetX();
+        y = pos[1] + cuboid.getModelOffsetY();
+        z = pos[2] + cuboid.getModelOffsetZ();
         return this;
     }
 
@@ -65,7 +71,7 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder stretch(float stretch) {
-        scale =+ stretch;
+        this.stretch =+ stretch;
         return this;
     }
 
@@ -100,15 +106,15 @@ public final class BoxBuilder {
         return new Quad(vertices,
                 x,         y,
                 x + width, y + height,
-                texU, texV);
+                u, v);
     }
 
     public Box build() {
         return new Box((Cuboid)cuboid,
-                texU, texV,
-                xMin, yMin, zMin,
+                u, v,
+                x, y, z,
                 dx, dy, dz,
-                scale, cuboid.getMirrorX());
+                stretch, cuboid.getMirrorX());
     }
 
     public Box build(QuadsBuilder builder) {

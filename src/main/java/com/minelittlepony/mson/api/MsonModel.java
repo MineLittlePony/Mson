@@ -2,6 +2,8 @@ package com.minelittlepony.mson.api;
 
 /**
  * A Mson Model.
+ *
+ * All models must implement this interface.
  */
 public interface MsonModel {
 

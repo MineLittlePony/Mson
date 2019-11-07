@@ -3,13 +3,12 @@ package com.minelittlepony.mson.impl;
 import net.minecraft.client.model.Cuboid;
 import net.minecraft.client.model.Model;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.impl.exception.EmptyContextException;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 
 import java.util.Optional;
@@ -23,17 +22,17 @@ final class NullContext implements JsonContext, ModelContext {
 
     @Override
     public Model getModel() {
-        throw new NotImplementedException("getModel");
+        throw new EmptyContextException("getModel");
     }
 
     @Override
     public Object getContext() {
-        throw new NotImplementedException("getContext");
+        throw new EmptyContextException("getContext");
     }
 
     @Override
     public CompletableFuture<JsonContext> resolve(JsonElement json) {
-        throw new NotImplementedException("resolve");
+        throw new EmptyContextException("resolve");
     }
 
     @Override
@@ -43,12 +42,12 @@ final class NullContext implements JsonContext, ModelContext {
 
     @Override
     public <T> T findByName(String name) {
-        throw new RuntimeException(String.format("Key not found `%s`", name));
+        throw new IllegalArgumentException(String.format("Key not found `%s`", name));
     }
 
     @Override
     public void findByName(String name, Cuboid output) {
-        throw new RuntimeException(String.format("Key not found `%s`", name));
+        throw new IllegalArgumentException(String.format("Key not found `%s`", name));
     }
 
     @Override

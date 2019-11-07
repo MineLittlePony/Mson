@@ -23,6 +23,8 @@ public interface ModelContext {
     /**
      * Gets the immediate object in this context.
      * May be the same as the model if called on the root context.
+     *
+     * Otherwise it is the object this context was resolved against.
      */
     Object getContext();
 

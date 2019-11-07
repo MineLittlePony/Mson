@@ -2,6 +2,9 @@ package com.minelittlepony.mson.api;
 
 import net.minecraft.util.Identifier;
 
+/**
+ * Handle for a registered entity model.
+ */
 public interface ModelKey<T extends MsonModel> {
 
     /**

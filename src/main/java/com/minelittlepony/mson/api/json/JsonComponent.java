@@ -2,13 +2,16 @@ package com.minelittlepony.mson.api.json;
 
 import net.minecraft.client.model.Cuboid;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.minelittlepony.mson.api.ModelContext;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * A json component.
+ *
+ * Consumes json data and "exports" a concrete model instance, or a piece of a model.
+ */
 public interface JsonComponent<T> {
 
     @SuppressWarnings("unchecked")
@@ -26,9 +29,20 @@ public interface JsonComponent<T> {
         return Optional.empty();
     }
 
+    /**
+     * Creates an instance of this component's object type within the supplied model loading context.
+     */
     T export(ModelContext context) throws InterruptedException, ExecutionException;
 
+    /**
+     * Exports this component to a Cuboid output.
+     *
+     * The contents of the cuboid are overwritten by the contents of this components.
+     * Only really exists to work around finals as seen in player models.
+     *
+     * @throws UnsupportedOperationException if this component would not have produced a cuboid.
+     */
     default void export(ModelContext context, Cuboid output) throws InterruptedException, ExecutionException {
-        throw new NotImplementedException("I am not a cuboid");
+        throw new UnsupportedOperationException("I am not a cuboid");
     }
 }

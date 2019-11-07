@@ -7,8 +7,6 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
@@ -19,6 +17,7 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -131,7 +130,7 @@ class ModelFoundry {
                         .map(c -> (JsonComponent<T>)c.loadJson(this, o));
             }
 
-            throw new NotImplementedException("Json was not a js object");
+            throw new UnsupportedOperationException("Json was not a js object");
         }
 
         @Override
@@ -195,7 +194,7 @@ class ModelFoundry {
                     try {
                         return (T)elements.get(name).export(this);
                     } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
+                        throw new FutureAwaitException(e);
                     }
                 }
                 return inherited.findByName(name);
@@ -207,7 +206,7 @@ class ModelFoundry {
                     try {
                         elements.get(name).export(this, output);
                     } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
+                        throw new FutureAwaitException(e);
                     }
                 } else {
                     inherited.findByName(name, output);

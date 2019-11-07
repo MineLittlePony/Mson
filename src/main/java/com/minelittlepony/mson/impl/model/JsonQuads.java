@@ -45,8 +45,8 @@ public class JsonQuads implements JsonComponent<Box>, QuadsBuilder {
     @Override
     public Box export(ModelContext context) {
         BoxBuilder builder = new BoxBuilder(context);
-        builder.texU = texU;
-        builder.texV = texV;
+        builder.u = texU;
+        builder.v = texV;
         return builder.build(this);
     }
 

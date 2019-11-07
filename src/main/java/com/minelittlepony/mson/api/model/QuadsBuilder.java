@@ -3,6 +3,9 @@ package com.minelittlepony.mson.api.model;
 import net.minecraft.client.model.Quad;
 import net.minecraft.client.model.Vertex;
 
+/**
+ * A builder for creating box quads.
+ */
 public interface QuadsBuilder {
 
     /**
@@ -11,46 +14,46 @@ public interface QuadsBuilder {
      * This produces a square polygon with tapered sides ending in a flat top.
      */
     static QuadsBuilder squareFrustum(float tipInset) {
-        return box -> {
-            float xMax = box.xMin + box.dx + box.scale;
-            float yMax = box.yMin + box.dy + box.scale;
-            float zMax = box.zMin + box.dz + box.scale;
+        return ctx -> {
+            float xMax = ctx.x + ctx.dx + ctx.stretch;
+            float yMax = ctx.y + ctx.dy + ctx.stretch;
+            float zMax = ctx.z + ctx.dz + ctx.stretch;
 
-            float x = box.xMin - box.scale;
-            float y = box.yMin - box.scale;
-            float z = box.zMin - box.scale;
+            float xMin = ctx.x - ctx.stretch;
+            float yMin = ctx.y - ctx.stretch;
+            float zMin = ctx.z - ctx.stretch;
 
-            if (box.cuboid.getMirrorX()) {
+            if (ctx.cuboid.getMirrorX()) {
                 float v = xMax;
-                xMax = x;
-                x = v;
+                xMax = xMin;
+                xMin = v;
             }
 
-            float tipXmin = x + box.dx * tipInset;
-            float tipZmin = z + box.dz * tipInset;
-            float tipXMax = xMax - box.dx * tipInset;
-            float tipZMax = zMax - box.dz * tipInset;
+            float tipXmin = xMin + ctx.dx * tipInset;
+            float tipZmin = zMin + ctx.dz * tipInset;
+            float tipXMax = xMax - ctx.dx * tipInset;
+            float tipZMax = zMax - ctx.dz * tipInset;
 
             // w:west e:east d:down u:up s:south n:north
-            Vertex wds = box.vert(tipXmin, y,    tipZmin, 0, 0);
-            Vertex eds = box.vert(tipXMax, y,    tipZmin, 0, 8);
-            Vertex eus = box.vert(xMax,    yMax, z,       8, 8);
-            Vertex wus = box.vert(x,       yMax, z,       8, 0);
-            Vertex wdn = box.vert(tipXmin, y,    tipZMax, 0, 0);
-            Vertex edn = box.vert(tipXMax, y,    tipZMax, 0, 8);
-            Vertex eun = box.vert(xMax,    yMax, zMax,    8, 8);
-            Vertex wun = box.vert(x,       yMax, zMax,    8, 0);
+            Vertex wds = ctx.vert(tipXmin, yMin, tipZmin, 0, 0);
+            Vertex eds = ctx.vert(tipXMax, yMin, tipZmin, 0, 8);
+            Vertex eus = ctx.vert(xMax,    yMax, zMin,    8, 8);
+            Vertex wus = ctx.vert(xMin,    yMax, zMin,    8, 0);
+            Vertex wdn = ctx.vert(tipXmin, yMin, tipZMax, 0, 0);
+            Vertex edn = ctx.vert(tipXMax, yMin, tipZMax, 0, 8);
+            Vertex eun = ctx.vert(xMax,    yMax, zMax,    8, 8);
+            Vertex wun = ctx.vert(xMin,    yMax, zMax,    8, 0);
 
             Quad[] quads = new Quad[] {
-                box.quad(box.texU + box.dz + box.dx,          box.dz, box.texV + box.dz,  box.dy, edn, eds, eus, eun),
-                box.quad(box.texU,                            box.dz, box.texV + box.dz,  box.dy, wds, wdn, wun, wus),
-                box.quad(box.texU + box.dz,                   box.dx, box.texV,           box.dz, edn, wdn, wds, eds),
-                box.quad(box.texU + box.dz + box.dx,          box.dx, box.texV + box.dz, -box.dz, eus, wus, wun, eun),
-                box.quad(box.texU + box.dz,                   box.dx, box.texV + box.dz,  box.dy, eds, wds, wus, eus),
-                box.quad(box.texU + box.dz + box.dx + box.dz, box.dx, box.texV + box.dz,  box.dy, wdn, edn, eun, wun)
+                ctx.quad(ctx.u + ctx.dz + ctx.dx,          ctx.dz, ctx.v + ctx.dz,  ctx.dy, edn, eds, eus, eun),
+                ctx.quad(ctx.u,                            ctx.dz, ctx.v + ctx.dz,  ctx.dy, wds, wdn, wun, wus),
+                ctx.quad(ctx.u + ctx.dz,                   ctx.dx, ctx.v,           ctx.dz, edn, wdn, wds, eds),
+                ctx.quad(ctx.u + ctx.dz + ctx.dx,          ctx.dx, ctx.v + ctx.dz, -ctx.dz, eus, wus, wun, eun),
+                ctx.quad(ctx.u + ctx.dz,                   ctx.dx, ctx.v + ctx.dz,  ctx.dy, eds, wds, wus, eus),
+                ctx.quad(ctx.u + ctx.dz + ctx.dx + ctx.dz, ctx.dx, ctx.v + ctx.dz,  ctx.dy, wdn, edn, eun, wun)
             };
 
-            if (box.cuboid.getMirrorX()) {
+            if (ctx.cuboid.getMirrorX()) {
                 for (Quad i : quads) {
                     i.flip();
                 }
@@ -64,65 +67,65 @@ public interface QuadsBuilder {
      * Creates a single, flat plane aligned to the given face.
      */
     static QuadsBuilder plane(Face face) {
-        return box -> {
-            float xMax = box.xMin + box.dx + box.scale;
-            float yMax = box.yMin + box.dy + box.scale;
-            float zMax = box.zMin + box.dz + box.scale;
+        return ctx -> {
+            float xMax = ctx.x + ctx.dx + ctx.stretch;
+            float yMax = ctx.y + ctx.dy + ctx.stretch;
+            float zMax = ctx.z + ctx.dz + ctx.stretch;
 
-            float x = box.xMin - box.scale;
-            float y = box.yMin - box.scale;
-            float z = box.zMin - box.scale;
+            float xMin = ctx.x - ctx.stretch;
+            float yMin = ctx.y - ctx.stretch;
+            float zMin = ctx.z - ctx.stretch;
 
-            if (box.cuboid.getMirrorX()) {
+            if (ctx.cuboid.getMirrorX()) {
                 float v = xMax;
-                xMax = x;
-                x = v;
+                xMax = xMin;
+                xMin = v;
             }
 
-            if (box.cuboid.getMirrorY()) {
+            if (ctx.cuboid.getMirrorY()) {
                 float v = yMax;
-                yMax = y;
-                y = v;
+                yMax = yMin;
+                yMin = v;
             }
 
-            if (box.cuboid.getMirrorZ()) {
+            if (ctx.cuboid.getMirrorZ()) {
                 float v = zMax;
-                zMax = z;
-                z = v;
+                zMax = zMin;
+                zMin = v;
             }
 
             // w:west e:east d:down u:up s:south n:north
-            Vertex wds = box.vert(x, y, z, 0, 0);
-            Vertex eds = box.vert(xMax, y, z, 0, 8);
-            Vertex eus = box.vert(xMax, yMax, z, 8, 8);
-            Vertex wus = box.vert(x, yMax, z, 8, 0);
-            Vertex wdn = box.vert(x, y, zMax, 0, 0);
-            Vertex edn = box.vert(xMax, y, zMax, 0, 8);
-            Vertex eun = box.vert(xMax, yMax, zMax, 8, 8);
-            Vertex wun = box.vert(x, yMax, zMax, 8, 0);
+            Vertex wds = ctx.vert(xMin, yMin, zMin, 0, 0);
+            Vertex eds = ctx.vert(xMax, yMin, zMin, 0, 8);
+            Vertex eus = ctx.vert(xMax, yMax, zMin, 8, 8);
+            Vertex wus = ctx.vert(xMin, yMax, zMin, 8, 0);
+            Vertex wdn = ctx.vert(xMin, yMin, zMax, 0, 0);
+            Vertex edn = ctx.vert(xMax, yMin, zMax, 0, 8);
+            Vertex eun = ctx.vert(xMax, yMax, zMax, 8, 8);
+            Vertex wun = ctx.vert(xMin, yMax, zMax, 8, 0);
 
             Quad[] quads = new Quad[1];
 
             if (face == Face.EAST) {
-                quads[0] = box.quad(box.texU, box.dz, box.texV, box.dy, edn, eds, eus, eun);
+                quads[0] = ctx.quad(ctx.u, ctx.dz, ctx.v, ctx.dy, edn, eds, eus, eun);
             }
             if (face == Face.WEST) {
-                quads[0] = box.quad(box.texU, box.dz, box.texV, box.dy, wds, wdn, wun, wus);
+                quads[0] = ctx.quad(ctx.u, ctx.dz, ctx.v, ctx.dy, wds, wdn, wun, wus);
             }
             if (face == Face.UP) {
-                quads[0] = box.quad(box.texU, box.dx, box.texV, box.dz, edn, wdn, wds, eds);
+                quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dz, edn, wdn, wds, eds);
             }
             if (face == Face.DOWN) {
-                quads[0] = box.quad(box.texU, box.dx, box.texV, box.dz, eus, wus, wun, eun);
+                quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dz, eus, wus, wun, eun);
             }
             if (face == Face.SOUTH) {
-                quads[0] = box.quad(box.texU, box.dx, box.texV, box.dy, eds, wds, wus, eus);
+                quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dy, eds, wds, wus, eus);
             }
             if (face == Face.NORTH) {
-                quads[0] = box.quad(box.texU, box.dx, box.texV, box.dy, wdn, edn, eun, wun);
+                quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dy, wdn, edn, eun, wun);
             }
 
-            if (box.cuboid.getMirrorX() || box.cuboid.getMirrorY() || box.cuboid.getMirrorZ()) {
+            if (ctx.cuboid.getMirrorX() || ctx.cuboid.getMirrorY() || ctx.cuboid.getMirrorZ()) {
                 quads[0].flip();
             }
 
@@ -130,5 +133,8 @@ public interface QuadsBuilder {
         };
     }
 
-    Quad[] build(BoxBuilder box);
+    /**
+     * Builds the quads array using the provided box builder.
+     */
+    Quad[] build(BoxBuilder ctx);
 }
