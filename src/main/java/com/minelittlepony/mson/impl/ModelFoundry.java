@@ -20,12 +20,14 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.model.JsonTexture;
+import com.minelittlepony.mson.util.JsonUtil;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -62,10 +64,9 @@ class ModelFoundry {
 
                     Identifier file = new Identifier(id.getNamespace(), "models/" + id.getPath() + ".json");
 
-                    try (Resource res = manager.getResource(file)) {
-                        try (Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
-                            return new StoredModelData(GSON.fromJson(reader, JsonObject.class));
-                        }
+                    try (Resource res = manager.getResource(file);
+                         Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
+                        return new StoredModelData(GSON.fromJson(reader, JsonObject.class));
                     } catch (IOException e) {
                         e.printStackTrace();
                     } finally {
@@ -88,19 +89,28 @@ class ModelFoundry {
 
         private final Map<String, JsonComponent<?>> elements;
 
-        private CompletableFuture<JsonContext> parent = CompletableFuture.completedFuture(NullContext.INSTANCE);
+        private final CompletableFuture<JsonContext> parent;
 
         private final CompletableFuture<Texture> texture;
 
+        private float scale = -1;
+
         StoredModelData(JsonObject json) {
-            if (json.has("parent")) {
-                parent = loadJsonModel(new Identifier(json.get("parent").getAsString()));
-            }
+            parent = JsonUtil.accept(json, "parent")
+                .map(JsonElement::getAsString)
+                .map(Identifier::new)
+                .map(ModelFoundry.this::loadJsonModel)
+                .orElseGet(() -> CompletableFuture.completedFuture(NullContext.INSTANCE));
+
+            JsonUtil.accept(json, "scale")
+                .map(JsonElement::getAsFloat)
+                .ifPresent(scale -> this.scale = scale);
+
 
             texture = parent.thenComposeAsync(JsonContext::getTexture).thenApplyAsync(t -> new JsonTexture(json, t));
             elements = json.entrySet().stream().collect(Collectors.toMap(
                     entry -> entry.getKey(),
-                    entry -> loadComponent(entry.getValue().getAsJsonObject())
+                    entry -> loadComponent(entry.getValue().getAsJsonObject()).orElseGet(null)
             ));
         }
 
@@ -111,11 +121,14 @@ class ModelFoundry {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> JsonComponent<T> loadComponent(JsonElement json) {
+        public <T> Optional<JsonComponent<T>> loadComponent(JsonElement json) {
             if (json.isJsonObject()) {
                 JsonObject o = json.getAsJsonObject();
-                Identifier id = new Identifier(o.get("id").getAsString());
-                return (JsonComponent<T>)mson.componentTypes.get(id).loadJson(this, o);
+                Identifier id = new Identifier(JsonUtil.require(o, "id").getAsString());
+
+                return Optional
+                        .ofNullable(mson.componentTypes.get(id))
+                        .map(c -> (JsonComponent<T>)c.loadJson(this, o));
             }
 
             throw new NotImplementedException("Json was not a js object");
@@ -138,7 +151,7 @@ class ModelFoundry {
 
         @Override
         public ModelContext createContext(Model model) {
-            return new RootContext(model, parent.getNow(NullContext.INSTANCE).createContext(model));
+            return new RootContext(model, scale, parent.getNow(NullContext.INSTANCE).createContext(model));
         }
 
         class RootContext implements ModelContext {
@@ -149,8 +162,11 @@ class ModelFoundry {
 
             private final ModelContext inherited;
 
-            RootContext(Model model, ModelContext inherited) {
+            private final float scale;
+
+            RootContext(Model model, float scale, ModelContext inherited) {
                 this.model = model;
+                this.scale = scale;
                 this.inherited = inherited;
             }
 
@@ -162,6 +178,14 @@ class ModelFoundry {
             @Override
             public Object getContext() {
                 return model;
+            }
+
+            @Override
+            public float getScale() {
+                if (scale > 0) {
+                    return scale;
+                }
+                return inherited.getScale();
             }
 
             @SuppressWarnings("unchecked")

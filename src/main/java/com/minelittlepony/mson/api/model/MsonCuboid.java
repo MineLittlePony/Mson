@@ -112,22 +112,4 @@ public interface MsonCuboid {
     default boolean getMirrorZ() {
         return false;
     }
-
-    default MsonPlane createPlane(float x, float y, float z, int width, int height, int depth, float scale, Face face) {
-        return new MsonPlane((Cuboid)this,
-                getTextureOffsetU(), getTextureOffsetV(),
-                getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z,
-            width, height, depth,
-            scale,
-            getMirrorX(), getMirrorY(), getMirrorZ(),
-            face
-        );
-    }
-
-    default MsonBox createBox(float x, float y, float z, int width, int height, int depth, float scaleFactor, boolean mirrored) {
-        return new MsonBox((Cuboid)this, getTextureOffsetU(), getTextureOffsetV(),
-                getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z,
-                width, height, depth, scaleFactor, mirrored);
-    }
-
 }

@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.impl.model;
 
+import net.minecraft.client.model.Box;
 import net.minecraft.client.model.Cuboid;
 import net.minecraft.util.Identifier;
 
@@ -8,7 +9,6 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
-import com.minelittlepony.mson.api.model.MsonBox;
 import com.minelittlepony.mson.api.model.MsonCuboid;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -58,18 +58,12 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
 
         JsonUtil.accept(json, "children").map(JsonElement::getAsJsonArray).ifPresent(el -> {
             el.forEach(element -> {
-                JsonComponent<?> component = context.loadComponent(element);
-                if (component != null) {
-                    children.add(component);
-                }
+                context.loadComponent(element).ifPresent(children::add);
             });
         });
         JsonUtil.accept(json, "cubes").map(JsonElement::getAsJsonArray).ifPresent(el -> {
             el.forEach(element -> {
-                JsonComponent<?> component = context.loadComponent(element);
-                if (component != null) {
-                    cubes.add(component);
-                }
+                context.loadComponent(element).ifPresent(cubes::add);
             });
         });
 
@@ -119,7 +113,7 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
         );
         cuboid.boxes.addAll(cubes
                 .stream()
-                .map(c -> c.tryExport(subContext, MsonBox.class))
+                .map(c -> c.tryExport(subContext, Box.class))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList())

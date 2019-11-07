@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.impl.model;
 
+import net.minecraft.client.model.Box;
 import net.minecraft.client.model.Cuboid;
 import net.minecraft.util.Identifier;
 
@@ -9,9 +10,9 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Face;
-import com.minelittlepony.mson.api.model.MsonCuboid;
-import com.minelittlepony.mson.api.model.MsonPlane;
+import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.EnumMap;
@@ -43,7 +44,7 @@ public class JsonPlanar extends JsonCuboid {
         });
     }
 
-    class JsonFace implements JsonComponent<MsonPlane> {
+    class JsonFace implements JsonComponent<Box> {
 
         private final Face face;
 
@@ -61,13 +62,11 @@ public class JsonPlanar extends JsonCuboid {
         }
 
         @Override
-        public MsonPlane export(ModelContext context) {
-            MsonCuboid cuboid = (MsonCuboid)context.getContext();
-
-            float[] pos = face.transformPosition(position, 1);
-            Face.Axis axis = face.getAxis();
-
-            return cuboid.createPlane(pos[0], pos[1], pos[2], axis.getWidth(size), axis.getHeight(size), axis.getDeptch(size), 0, face);
+        public Box export(ModelContext context) {
+            return new BoxBuilder(context)
+                .pos(face.transformPosition(position, context))
+                .size(face.getAxis(), size)
+                .build(QuadsBuilder.plane(face));
         }
 
     }

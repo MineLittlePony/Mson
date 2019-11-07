@@ -2,6 +2,7 @@ package com.minelittlepony.mson.api.model;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import com.minelittlepony.mson.api.ModelContext;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,13 +32,13 @@ public enum Face {
         this.axis = axis;
     }
 
-    public float[] transformPosition(float[] position, float scale) {
+    public float[] transformPosition(float[] position, ModelContext context) {
 
         float[] result = new float[position.length];
         System.arraycopy(position, 0, result, 0, position.length);
 
         if (axis == Axis.Y) {
-            result[2] += direction * (scale * 2);
+            result[2] += direction * (context.getScale() * 2);
         }
 
         return result;

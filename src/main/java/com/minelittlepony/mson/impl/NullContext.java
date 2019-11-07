@@ -6,13 +6,13 @@ import net.minecraft.client.model.Model;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 final class NullContext implements JsonContext, ModelContext {
@@ -66,8 +66,8 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public <T> JsonComponent<T> loadComponent(JsonElement json) {
-        throw new JsonParseException("Null Context");
+    public <T> Optional<JsonComponent<T>> loadComponent(JsonElement json) {
+        return Optional.empty();
     }
 
     @Override
@@ -78,5 +78,10 @@ final class NullContext implements JsonContext, ModelContext {
     @Override
     public CompletableFuture<Texture> getTexture() {
         return CompletableFuture.completedFuture(JsonTexture.EMPTY);
+    }
+
+    @Override
+    public float getScale() {
+        return 0;
     }
 }

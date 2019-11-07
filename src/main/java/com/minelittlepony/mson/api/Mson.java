@@ -8,7 +8,7 @@ import com.minelittlepony.mson.impl.MsonImpl;
 
 public interface Mson {
 
-    static Mson getRegistry() {
+    static Mson getInstance() {
         return MsonImpl.instance();
     }
 

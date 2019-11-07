@@ -47,36 +47,35 @@ class MsonCuboidImpl extends Cuboid implements MsonCuboid {
     }
 
     @Override
-    public MsonCuboidImpl addBox(String partName, float offX, float offY, float offZ, int width, int height, int depth, float unknown, int texX, int texY) {
+    public MsonCuboidImpl addBox(String partName, float x, float y, float z, int width, int height, int depth, float scale, int texX, int texY) {
         partName = name + "." + partName;
 
         setTextureOffset(texX, texY);
-        addBox(offX, offY, offZ, width, height, depth);
+        addBox(x, y, z, width, height, depth);
         boxes.get(boxes.size() - 1).setName(partName);
 
         return  this;
     }
 
     @Override
-    public MsonCuboidImpl addBox(float offX, float offY, float offZ, int width, int height, int depth) {
-        addBox(offX, offY, offZ, width, height, depth, 0);
-        return  this;
+    public MsonCuboidImpl addBox(float x, float y, float z, int width, int height, int depth) {
+        return addBox(x, y, z, width, height, depth, getMirrorX());
     }
 
     @Override
-    public MsonCuboidImpl addBox(float offX, float offY, float offZ, int width, int height, int depth, boolean mirrored) {
-        addBox(offX, offY, offZ, width, height, depth, 0, mirrored);
+    public MsonCuboidImpl addBox(float x, float y, float z, int width, int height, int depth, boolean mirrored) {
+        addBox(x, y, z, width, height, depth, 0, mirrored);
         return this;
     }
 
     @Override
-    public void addBox(float offX, float offY, float offZ, int width, int height, int depth, float scaleFactor) {
-        addBox(offX, offY, offZ, width, height, depth, scaleFactor, mirror);
+    public void addBox(float x, float y, float z, int width, int height, int depth, float scaleFactor) {
+        addBox(x, y, z, width, height, depth, scaleFactor, getMirrorX());
     }
 
     @Override
-    public void addBox(float offX, float offY, float offZ, int width, int height, int depth, float scaleFactor, boolean mirrored) {
-        boxes.add(createBox(offX, offY, offZ, width, height, depth, scaleFactor, mirrored));
+    public void addBox(float x, float y, float z, int width, int height, int depth, float scaleFactor, boolean mirrored) {
+        super.addBox(getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z, width, height, depth, scaleFactor, mirrored);
     }
 
     @Override

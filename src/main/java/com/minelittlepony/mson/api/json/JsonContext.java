@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Texture;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface JsonContext {
@@ -15,7 +16,7 @@ public interface JsonContext {
 
     <T> void addNamedComponent(String name, JsonComponent<T> component);
 
-    <T> JsonComponent<T> loadComponent(JsonElement json);
+    <T> Optional<JsonComponent<T>> loadComponent(JsonElement json);
 
     ModelContext createContext(Model model);
 

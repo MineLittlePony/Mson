@@ -51,4 +51,9 @@ public class SubContext implements ModelContext {
         return parent.getRoot();
     }
 
+    @Override
+    public float getScale() {
+        return parent.getScale();
+    }
+
 }
