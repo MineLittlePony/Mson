@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.util;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -32,23 +31,26 @@ public class JsonUtil {
     }
 
     public static void getInts(JsonObject json, String member, int[] output) {
-        JsonArray arr = json.get(member).getAsJsonArray();
-        for (int i = 0; i < output.length && i < arr.size(); i++) {
-            output[i] = arr.get(i).getAsInt();
-        }
+        accept(json, member).map(JsonElement::getAsJsonArray).ifPresent(arr -> {
+            for (int i = 0; i < output.length && i < arr.size(); i++) {
+                output[i] = arr.get(i).getAsInt();
+            }
+        });
     }
 
     public static void getFloats(JsonObject json, String member, float[] output) {
-        JsonArray arr = require(json, member).getAsJsonArray();
-        for (int i = 0; i < output.length && i < arr.size(); i++) {
-            output[i] = arr.get(i).getAsFloat();
-        }
+        accept(json, member).map(JsonElement::getAsJsonArray).ifPresent(arr -> {
+            for (int i = 0; i < output.length && i < arr.size(); i++) {
+                output[i] = arr.get(i).getAsFloat();
+            }
+        });
     }
 
     public static void getBooleans(JsonObject json, String member, boolean[] output) {
-        JsonArray arr = require(json, member).getAsJsonArray();
-        for (int i = 0; i < output.length && i < arr.size(); i++) {
-            output[i] = arr.get(i).getAsBoolean();
-        }
+        accept(json, member).map(JsonElement::getAsJsonArray).ifPresent(arr -> {
+            for (int i = 0; i < output.length && i < arr.size(); i++) {
+                output[i] = arr.get(i).getAsBoolean();
+            }
+        });
     }
 }
