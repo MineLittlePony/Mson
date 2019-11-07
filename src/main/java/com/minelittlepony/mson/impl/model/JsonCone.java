@@ -11,13 +11,13 @@ import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.util.JsonUtil;
 
-public class JsonFrustum extends JsonBox {
+public class JsonCone extends JsonBox {
 
-    public static final Identifier ID = new Identifier("mson", "frust");
+    public static final Identifier ID = new Identifier("mson", "cone");
 
     private final float taper;
 
-    public JsonFrustum(JsonContext context, JsonObject json) {
+    public JsonCone(JsonContext context, JsonObject json) {
         super(context, json);
         taper = JsonUtil.require(json, "taper").getAsFloat();
     }
@@ -29,6 +29,6 @@ public class JsonFrustum extends JsonBox {
             .size(size)
             .stretch(stretch)
             .mirror(Axis.X, mirror)
-            .build(QuadsBuilder.squareFrustum(taper));
+            .build(QuadsBuilder.cone(taper));
     }
 }

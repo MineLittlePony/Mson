@@ -14,7 +14,7 @@ import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.JsonBox;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
-import com.minelittlepony.mson.impl.model.JsonFrustum;
+import com.minelittlepony.mson.impl.model.JsonCone;
 import com.minelittlepony.mson.impl.model.JsonPlanar;
 import com.minelittlepony.mson.impl.model.JsonPlane;
 import com.minelittlepony.mson.impl.model.JsonQuads;
@@ -52,7 +52,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         componentTypes.put(JsonPlane.ID, JsonPlane::new);
         componentTypes.put(JsonPlanar.ID, JsonPlanar::new);
         componentTypes.put(JsonSlot.ID, JsonSlot::new);
-        componentTypes.put(JsonFrustum.ID, JsonFrustum::new);
+        componentTypes.put(JsonCone.ID, JsonCone::new);
         componentTypes.put(JsonQuads.ID, JsonQuads::new);
     }
 
