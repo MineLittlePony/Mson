@@ -17,6 +17,7 @@ import com.minelittlepony.mson.impl.model.JsonCuboid;
 import com.minelittlepony.mson.impl.model.JsonFrustum;
 import com.minelittlepony.mson.impl.model.JsonPlanar;
 import com.minelittlepony.mson.impl.model.JsonPlane;
+import com.minelittlepony.mson.impl.model.JsonQuads;
 import com.minelittlepony.mson.impl.model.JsonSlot;
 
 import javax.annotation.Nullable;
@@ -52,6 +53,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         componentTypes.put(JsonPlanar.ID, JsonPlanar::new);
         componentTypes.put(JsonSlot.ID, JsonSlot::new);
         componentTypes.put(JsonFrustum.ID, JsonFrustum::new);
+        componentTypes.put(JsonQuads.ID, JsonQuads::new);
     }
 
     @Override

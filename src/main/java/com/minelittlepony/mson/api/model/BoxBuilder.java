@@ -87,19 +87,19 @@ public final class BoxBuilder {
     /**
      * Creates a new vertex mapping the given (x, y, z) coordinates to a texture offset.
      */
-    public Vertex vert(float x, float y, float z, int texX, int texY) {
-        return new Vertex(x, y, z, texX, texY);
+    public Vertex vert(float x, float y, float z, int u, int v) {
+        return new Vertex(x, y, z, u, v);
     }
 
     /**
      * Creates a new quad with the given spatial vertices.
      */
     public Quad quad(
-            int startX, int width,
-            int startY, int height, Vertex ...verts) {
-        return new Quad(verts,
-                startX,         startY,
-                startX + width, startY + height,
+            int x, int width,
+            int y, int height, Vertex ...vertices) {
+        return new Quad(vertices,
+                x,         y,
+                x + width, y + height,
                 texU, texV);
     }
 
