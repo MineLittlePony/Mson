@@ -10,7 +10,7 @@ public interface QuadsBuilder {
      *
      * This produces a square polygon with tapered sides ending in a flat top.
      */
-    static QuadsBuilder squareFrustrum(float tipInset) {
+    static QuadsBuilder squareFrustum(float tipInset) {
         return box -> {
             float xMax = box.xMin + box.dx + box.scale;
             float yMax = box.yMin + box.dy + box.scale;

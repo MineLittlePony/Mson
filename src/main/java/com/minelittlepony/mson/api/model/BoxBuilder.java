@@ -7,6 +7,7 @@ import net.minecraft.client.model.Vertex;
 
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
+import com.minelittlepony.mson.util.Qbit;
 
 public final class BoxBuilder {
 
@@ -68,15 +69,17 @@ public final class BoxBuilder {
         return this;
     }
 
-    public BoxBuilder mirror(Axis axis, boolean mirror) {
-        if (axis == Axis.X) {
-            mirrorX = mirror;
-        }
-        if (axis == Axis.Y) {
-            mirrorY = mirror;
-        }
-        if (axis == Axis.Z) {
-            mirrorZ = mirror;
+    public BoxBuilder mirror(Axis axis, Qbit mirror) {
+        if (mirror.isKnown()) {
+            if (axis == Axis.X) {
+                mirrorX = mirror.toBoolean();
+            }
+            if (axis == Axis.Y) {
+                mirrorY = mirror.toBoolean();
+            }
+            if (axis == Axis.Z) {
+                mirrorZ = mirror.toBoolean();
+            }
         }
         return this;
     }

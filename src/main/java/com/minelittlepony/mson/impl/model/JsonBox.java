@@ -10,25 +10,26 @@ import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.util.JsonUtil;
+import com.minelittlepony.mson.util.Qbit;
 import com.mojang.realmsclient.util.JsonUtils;
 
 public class JsonBox implements JsonComponent<Box> {
 
     public static final Identifier ID = new Identifier("mson", "box");
 
-    private final float[] from = new float[3];
+    protected final float[] from = new float[3];
 
-    private final int[] size = new int[3];
+    protected final int[] size = new int[3];
 
-    private final float stretch;
+    protected final float stretch;
 
-    private final boolean mirror;
+    protected Qbit mirror = Qbit.UNKNOWN;
 
     public JsonBox(JsonContext context, JsonObject json) {
         JsonUtil.getFloats(json, "from", from);
         JsonUtil.getInts(json, "size", size);
         stretch = JsonUtil.getFloatOr("stretch", json, -1);
-        mirror = JsonUtils.getBooleanOr("mirror", json, false);
+        mirror = json.has("mirror") ? Qbit.of(JsonUtils.getBooleanOr("mirror", json, false)) : Qbit.UNKNOWN;
     }
 
     @Override
