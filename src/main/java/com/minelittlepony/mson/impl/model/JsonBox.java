@@ -28,7 +28,7 @@ public class JsonBox implements JsonComponent<Box> {
     public JsonBox(JsonContext context, JsonObject json) {
         JsonUtil.getFloats(json, "from", from);
         JsonUtil.getInts(json, "size", size);
-        stretch = JsonUtil.getFloatOr("stretch", json, -1);
+        stretch = JsonUtil.getFloatOr("stretch", json, 0);
         mirror = json.has("mirror") ? Qbit.of(JsonUtils.getBooleanOr("mirror", json, false)) : Qbit.UNKNOWN;
     }
 
