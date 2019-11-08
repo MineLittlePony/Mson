@@ -100,7 +100,7 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
         ((MsonCuboid)cuboid).tex(tex.getU(), tex.getV());
         ((MsonCuboid)cuboid).size(tex.getWidth(), tex.getHeight());
 
-        cuboid.children.clear();
+        cuboid.children = new ArrayList<>();
         cuboid.boxes.clear();
 
         final ModelContext subContext = context.resolve(cuboid);
