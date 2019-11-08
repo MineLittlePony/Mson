@@ -3,7 +3,7 @@ package com.minelittlepony.mson.api;
 import net.minecraft.client.model.Model;
 import net.minecraft.util.Identifier;
 
-import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.impl.MsonImpl;
 
 import java.util.function.Supplier;
@@ -42,7 +42,7 @@ public interface Mson {
      * @param id            Identifier for the component type.
      * @param constructor   The component constructor.
      */
-    void registerComponentType(Identifier id, JsonContext.Constructor<?> constructor);
+    void registerComponentType(Identifier id, JsonComponent.Constructor<?> constructor);
 
     /**
      * Gets the registry for adding entity renderers to the game.

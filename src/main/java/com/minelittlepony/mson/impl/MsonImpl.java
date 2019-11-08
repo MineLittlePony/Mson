@@ -7,11 +7,14 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.minelittlepony.mson.api.EntityRendererRegistry;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
+import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.Mson;
-import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.JsonBox;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
@@ -37,6 +40,8 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     static final MsonImpl INSTANCE = new MsonImpl();
 
+    public static final Logger LOGGER = LogManager.getLogger("Mson");
+
     public static Mson instance() {
         return INSTANCE;
     }
@@ -45,7 +50,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     private final Map<Identifier, Key<?>> registeredModels = new HashMap<>();
 
-    final Map<Identifier, JsonContext.Constructor<?>> componentTypes = new HashMap<>();
+    final Map<Identifier, JsonComponent.Constructor<?>> componentTypes = new HashMap<>();
 
     @Nullable
     ModelFoundry foundry;
@@ -98,7 +103,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     }
 
     @Override
-    public void registerComponentType(Identifier id, JsonContext.Constructor<?> constructor) {
+    public void registerComponentType(Identifier id, JsonComponent.Constructor<?> constructor) {
         Objects.requireNonNull(id, "Id must not be null");
         Objects.requireNonNull(constructor, "Constructor must not be null");
         checkNamespace(id.getNamespace());

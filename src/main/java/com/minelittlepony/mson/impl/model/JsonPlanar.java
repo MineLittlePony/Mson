@@ -54,9 +54,9 @@ public class JsonPlanar extends JsonCuboid {
         public JsonFace(JsonContext context, JsonArray json, Face face) {
             this.face = face;
 
-            position[0] = json.get(0).getAsFloat();
-            position[1] = json.get(1).getAsFloat();
-            position[2] = json.get(2).getAsFloat();
+            position[0] =  json.get(0).getAsFloat();
+            position[1] =  json.get(1).getAsFloat();
+            position[2] =  json.get(2).getAsFloat();
             size[0] = (int)json.get(3).getAsFloat();
             size[1] = (int)json.get(4).getAsFloat();
         }

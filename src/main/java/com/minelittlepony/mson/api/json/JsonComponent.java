@@ -2,6 +2,7 @@ package com.minelittlepony.mson.api.json;
 
 import net.minecraft.client.model.Cuboid;
 
+import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 
 import java.util.Optional;
@@ -14,6 +15,10 @@ import java.util.concurrent.ExecutionException;
  */
 public interface JsonComponent<T> {
 
+    /**
+     * Tries to export this component to the chosen type.
+     * Returns an optional containing the result for a successful conversion.
+     */
     @SuppressWarnings("unchecked")
     default <K> Optional<K> tryExport(ModelContext context, Class<K> type) {
         Object s;
@@ -44,5 +49,18 @@ public interface JsonComponent<T> {
      */
     default void export(ModelContext context, Cuboid output) throws InterruptedException, ExecutionException {
         throw new UnsupportedOperationException("I am not a cuboid");
+    }
+
+    /**
+     * Constructor for creating a component.
+     *
+     * Accepts the json context and json to parse and return a new component instance.
+     */
+    @FunctionalInterface
+    interface Constructor<T> {
+        /**
+         * Accepts the json context and json to parse and return a new component instance.
+         */
+        JsonComponent<? extends T> loadJson(JsonContext context, JsonObject json);
     }
 }

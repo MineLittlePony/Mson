@@ -4,7 +4,6 @@ import net.minecraft.client.model.Model;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Texture;
 
@@ -50,8 +49,4 @@ public interface JsonContext {
      * Otherwise the json tree itself serves as the contents, and the new context is resolved immediately upon return.
      */
     CompletableFuture<JsonContext> resolve(JsonElement json);
-
-    interface Constructor<T> {
-        JsonComponent<? extends T> loadJson(JsonContext context, JsonObject json);
-    }
 }

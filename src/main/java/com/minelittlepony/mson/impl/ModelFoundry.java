@@ -69,7 +69,7 @@ class ModelFoundry {
                          Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
                         return new StoredModelData(GSON.fromJson(reader, JsonObject.class));
                     } catch (JsonParseException | IOException e) {
-                        e.printStackTrace();
+                        MsonImpl.LOGGER.error("Could not load model json for {}", file, e);
                     } finally {
                         clientProfiler.pop();
                         serverProfiler.endTick();

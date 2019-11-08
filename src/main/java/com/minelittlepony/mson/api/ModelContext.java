@@ -64,6 +64,8 @@ public interface ModelContext {
     /**
      * Resolves this context against the given object.
      * Returns a new sub-context as a child of this one where the result of `getContext()` returns the passed in object.
+     *
+     * @throws NullPointerException if the passed in object is null.
      */
     ModelContext resolve(Object child);
 

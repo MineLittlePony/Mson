@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 
 import com.minelittlepony.mson.api.EntityRendererRegistry;
+import com.minelittlepony.mson.impl.MsonImpl;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -29,18 +30,24 @@ class MixinEntityRenderDispatcher implements EntityRendererRegistry {
 
     @Override
     public <R extends PlayerEntityRenderer> void registerPlayerRenderer(String skinType, Function<EntityRenderDispatcher, R> constructor) {
+        try {
+            R renderer = constructor.apply((EntityRenderDispatcher)(Object)this);
 
-        R renderer = constructor.apply((EntityRenderDispatcher)(Object)this);
-
-        if ("default".equalsIgnoreCase(skinType)) {
-            playerRenderer = renderer;
+            if ("default".equalsIgnoreCase(skinType)) {
+                playerRenderer = renderer;
+            }
+            modelRenderers.put(skinType, renderer);
+        } catch (Exception e) {
+            MsonImpl.LOGGER.error("Error whilst updating player renderer", e);
         }
-        modelRenderers.put(skinType, renderer);
     }
 
     @Override
     public <T extends Entity, R extends EntityRenderer<? super T>> void registerEntityRenderer(Class<T> type, Function<EntityRenderDispatcher, R> constructor) {
-        renderers.put(type, constructor.apply((EntityRenderDispatcher)(Object)this));
+        try {
+            renderers.put(type, constructor.apply((EntityRenderDispatcher)(Object)this));
+        } catch (Exception e) {
+            MsonImpl.LOGGER.error("Error whilst updating entity renderer", e);
+        }
     }
-
 }
