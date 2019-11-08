@@ -1,0 +1,60 @@
+{
+	"texture": {
+		"w": 64, "h": 32
+	},
+	"head": {
+		"type": "mson:compound",
+		"center": [0, 6, 0],
+		"cubes": [
+			{ "type": "mson:box", "from": [-4, -8, -4], "size": [ 8, 8, 8] }
+		]
+	},
+	"helmet": {
+		"type": "mson:compound",
+		"texture": { "u": 32, "v": 0 },
+		"center": [0, 6, 0],
+		"cubes": [
+			{ "type": "mson:box", "from": [-4, -8, -4], "size": [ 8, 8, 8], "stretch": 0.5 }
+		]
+	},
+	"torso": {
+		"type": "mson:compound",
+		"texture": { "u": 16, "v": 16 },
+		"center": [0, 6, 0],
+		"cubes": [
+			{ "type": "mson:box", "from": [-4, 0, -2], "size": [ 8, 12, 4] }
+		]
+	},
+	"back_left_leg": {
+		"type": "mson:compound",
+		"center": [-2, 18, 4],
+		"texture": { "u": 0, "v": 16 },
+		"cubes": [
+			{ "type": "mson:box", "from": [-2, 0, -2], "size": [ 4,  6,  4] }
+		]
+	},
+	"back_right_leg": {
+		"type": "mson:compound",
+		"center": [2, 18, 4],
+		"texture": { "u": 0, "v": 16 },
+		"cubes": [
+			{ "type": "mson:box", "from": [-2, 0, -2], "size": [ 4,  6,  4] }
+		]
+	},
+	"front_left_leg": {
+		"type": "mson:compound",
+		"center": [-2, 18, -4],
+		"texture": { "u": 0, "v": 16 },
+		"cubes": [
+			{ "type": "mson:box", "from": [-2, 0, -2], "size": [ 4,  6,  4] }
+		]
+	},
+	"front_right_leg": {
+		"type": "mson:compound",
+		"center": [2, 18, -4],
+		"texture": { "u": 0, "v": 16 },
+		"cubes": [
+			{ "type": "mson:box", "from": [-2, 0, -2], "size": [ 4,  6,  4] }
+		]
+	}
+}
