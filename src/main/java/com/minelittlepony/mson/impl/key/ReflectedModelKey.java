@@ -7,6 +7,10 @@ import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+
 public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelKeyImpl<T> {
     public static <T extends MsonModel> ModelKey<T> fromJson(JsonObject json) {
         if (!json.has("implementation")) {
@@ -15,29 +19,32 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
         return new ReflectedModelKey<>(json.get("implementation").getAsString());
     }
 
-    private final Class<T> implementation;
+    private final MethodHandle handle;
 
     @SuppressWarnings("unchecked")
     private ReflectedModelKey(String className) {
+
+        id = new Identifier("dynamic", className);
+
         try {
-            implementation = (Class<T>)Class.forName(className, false, ReflectedModelKey.class.getClassLoader());
+            Class<T> implementation = (Class<T>)Class.forName(className, false, ReflectedModelKey.class.getClassLoader());
 
             if (!MsonModel.class.isAssignableFrom(implementation)) {
                 throw new JsonParseException("Slot implementation does not implement MsonModel");
             }
-        } catch (ClassNotFoundException e) {
+
+            handle = MethodHandles.publicLookup().findConstructor(implementation, MethodType.methodType(implementation));
+        } catch (Throwable e) {
             throw new JsonParseException("Unknown implementation", e);
         }
-
-        id = new Identifier("dynamic", String.valueOf(implementation.getCanonicalName().hashCode()));
     }
 
     @Override
     public T createModel() {
         try {
-            return implementation.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(String.format("Could not instantiate implementation `%s`", implementation), e);
+            return (T) handle.invoke();
+        } catch (Throwable e) {
+            throw new RuntimeException(String.format("Could not instantiate implementation `%s`", id), e);
         }
     }
 }
