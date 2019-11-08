@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import com.minelittlepony.mson.api.model.BoxBuilder.PolygonsSetter;
 
 @Mixin(Box.class)
-public abstract class MixinBox implements PolygonsSetter {
+abstract class MixinBox implements PolygonsSetter {
 
     @Shadow
     @Final

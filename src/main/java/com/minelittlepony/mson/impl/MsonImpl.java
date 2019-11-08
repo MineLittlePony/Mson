@@ -1,15 +1,16 @@
 package com.minelittlepony.mson.impl;
 
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.Model;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
 
+import com.minelittlepony.mson.api.EntityRendererRegistry;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.Mson;
-import com.minelittlepony.mson.api.event.MsonModelsReadyCallback;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.JsonBox;
@@ -28,6 +29,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 
 public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
@@ -38,6 +40,8 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     public static Mson instance() {
         return INSTANCE;
     }
+
+    private final PendingEntityRendererRegistry renderers = new PendingEntityRendererRegistry();
 
     private final Map<Identifier, Key<?>> registeredModels = new HashMap<>();
 
@@ -70,7 +74,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
         sync.getClass();
         return all.thenCompose(sync::whenPrepared).thenRunAsync(() -> {
-            MsonModelsReadyCallback.EVENT.invoker().init();
+            renderers.initialize((EntityRendererRegistry)MinecraftClient.getInstance().getEntityRenderManager());
         }, clientExecutor);
     }
 
@@ -81,16 +85,16 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends Model & MsonModel> ModelKey<T> registerModel(Identifier id, Class<T> implementation) {
+    public <T extends Model & MsonModel> ModelKey<T> registerModel(Identifier id, Supplier<T> constructor) {
         Objects.requireNonNull(id, "Id must not be null");
-        Objects.requireNonNull(implementation, "Implementation class must not be null");
+        Objects.requireNonNull(constructor, "Implementation class must not be null");
         checkNamespace(id.getNamespace());
 
-        if (registeredModels.containsKey(id) && registeredModels.get(id).clazz.equals(implementation)) {
+        if (registeredModels.containsKey(id)) {
             throw new IllegalArgumentException(String.format("A model with the id `%s` was already registered", id.toString()));
         }
 
-        return (ModelKey<T>)registeredModels.computeIfAbsent(id, i -> new Key<>(id, implementation));
+        return (ModelKey<T>)registeredModels.computeIfAbsent(id, i -> new Key<>(id, constructor));
     }
 
     @Override
@@ -120,25 +124,31 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     class Key<T extends Model & MsonModel> extends AbstractModelKeyImpl<T> {
 
-        private final Class<T> clazz;
+        private final Supplier<T> constr;
 
-        public Key(Identifier id, Class<T> clazz) {
+        public Key(Identifier id, Supplier<T> constr) {
             this.id = id;
-            this.clazz = clazz;
+            this.constr = constr;
         }
 
         @Override
         public T createModel() {
+            if (foundry == null) {
+                throw new IllegalStateException("You're too early. Wait for Mson to load first.");
+            }
+
+            T t = constr.get();
             try {
-                if (foundry == null) {
-                    throw new IllegalStateException("You're too early. Wait for Mson to load first.");
-                }
-                T t = clazz.newInstance();
                 t.init(foundry.getModelData(this).createContext(t));
-                return t;
-            } catch (InstantiationException | IllegalAccessException | InterruptedException | ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException("Could not create model", e);
             }
+            return t;
         }
+    }
+
+    @Override
+    public EntityRendererRegistry getEntityRendererRegistry() {
+        return renderers;
     }
 }

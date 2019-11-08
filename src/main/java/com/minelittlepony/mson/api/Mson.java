@@ -6,6 +6,8 @@ import net.minecraft.util.Identifier;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.impl.MsonImpl;
 
+import java.util.function.Supplier;
+
 /**
  * The main Mson class.
  *
@@ -29,7 +31,7 @@ public interface Mson {
      * @param implementation The class to instantiate.
      * @return A key to create instances of the registered model type.
      */
-    <T extends Model & MsonModel> ModelKey<T> registerModel(Identifier id, Class<T> implementation);
+    <T extends Model & MsonModel> ModelKey<T> registerModel(Identifier id, Supplier<T> constructor);
 
     /**
      * Registers a custom component to load model json.
@@ -41,4 +43,9 @@ public interface Mson {
      * @param constructor   The component constructor.
      */
     void registerComponentType(Identifier id, JsonContext.Constructor<?> constructor);
+
+    /**
+     * Gets the registry for adding entity renderers to the game.
+     */
+    EntityRendererRegistry getEntityRendererRegistry();
 }
