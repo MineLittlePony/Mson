@@ -12,6 +12,7 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
@@ -66,7 +67,7 @@ class ModelFoundry {
                     try (Resource res = manager.getResource(file);
                          Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
                         return new StoredModelData(GSON.fromJson(reader, JsonObject.class));
-                    } catch (IOException e) {
+                    } catch (JsonParseException | IOException e) {
                         e.printStackTrace();
                     } finally {
                         clientProfiler.pop();
@@ -107,10 +108,23 @@ class ModelFoundry {
 
 
             texture = parent.thenComposeAsync(JsonContext::getTexture).thenApplyAsync(t -> new JsonTexture(json, t));
-            elements = json.entrySet().stream().collect(Collectors.toMap(
+            elements = json.entrySet().stream()
+                    .filter(this::isElement)
+                    .collect(Collectors.toMap(
                     entry -> entry.getKey(),
                     entry -> loadComponent(entry.getValue().getAsJsonObject()).orElseGet(null)
             ));
+        }
+
+        private boolean isElement(Map.Entry<String, JsonElement> entry) {
+            switch (entry.getKey()) {
+                case "scale":
+                case "parent":
+                case "texture":
+                    return false;
+                default:
+                    return entry.getValue().isJsonObject();
+            }
         }
 
         @Override
@@ -123,7 +137,7 @@ class ModelFoundry {
         public <T> Optional<JsonComponent<T>> loadComponent(JsonElement json) {
             if (json.isJsonObject()) {
                 JsonObject o = json.getAsJsonObject();
-                Identifier id = new Identifier(JsonUtil.require(o, "id").getAsString());
+                Identifier id = new Identifier(JsonUtil.require(o, "type").getAsString());
 
                 return Optional
                         .ofNullable(mson.componentTypes.get(id))
