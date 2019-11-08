@@ -58,12 +58,12 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
 
         JsonUtil.accept(json, "children").map(JsonElement::getAsJsonArray).ifPresent(el -> {
             el.forEach(element -> {
-                context.loadComponent(element).ifPresent(children::add);
+                context.loadComponent(element, ID).ifPresent(children::add);
             });
         });
         JsonUtil.accept(json, "cubes").map(JsonElement::getAsJsonArray).ifPresent(el -> {
             el.forEach(element -> {
-                context.loadComponent(element).ifPresent(cubes::add);
+                context.loadComponent(element, JsonBox.ID).ifPresent(cubes::add);
             });
         });
 
@@ -91,15 +91,10 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
         ((MsonCuboid)cuboid).around(center[0], center[1], center[2]);
         ((MsonCuboid)cuboid).rotate(rotation[0], rotation[1], rotation[2]);
         ((MsonCuboid)cuboid).mirror(mirror[0], mirror[1], mirror[2]);
+        ((MsonCuboid)cuboid).tex(texture.get());
 
         cuboid.visible = visible;
         cuboid.field_3664 = hidden;
-
-        Texture tex = texture.get();
-
-        ((MsonCuboid)cuboid).tex(tex.getU(), tex.getV());
-        ((MsonCuboid)cuboid).size(tex.getWidth(), tex.getHeight());
-
         cuboid.children = new ArrayList<>();
         cuboid.boxes.clear();
 

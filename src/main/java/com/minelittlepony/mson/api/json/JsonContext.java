@@ -1,6 +1,7 @@
 package com.minelittlepony.mson.api.json;
 
 import net.minecraft.client.model.Model;
+import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -32,7 +33,7 @@ public interface JsonContext {
      *
      * Defers  to the component-types pipeline to return the corresponding instance to that of the passed in json.
      */
-    <T> Optional<JsonComponent<T>> loadComponent(JsonElement json);
+    <T> Optional<JsonComponent<T>> loadComponent(JsonElement json, Identifier defaultAs);
 
     /**
      * Creates a new model context for the supplied model instance.

@@ -2,6 +2,7 @@ package com.minelittlepony.mson.impl;
 
 import net.minecraft.client.model.Cuboid;
 import net.minecraft.client.model.Model;
+import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.ModelContext;
@@ -65,7 +66,7 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public <T> Optional<JsonComponent<T>> loadComponent(JsonElement json) {
+    public <T> Optional<JsonComponent<T>> loadComponent(JsonElement json, Identifier defaultAs) {
         return Optional.empty();
     }
 

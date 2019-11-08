@@ -5,6 +5,13 @@ import net.minecraft.client.model.Cuboid;
 public interface MsonCuboid {
 
     /**
+     * Sets the cuboid's texture parameters.
+     */
+    default MsonCuboid tex(Texture tex) {
+        return tex(tex.getWidth(), tex.getHeight()).size(tex.getWidth(), tex.getHeight());
+    }
+
+    /**
      * Sets the texture offset
      */
     default MsonCuboid tex(int x, int y) {

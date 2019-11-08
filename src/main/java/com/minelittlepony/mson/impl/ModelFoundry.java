@@ -19,6 +19,7 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
+import com.minelittlepony.mson.impl.model.JsonCuboid;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -112,7 +113,7 @@ class ModelFoundry {
                     .filter(this::isElement)
                     .collect(Collectors.toMap(
                     entry -> entry.getKey(),
-                    entry -> loadComponent(entry.getValue().getAsJsonObject()).orElseGet(null)
+                    entry -> loadComponent(entry.getValue().getAsJsonObject(), JsonCuboid.ID).orElseGet(null)
             ));
         }
 
@@ -134,13 +135,15 @@ class ModelFoundry {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> Optional<JsonComponent<T>> loadComponent(JsonElement json) {
+        public <T> Optional<JsonComponent<T>> loadComponent(JsonElement json, Identifier defaultAs) {
             if (json.isJsonObject()) {
                 JsonObject o = json.getAsJsonObject();
-                Identifier id = new Identifier(JsonUtil.require(o, "type").getAsString());
 
                 return Optional
-                        .ofNullable(mson.componentTypes.get(id))
+                        .ofNullable(mson.componentTypes.get(JsonUtil.accept(o, "type")
+                                .map(JsonElement::getAsString)
+                                .map(Identifier::new)
+                                .orElse(defaultAs)))
                         .map(c -> (JsonComponent<T>)c.loadJson(this, o));
             }
 
