@@ -1,0 +1,31 @@
+{
+	"parent": "mson:models/steve",
+	"left_arm": {
+		"center": [5, 2.5, 0],
+		"texture": { "u": 32, "v": 48 },
+		"cubes": [
+			{ "from": [-1, -2, -2], "size": [ 3,  12,  4] }
+		]
+	},
+	"right_arm": {
+		"center": [-5, 2.5, 0],
+		"texture": { "u": 40, "v": 16 },
+		"cubes": [
+			{ "from": [-2, -2, -2], "size": [ 3,  12,  4] }
+		]
+	},
+	"right_sleeve": {
+		"center": [-5, 2.5, 10],
+		"texture": { "u": 40, "v": 32 },
+		"cubes": [
+			{ "from": [-2, -2, -2], "size": [ 3,  12,  4], "stretch": 0.25 }
+		]
+	},
+	"left_sleeve": {
+		"center": [5, 2.5, 0],
+		"texture": { "u": 48, "v": 48 },
+		"cubes": [
+			{ "from": [-1, -2, -2], "size": [ 3,  12,  4], "stretch": 0.25 }
+		]
+	}
+}
