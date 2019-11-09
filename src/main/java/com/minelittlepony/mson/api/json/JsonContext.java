@@ -56,6 +56,4 @@ public interface JsonContext {
      * Otherwise the json tree itself serves as the contents, and the new context is resolved immediately upon return.
      */
     CompletableFuture<JsonContext> resolve(JsonElement json);
-
-
 }
