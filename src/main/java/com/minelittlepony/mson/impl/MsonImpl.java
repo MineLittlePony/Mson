@@ -41,7 +41,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     static final MsonImpl INSTANCE = new MsonImpl();
 
-    static boolean debug = false;
+    static boolean DEBUG = false;
 
     public static final Logger LOGGER = LogManager.getLogger("Mson");
 
@@ -122,7 +122,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         if ("minecraft".equalsIgnoreCase(namespace)) {
             throw new IllegalArgumentException("Id must have a namespace other than `minecraft`.");
         }
-        if (!debug && "mson".equalsIgnoreCase(namespace)) {
+        if (!DEBUG && "mson".equalsIgnoreCase(namespace)) {
             throw new IllegalArgumentException("`mson` is a reserved namespace.");
         }
         if ("dynamic".equalsIgnoreCase(namespace)) {
