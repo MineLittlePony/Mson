@@ -11,6 +11,8 @@ import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.util.JsonUtil;
 
+import java.util.concurrent.ExecutionException;
+
 public class JsonCone extends JsonBox {
 
     public static final Identifier ID = new Identifier("mson", "cone");
@@ -23,10 +25,10 @@ public class JsonCone extends JsonBox {
     }
 
     @Override
-    public Box export(ModelContext context) {
+    public Box export(ModelContext context) throws InterruptedException, ExecutionException {
         return new BoxBuilder(context)
-            .pos(from)
-            .size(size)
+            .pos(from.complete(context))
+            .size(size.complete(context))
             .stretch(stretch)
             .mirror(Axis.X, mirror)
             .build(QuadsBuilder.cone(taper));

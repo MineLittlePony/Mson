@@ -23,6 +23,13 @@ public interface JsonContext {
     CompletableFuture<Texture> getTexture();
 
     /**
+     * Gets the variable lookup mechanism.
+     */
+    Variables getVarLookup();
+
+    CompletableFuture<Float> getLocalVariable(String name);
+
+    /**
      * Registers a component with a name to the enclosing scope.
      */
     <T> void addNamedComponent(String name, JsonComponent<T> component);
@@ -49,4 +56,6 @@ public interface JsonContext {
      * Otherwise the json tree itself serves as the contents, and the new context is resolved immediately upon return.
      */
     CompletableFuture<JsonContext> resolve(JsonElement json);
+
+
 }

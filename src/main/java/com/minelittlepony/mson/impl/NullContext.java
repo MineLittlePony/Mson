@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.api.json.Variables;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.exception.EmptyContextException;
 import com.minelittlepony.mson.impl.model.JsonTexture;
@@ -18,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 final class NullContext implements JsonContext, ModelContext {
 
     static NullContext INSTANCE = new NullContext();
+    static Float ZERO = 0F;
 
     private NullContext() {}
 
@@ -81,6 +83,11 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
+    public CompletableFuture<Float> getLocalVariable(String name) {
+        return CompletableFuture.completedFuture(ZERO);
+    }
+
+    @Override
     public float getScale() {
         return 0;
     }
@@ -88,5 +95,10 @@ final class NullContext implements JsonContext, ModelContext {
     @Override
     public Locals getLocals() {
         return new LocalizedJsonContext(this);
+    }
+
+    @Override
+    public Variables getVarLookup() {
+        return VariablesImpl.INSTANCE;
     }
 }

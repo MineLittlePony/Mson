@@ -94,5 +94,7 @@ public interface ModelContext {
 
     interface Locals {
         CompletableFuture<Texture> getTexture();
+
+        CompletableFuture<Float> getValue(String name);
     }
 }

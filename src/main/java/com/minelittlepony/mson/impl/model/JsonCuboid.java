@@ -25,11 +25,11 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
     public static final Identifier ID = new Identifier("mson", "compound");
     private static final float RADS_DEGS_FACTOR = (float)Math.PI / 180F;
 
-    private final float[] center = new float[3];
+    private final Incomplete<float[]> center;
 
-    private final float[] rotation = new float[3];
+    private final Incomplete<float[]> rotation;
 
-    private final float[] position = new float[3];
+    private final Incomplete<float[]> position;
 
     private final boolean[] mirror = new boolean[3];
 
@@ -44,9 +44,9 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
     private final String name;
 
     public JsonCuboid(JsonContext context, JsonObject json) {
-        JsonUtil.getFloats(json, "center", center);
-        JsonUtil.getFloats(json, "rotate", rotation);
-        JsonUtil.getFloats(json, "position", position);
+        center = context.getVarLookup().getFloats(json, "center", 3);
+        rotation = context.getVarLookup().getFloats(json, "rotate", 3);
+        position = context.getVarLookup().getFloats(json, "position", 3);
         JsonUtil.getBooleans(json, "mirror", mirror);
 
         visible = JsonUtils.getBooleanOr("visible", json, true);
@@ -82,9 +82,17 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
     @Override
     public void export(ModelContext context, Cuboid cuboid) throws InterruptedException, ExecutionException {
 
+        float[] position = this.position.complete(context);
+        float[] center = this.center.complete(context);
+        float[] rotation = this.rotation.complete(context);
+
         ((MsonCuboid)cuboid).at(position[0], position[1], position[2]);
         ((MsonCuboid)cuboid).around(center[0], center[1], center[2]);
-        ((MsonCuboid)cuboid).rotate(rotation[0] * RADS_DEGS_FACTOR, rotation[1] * RADS_DEGS_FACTOR, rotation[2] * RADS_DEGS_FACTOR);
+        ((MsonCuboid)cuboid).rotate(
+                rotation[0] * RADS_DEGS_FACTOR,
+                rotation[1] * RADS_DEGS_FACTOR,
+                rotation[2] * RADS_DEGS_FACTOR
+        );
         ((MsonCuboid)cuboid).mirror(mirror[0], mirror[1], mirror[2]);
         ((MsonCuboid)cuboid).tex(texture.complete(context));
 

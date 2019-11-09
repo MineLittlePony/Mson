@@ -17,6 +17,7 @@ import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.api.json.Variables;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -91,6 +93,8 @@ class ModelFoundry {
 
         private final Map<String, JsonComponent<?>> elements;
 
+        private final Map<String, Float> locals;
+
         private final CompletableFuture<JsonContext> parent;
 
         private final CompletableFuture<Texture> texture;
@@ -113,6 +117,13 @@ class ModelFoundry {
                     .map(el -> JsonTexture.resolve(el, future))
                     .orElse(future);
 
+            locals = JsonUtil.accept(json, "locals")
+                    .map(JsonElement::getAsJsonObject)
+                    .map(JsonObject::entrySet)
+                    .orElseGet(() -> new HashSet<>())
+                    .stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getAsFloat()));
+
             elements = json.entrySet().stream()
                     .filter(this::isElement)
                     .collect(Collectors.toMap(
@@ -126,6 +137,7 @@ class ModelFoundry {
                 case "scale":
                 case "parent":
                 case "texture":
+                case "locals":
                     return false;
                 default:
                     return entry.getValue().isJsonObject();
@@ -162,6 +174,14 @@ class ModelFoundry {
         }
 
         @Override
+        public CompletableFuture<Float> getLocalVariable(String name) {
+            if (locals.containsKey(name)) {
+                return CompletableFuture.completedFuture(locals.get(name));
+            }
+            return parent.thenComposeAsync(p -> p.getLocalVariable(name));
+        }
+
+        @Override
         public CompletableFuture<JsonContext> resolve(JsonElement json) {
 
             if (json.isJsonPrimitive()) {
@@ -174,6 +194,11 @@ class ModelFoundry {
         @Override
         public ModelContext createContext(Model model, ModelContext.Locals locals) {
             return new RootContext(model, scale, parent.getNow(NullContext.INSTANCE).createContext(model, locals), locals);
+        }
+
+        @Override
+        public Variables getVarLookup() {
+            return VariablesImpl.INSTANCE;
         }
 
         class RootContext implements ModelContext {

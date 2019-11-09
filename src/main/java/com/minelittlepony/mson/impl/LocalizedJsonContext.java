@@ -18,4 +18,9 @@ class LocalizedJsonContext implements ModelContext.Locals {
     public CompletableFuture<Texture> getTexture() {
         return context.getTexture();
     }
+
+    @Override
+    public CompletableFuture<Float> getValue(String name) {
+        return context.getLocalVariable(name);
+    }
 }

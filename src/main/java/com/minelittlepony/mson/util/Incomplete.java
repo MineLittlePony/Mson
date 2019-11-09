@@ -11,6 +11,8 @@ import java.util.concurrent.ExecutionException;
 @FunctionalInterface
 public interface Incomplete<T> {
 
+    static Incomplete<Float> ZERO = Incomplete.completed(0F);
+
     /**
      * A complete value. Resolves immediately to the supplied value.
      */
