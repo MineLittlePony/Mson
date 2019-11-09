@@ -42,7 +42,7 @@ public interface Mson {
      * @param id            Identifier for the component type.
      * @param constructor   The component constructor.
      */
-    void registerComponentType(Identifier id, JsonComponent.Constructor<?> constructor);
+    void registerComponentType(Identifier id, JsonComponent.Factory<?> constructor);
 
     /**
      * Gets the registry for adding entity renderers to the game.

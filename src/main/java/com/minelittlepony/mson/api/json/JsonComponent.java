@@ -57,7 +57,7 @@ public interface JsonComponent<T> {
      * Accepts the json context and json to parse and return a new component instance.
      */
     @FunctionalInterface
-    interface Constructor<T> {
+    interface Factory<T> {
         /**
          * Accepts the json context and json to parse and return a new component instance.
          */

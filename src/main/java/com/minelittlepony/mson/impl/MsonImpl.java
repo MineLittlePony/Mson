@@ -53,7 +53,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     private final Map<Identifier, Key<?>> registeredModels = new HashMap<>();
 
-    final Map<Identifier, JsonComponent.Constructor<?>> componentTypes = new HashMap<>();
+    final Map<Identifier, JsonComponent.Factory<?>> componentTypes = new HashMap<>();
 
     @Nullable
     ModelFoundry foundry;
@@ -106,7 +106,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     }
 
     @Override
-    public void registerComponentType(Identifier id, JsonComponent.Constructor<?> constructor) {
+    public void registerComponentType(Identifier id, JsonComponent.Factory<?> constructor) {
         Objects.requireNonNull(id, "Id must not be null");
         Objects.requireNonNull(constructor, "Constructor must not be null");
         checkNamespace(id.getNamespace());
