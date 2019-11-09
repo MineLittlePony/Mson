@@ -45,7 +45,7 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
 
     public JsonCuboid(JsonContext context, JsonObject json) {
         JsonUtil.getFloats(json, "center", center);
-        JsonUtil.getFloats(json, "rotation", rotation);
+        JsonUtil.getFloats(json, "rotate", rotation);
         JsonUtil.getFloats(json, "position", position);
         JsonUtil.getBooleans(json, "mirror", mirror);
 
