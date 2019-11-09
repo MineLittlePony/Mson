@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 public class JsonCuboid implements JsonComponent<Cuboid> {
     public static final Identifier ID = new Identifier("mson", "compound");
+    private static final float RADS_DEGS_FACTOR = (float)Math.PI / 180F;
 
     private final float[] center = new float[3];
 
@@ -81,11 +82,9 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
     @Override
     public void export(ModelContext context, Cuboid cuboid) throws InterruptedException, ExecutionException {
 
-        float degs = 180F/(float)Math.PI;
-
         ((MsonCuboid)cuboid).at(position[0], position[1], position[2]);
         ((MsonCuboid)cuboid).around(center[0], center[1], center[2]);
-        ((MsonCuboid)cuboid).rotate(rotation[0] / degs, rotation[1] / degs, rotation[2] / degs);
+        ((MsonCuboid)cuboid).rotate(rotation[0] * RADS_DEGS_FACTOR, rotation[1] * RADS_DEGS_FACTOR, rotation[2] * RADS_DEGS_FACTOR);
         ((MsonCuboid)cuboid).mirror(mirror[0], mirror[1], mirror[2]);
         ((MsonCuboid)cuboid).tex(texture.complete(context));
 
