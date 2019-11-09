@@ -12,7 +12,6 @@ import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 import com.minelittlepony.mson.util.Qbit;
-import com.mojang.realmsclient.util.JsonUtils;
 
 import java.util.concurrent.ExecutionException;
 
@@ -26,13 +25,13 @@ public class JsonBox implements JsonComponent<Box> {
 
     protected final float stretch;
 
-    protected Qbit mirror = Qbit.UNKNOWN;
+    protected final Qbit mirror;
 
     public JsonBox(JsonContext context, JsonObject json) {
         from = context.getVarLookup().getFloats(json, "from", 3);
         size = context.getVarLookup().getInts(json, "size", 3);
         stretch = JsonUtil.getFloatOr("stretch", json, 0);
-        mirror = json.has("mirror") ? Qbit.of(JsonUtils.getBooleanOr("mirror", json, false)) : Qbit.UNKNOWN;
+        mirror = JsonUtil.getQBit("mirror", json);
     }
 
     @Override
