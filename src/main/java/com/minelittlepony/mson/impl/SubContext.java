@@ -58,4 +58,9 @@ class SubContext implements ModelContext {
         return parent.getScale();
     }
 
+    @Override
+    public Locals getLocals() {
+        return parent.getLocals();
+    }
+
 }

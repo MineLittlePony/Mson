@@ -1,5 +1,5 @@
 {
-	"parent": "mson:models/biped",
+	"parent": "mson:biped",
 	"texture": {
 		"w": 64, "h": 64
 	},

@@ -11,19 +11,17 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.MsonCuboid;
 import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 import com.mojang.realmsclient.util.JsonUtils;
-
-import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
+public class JsonCuboid implements JsonComponent<Cuboid> {
     public static final Identifier ID = new Identifier("mson", "compound");
 
     private final float[] center = new float[3];
@@ -34,16 +32,15 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
 
     private final boolean[] mirror = new boolean[3];
 
-    private final CompletableFuture<Texture> texture;
-
     private final boolean visible;
     private final boolean hidden;
 
     private final List<JsonComponent<?>> children = new ArrayList<>();
     private final List<JsonComponent<?>> cubes = new ArrayList<>();
 
-    @Nullable
-    private String name;
+    private final Incomplete<Texture> texture;
+
+    private final String name;
 
     public JsonCuboid(JsonContext context, JsonObject json) {
         JsonUtil.getFloats(json, "center", center);
@@ -53,8 +50,8 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
 
         visible = JsonUtils.getBooleanOr("visible", json, true);
         hidden = JsonUtils.getBooleanOr("hidden", json, false);
-
-        texture = context.getTexture().thenApply(t -> new JsonTexture(json, t));
+        texture = JsonTexture.localized(json);
+        name = JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("");
 
         JsonUtil.accept(json, "children").map(JsonElement::getAsJsonArray).ifPresent(el -> {
             el.forEach(element -> {
@@ -67,16 +64,13 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
             });
         });
 
-        JsonUtil.accept(json, "name").map(JsonElement::getAsString).ifPresent(name -> {
-            this.name = name;
-            context.addNamedComponent(name, this);
-        });
+        context.addNamedComponent(name, this);
     }
 
     @Override
-    public MsonCuboidImpl export(ModelContext context) {
+    public Cuboid export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            MsonCuboidImpl cuboid = new MsonCuboidImpl(context.getModel(), key);
+            Cuboid cuboid = new MsonCuboidImpl(context.getModel(), key);
 
             export(context, cuboid);
 
@@ -87,11 +81,13 @@ public class JsonCuboid implements JsonComponent<MsonCuboidImpl> {
     @Override
     public void export(ModelContext context, Cuboid cuboid) throws InterruptedException, ExecutionException {
 
+        float degs = 180F/(float)Math.PI;
+
         ((MsonCuboid)cuboid).at(position[0], position[1], position[2]);
         ((MsonCuboid)cuboid).around(center[0], center[1], center[2]);
-        ((MsonCuboid)cuboid).rotate(rotation[0], rotation[1], rotation[2]);
+        ((MsonCuboid)cuboid).rotate(rotation[0] / degs, rotation[1] / degs, rotation[2] / degs);
         ((MsonCuboid)cuboid).mirror(mirror[0], mirror[1], mirror[2]);
-        ((MsonCuboid)cuboid).tex(texture.get());
+        ((MsonCuboid)cuboid).tex(texture.complete(context));
 
         cuboid.visible = visible;
         cuboid.field_3664 = hidden;

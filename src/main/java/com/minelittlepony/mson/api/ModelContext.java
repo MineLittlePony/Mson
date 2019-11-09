@@ -3,8 +3,11 @@ package com.minelittlepony.mson.api;
 import net.minecraft.client.model.Cuboid;
 import net.minecraft.client.model.Model;
 
+import com.minelittlepony.mson.api.model.Texture;
+
 import javax.annotation.Nullable;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
@@ -27,6 +30,12 @@ public interface ModelContext {
      * Otherwise it is the object this context was resolved against.
      */
     Object getContext();
+
+    /**
+     * Gets the json context creating this model.
+     * The json context is filtered bubbled up from the initial call site.
+     */
+    Locals getLocals();
 
     /**
      * Gets the world scale factor.
@@ -81,5 +90,9 @@ public interface ModelContext {
         }
 
         T get(String key) throws InterruptedException, ExecutionException;
+    }
+
+    interface Locals {
+        CompletableFuture<Texture> getTexture();
     }
 }

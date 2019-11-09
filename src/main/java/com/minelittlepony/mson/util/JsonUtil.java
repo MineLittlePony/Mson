@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.util;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -31,11 +32,15 @@ public class JsonUtil {
     }
 
     public static void getInts(JsonObject json, String member, int[] output) {
-        accept(json, member).map(JsonElement::getAsJsonArray).ifPresent(arr -> {
-            for (int i = 0; i < output.length && i < arr.size(); i++) {
-                output[i] = arr.get(i).getAsInt();
-            }
-        });
+        accept(json, member)
+            .map(JsonElement::getAsJsonArray)
+            .ifPresent(arr -> getAsInts(arr, output));
+    }
+
+    public static void getAsInts(JsonArray arr, int[] output) {
+        for (int i = 0; i < output.length && i < arr.size(); i++) {
+            output[i] = arr.get(i).getAsInt();
+        }
     }
 
     public static void getFloats(JsonObject json, String member, float[] output) {

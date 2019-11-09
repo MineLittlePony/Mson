@@ -1,5 +1,5 @@
 {
-	"parent": "mson:models/steve",
+	"parent": "mson:steve",
 	"left_arm": {
 		"center": [5, 2.5, 0],
 		"texture": { "u": 32, "v": 48 },

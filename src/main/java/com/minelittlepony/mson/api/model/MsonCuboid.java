@@ -8,7 +8,7 @@ public interface MsonCuboid {
      * Sets the cuboid's texture parameters.
      */
     default MsonCuboid tex(Texture tex) {
-        return tex(tex.getWidth(), tex.getHeight()).size(tex.getWidth(), tex.getHeight());
+        return tex(tex.getU(), tex.getV()).size(tex.getWidth(), tex.getHeight());
     }
 
     /**

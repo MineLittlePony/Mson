@@ -71,7 +71,7 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public ModelContext createContext(Model model) {
+    public ModelContext createContext(Model model, Locals locals) {
         return this;
     }
 
@@ -83,5 +83,10 @@ final class NullContext implements JsonContext, ModelContext {
     @Override
     public float getScale() {
         return 0;
+    }
+
+    @Override
+    public Locals getLocals() {
+        return new LocalizedJsonContext(this);
     }
 }

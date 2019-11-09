@@ -38,7 +38,7 @@ public class JsonSlot<T extends MsonModel> implements JsonComponent<T> {
         return context.computeIfAbsent(name, key -> {
             T inst = implementation.createModel();
 
-            inst.init(content.get().createContext(context.getModel()));
+            inst.init(content.get().createContext(context.getModel(), context.getLocals()));
 
             return inst;
         });

@@ -14,6 +14,7 @@ import com.minelittlepony.mson.api.EntityRendererRegistry;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.json.JsonComponent;
+import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.Mson;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.JsonBox;
@@ -39,6 +40,8 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     private static final Identifier ID = new Identifier("mson", "models");
 
     static final MsonImpl INSTANCE = new MsonImpl();
+
+    static boolean debug = false;
 
     public static final Logger LOGGER = LogManager.getLogger("Mson");
 
@@ -119,7 +122,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         if ("minecraft".equalsIgnoreCase(namespace)) {
             throw new IllegalArgumentException("Id must have a namespace other than `minecraft`.");
         }
-        if ("mson".equalsIgnoreCase(namespace)) {
+        if (!debug && "mson".equalsIgnoreCase(namespace)) {
             throw new IllegalArgumentException("`mson` is a reserved namespace.");
         }
         if ("dynamic".equalsIgnoreCase(namespace)) {
@@ -144,7 +147,9 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
             T t = constr.get();
             try {
-                t.init(foundry.getModelData(this).createContext(t));
+                JsonContext context = foundry.getModelData(this);
+
+                t.init(context.createContext(t, new LocalizedJsonContext(context)));
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException("Could not create model", e);
             }

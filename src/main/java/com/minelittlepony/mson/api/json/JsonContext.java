@@ -37,7 +37,7 @@ public interface JsonContext {
     /**
      * Creates a new model context for the supplied model instance.
      */
-    ModelContext createContext(Model model);
+    ModelContext createContext(Model model, ModelContext.Locals locals);
 
     /**
      * Resolves a new json context against the passed in json block.

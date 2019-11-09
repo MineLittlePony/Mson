@@ -62,6 +62,7 @@ class ModelFoundry {
                 load.put(id, CompletableFuture.supplyAsync(() -> {
                     serverProfiler.startTick();
                     clientProfiler.push("Loading MSON model - " + id);
+                    MsonImpl.LOGGER.info("Loading MSON model - {}", id);
 
                     Identifier file = new Identifier(id.getNamespace(), "models/" + id.getPath() + ".json");
 
@@ -107,8 +108,11 @@ class ModelFoundry {
                 .map(JsonElement::getAsFloat)
                 .ifPresent(scale -> this.scale = scale);
 
+            CompletableFuture<Texture> future = parent.thenComposeAsync(JsonContext::getTexture);
+            texture = JsonUtil.accept(json, "texture")
+                    .map(el -> JsonTexture.resolve(el, future))
+                    .orElse(future);
 
-            texture = parent.thenComposeAsync(JsonContext::getTexture).thenApplyAsync(t -> new JsonTexture(json, t));
             elements = json.entrySet().stream()
                     .filter(this::isElement)
                     .collect(Collectors.toMap(
@@ -130,7 +134,9 @@ class ModelFoundry {
 
         @Override
         public <T> void addNamedComponent(String name, JsonComponent<T> component) {
-            elements.put(name, component);
+            if (!Strings.isNullOrEmpty(name)) {
+                elements.put(name, component);
+            }
         }
 
         @SuppressWarnings("unchecked")
@@ -166,8 +172,8 @@ class ModelFoundry {
         }
 
         @Override
-        public ModelContext createContext(Model model) {
-            return new RootContext(model, scale, parent.getNow(NullContext.INSTANCE).createContext(model));
+        public ModelContext createContext(Model model, ModelContext.Locals locals) {
+            return new RootContext(model, scale, parent.getNow(NullContext.INSTANCE).createContext(model, locals), locals);
         }
 
         class RootContext implements ModelContext {
@@ -177,13 +183,15 @@ class ModelFoundry {
             private final Map<String, Object> objectCache = new HashMap<>();
 
             private final ModelContext inherited;
+            private final Locals locals;
 
             private final float scale;
 
-            RootContext(Model model, float scale, ModelContext inherited) {
+            RootContext(Model model, float scale, ModelContext inherited, Locals locals) {
                 this.model = model;
                 this.scale = scale;
                 this.inherited = inherited;
+                this.locals = locals;
             }
 
             @Override
@@ -194,6 +202,11 @@ class ModelFoundry {
             @Override
             public Object getContext() {
                 return model;
+            }
+
+            @Override
+            public Locals getLocals() {
+                return locals;
             }
 
             @Override
