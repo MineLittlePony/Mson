@@ -6,6 +6,7 @@ import net.minecraft.util.Identifier;
 import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -27,7 +28,7 @@ public interface JsonContext {
      */
     Variables getVarLookup();
 
-    CompletableFuture<Float> getLocalVariable(String name);
+    CompletableFuture<Incomplete<Float>> getLocalVariable(String name);
 
     /**
      * Registers a component with a name to the enclosing scope.

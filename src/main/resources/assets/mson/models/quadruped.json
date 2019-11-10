@@ -3,10 +3,10 @@
 		"w": 64, "h": 32
 	},
 	"locals": {
-		"head_rotation_y": 18,
-		"body_rotation_y": 17,
 		"leg_length": 0,
-		"leg_inset": 24
+		"leg_inset": [24, "-", "#leg_length"],
+		"head_rotation_y": [18, "-", "#leg_length"],
+		"body_rotation_y": [17, "-", "#leg_length"]
 	},
 	"head": {
 		"center": [0, "#head_rotation_y", -6],

@@ -22,6 +22,7 @@ import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
 import com.minelittlepony.mson.impl.model.JsonTexture;
+import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.io.IOException;
@@ -93,7 +94,7 @@ class ModelFoundry {
 
         private final Map<String, JsonComponent<?>> elements;
 
-        private final Map<String, Float> locals;
+        private final Map<String, Incomplete<Float>> locals;
 
         private final CompletableFuture<JsonContext> parent;
 
@@ -119,13 +120,15 @@ class ModelFoundry {
                     .map(JsonObject::entrySet)
                     .orElseGet(() -> new HashSet<>())
                     .stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getAsFloat()));
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            e -> LocalsImpl.createLocal(e.getValue())));
 
             elements = json.entrySet().stream()
                     .filter(this::isElement)
                     .collect(Collectors.toMap(
-                    entry -> entry.getKey(),
-                    entry -> loadComponent(entry.getValue().getAsJsonObject(), JsonCuboid.ID).orElseGet(null)
+                            Map.Entry::getKey,
+                            entry -> loadComponent(entry.getValue().getAsJsonObject(), JsonCuboid.ID).orElseGet(null)
             ));
         }
 
@@ -171,7 +174,7 @@ class ModelFoundry {
         }
 
         @Override
-        public CompletableFuture<Float> getLocalVariable(String name) {
+        public CompletableFuture<Incomplete<Float>> getLocalVariable(String name) {
             if (locals.containsKey(name)) {
                 return CompletableFuture.completedFuture(locals.get(name));
             }

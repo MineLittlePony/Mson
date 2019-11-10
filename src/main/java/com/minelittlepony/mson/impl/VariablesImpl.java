@@ -2,7 +2,6 @@ package com.minelittlepony.mson.impl;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.json.Variables;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -22,23 +21,11 @@ final class VariablesImpl implements Variables {
             .map(JsonElement::getAsJsonArray)
             .ifPresent(arr -> {
                 for (int i = 0; i < len && i < arr.size(); i++) {
-                    JsonPrimitive el = arr.get(i).getAsJsonPrimitive();
-                    if (el.isNumber()) {
-                        output[i] = Incomplete.completed(el.getAsFloat());
-                    } else {
-                        String variableName = el.getAsString();
-                        if (variableName.startsWith("#")) {
-                            output[i] = incompleteVariable(variableName.substring(1));
-                        }
-                    }
+                    output[i] = LocalsImpl.variableReference(arr.get(i).getAsJsonPrimitive());
                 }
             });
 
         return output;
-    }
-
-    private Incomplete<Float> incompleteVariable(String variableName) {
-        return local -> local.getValue(variableName).get();
     }
 
     @Override

@@ -1,10 +1,7 @@
 {
 	"parent": "mson:quadruped",
 	"locals": {
-		"head_rotation_y": 12,
-		"body_rotation_y": 11,
-		"leg_length": 6,
-		"leg_inset": 18
+		"leg_length": 6
 	},
 	"head": {
 		"center": [0, "#head_rotation_y", -6],

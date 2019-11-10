@@ -12,6 +12,7 @@ import com.minelittlepony.mson.api.json.Variables;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.exception.EmptyContextException;
 import com.minelittlepony.mson.impl.model.JsonTexture;
+import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -19,7 +20,6 @@ import java.util.concurrent.CompletableFuture;
 final class NullContext implements JsonContext, ModelContext {
 
     static NullContext INSTANCE = new NullContext();
-    static Float ZERO = 0F;
     static Identifier ID = new Identifier("null");
 
     private NullContext() {}
@@ -84,8 +84,8 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public CompletableFuture<Float> getLocalVariable(String name) {
-        return CompletableFuture.completedFuture(ZERO);
+    public CompletableFuture<Incomplete<Float>> getLocalVariable(String name) {
+        return CompletableFuture.completedFuture(Incomplete.ZERO);
     }
 
     @Override
@@ -95,7 +95,7 @@ final class NullContext implements JsonContext, ModelContext {
 
     @Override
     public Locals getLocals() {
-        return new LocalizedJsonContext(ID, this);
+        return new LocalsImpl(ID, this);
     }
 
     @Override
