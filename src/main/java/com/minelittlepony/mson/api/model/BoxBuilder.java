@@ -9,6 +9,8 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.util.Qbit;
 
+import java.util.Optional;
+
 /**
  * A builder for building boxes.
  *
@@ -53,6 +55,14 @@ public final class BoxBuilder {
         x = pos[0] + cuboid.getModelOffsetX();
         y = pos[1] + cuboid.getModelOffsetY();
         z = pos[2] + cuboid.getModelOffsetZ();
+        return this;
+    }
+
+    public BoxBuilder tex(Optional<Texture> tex) {
+        tex.ifPresent(t -> {
+            u = t.getU();
+            v = t.getV();
+        });
         return this;
     }
 

@@ -45,6 +45,13 @@ public class JsonTexture implements Texture {
         return locals -> resolve(el, locals.getTexture()).get();
     }
 
+    public static Texture create(JsonElement json) {
+        if (json.isJsonArray()) {
+            return new JsonTexture(json.getAsJsonArray());
+        }
+        return new JsonTexture(json.getAsJsonObject(), EMPTY);
+    }
+
     /**
      * Returns a texture resolved against the current inheritance hierarchy.
      *
