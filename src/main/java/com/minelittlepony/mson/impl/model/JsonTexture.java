@@ -62,11 +62,6 @@ public class JsonTexture implements Texture {
     }
 
     @Override
-    public int[] getParameters() {
-        return parameters;
-    }
-
-    @Override
     public int getU() {
         return parameters[0];
     }

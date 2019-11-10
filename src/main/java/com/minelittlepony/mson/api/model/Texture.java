@@ -5,8 +5,6 @@ package com.minelittlepony.mson.api.model;
  */
 public interface Texture {
 
-    int[] getParameters();
-
     /**
      * The texture horizontal x-position. (U)
      */
