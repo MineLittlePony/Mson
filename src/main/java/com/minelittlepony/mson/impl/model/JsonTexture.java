@@ -16,7 +16,7 @@ public class JsonTexture implements Texture {
 
     public static final Texture EMPTY = new JsonTexture(0, 0, 64, 32);
 
-    private int[] parameters;
+    private final int[] parameters;
 
     public static Incomplete<Texture> localized(JsonObject json) {
         return JsonUtil.accept(json, "texture")
@@ -44,17 +44,17 @@ public class JsonTexture implements Texture {
     }
 
     private JsonTexture(JsonArray arr) {
+        this(0, 0, 0, 0);
         JsonUtil.getAsInts(arr.getAsJsonArray(), parameters);
     }
 
     private JsonTexture(JsonObject tex, Texture inherited) {
-        this(inherited.getParameters());
-        parameters = new int[] {
-                JsonUtils.getIntOr("u", tex, getU()),
-                JsonUtils.getIntOr("v", tex, getV()),
-                JsonUtils.getIntOr("w", tex, getWidth()),
-                JsonUtils.getIntOr("h", tex, getHeight())
-        };
+        this(
+            JsonUtils.getIntOr("u", tex, inherited.getU()),
+            JsonUtils.getIntOr("v", tex, inherited.getV()),
+            JsonUtils.getIntOr("w", tex, inherited.getWidth()),
+            JsonUtils.getIntOr("h", tex, inherited.getHeight())
+        );
     }
 
     private JsonTexture(int... params) {
