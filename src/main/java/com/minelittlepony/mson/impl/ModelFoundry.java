@@ -112,10 +112,7 @@ class ModelFoundry {
                 .map(JsonElement::getAsFloat)
                 .ifPresent(scale -> this.scale = scale);
 
-            CompletableFuture<Texture> future = parent.thenComposeAsync(JsonContext::getTexture);
-            texture = JsonUtil.accept(json, "texture")
-                    .map(el -> JsonTexture.resolve(el, future))
-                    .orElse(future);
+            texture = JsonTexture.unlocalized(JsonUtil.accept(json, "texture"), parent.thenComposeAsync(JsonContext::getTexture));
 
             locals = JsonUtil.accept(json, "locals")
                     .map(JsonElement::getAsJsonObject)

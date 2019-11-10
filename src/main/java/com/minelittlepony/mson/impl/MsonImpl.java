@@ -149,7 +149,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             try {
                 JsonContext context = foundry.getModelData(this);
 
-                t.init(context.createContext(t, new LocalizedJsonContext(context)));
+                t.init(context.createContext(t, new LocalizedJsonContext(getId(), context)));
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException("Could not create model", e);
             }

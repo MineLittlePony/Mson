@@ -20,6 +20,7 @@ final class NullContext implements JsonContext, ModelContext {
 
     static NullContext INSTANCE = new NullContext();
     static Float ZERO = 0F;
+    static Identifier ID = new Identifier("null");
 
     private NullContext() {}
 
@@ -94,7 +95,7 @@ final class NullContext implements JsonContext, ModelContext {
 
     @Override
     public Locals getLocals() {
-        return new LocalizedJsonContext(this);
+        return new LocalizedJsonContext(ID, this);
     }
 
     @Override

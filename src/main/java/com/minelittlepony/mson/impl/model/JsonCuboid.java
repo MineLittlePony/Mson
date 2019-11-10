@@ -51,7 +51,7 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
 
         visible = JsonUtils.getBooleanOr("visible", json, true);
         hidden = JsonUtils.getBooleanOr("hidden", json, false);
-        texture = JsonTexture.localized(json);
+        texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
         name = JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("");
 
         JsonUtil.accept(json, "children").map(JsonElement::getAsJsonArray).ifPresent(el -> {

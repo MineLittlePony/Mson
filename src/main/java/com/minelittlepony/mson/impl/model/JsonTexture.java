@@ -9,17 +9,27 @@ import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 import com.mojang.realmsclient.util.JsonUtils;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class JsonTexture implements Texture {
 
+    /**
+     * A blank texture. Contains the default parameters to be used when no other exist to override them.
+     */
     public static final Texture EMPTY = new JsonTexture(0, 0, 64, 32);
 
     private final int[] parameters;
 
-    public static Incomplete<Texture> localized(JsonObject json) {
-        return JsonUtil.accept(json, "texture")
+    /**
+     * Returns an incomplete texture, ready to be resolved against the given context using the supplied json.
+     *
+     * When resolved the parameters of the json object will
+     * be applied on top of the inherited texture parameters.
+     */
+    public static Incomplete<Texture> localized(Optional<JsonElement> json) {
+        return json
             .map(JsonTexture::unresolvedMerged)
             .orElse(JsonTexture::unresolvedInherited);
     }
@@ -32,10 +42,30 @@ public class JsonTexture implements Texture {
         if (el.isJsonArray()) {
             return Incomplete.completed(new JsonTexture(el.getAsJsonArray()));
         }
-        return (Incomplete<Texture>)(locals -> resolve(el, locals.getTexture()).get());
+        return locals -> resolve(el, locals.getTexture()).get();
     }
 
-    public static CompletableFuture<Texture> resolve(JsonElement json, CompletableFuture<Texture> inherited) {
+    /**
+     * Returns a texture resolved against the current inheritance hierarchy.
+     *
+     * Elements in the passed json object will
+     * be applied on top of the inherited texture parameters.
+     *
+     * Unlike {@link localized(json)} this texture is only inherited to the current point
+     * in the model's hierarchyand may be different from the final texture made available
+     * at model construction time.
+     *
+     * It's recommended to always use the {@link Incomplete<>}
+     * variants resolved against a {@link ModelContext} for this reason.
+     *
+     */
+    public static CompletableFuture<Texture> unlocalized(Optional<JsonElement> json, CompletableFuture<Texture> inherited) {
+        return json
+            .map(el -> resolve(el, inherited))
+            .orElse(inherited);
+    }
+
+    private static CompletableFuture<Texture> resolve(JsonElement json, CompletableFuture<Texture> inherited) {
         if (json.isJsonArray()) {
             return CompletableFuture.completedFuture(new JsonTexture(json.getAsJsonArray()));
         }
