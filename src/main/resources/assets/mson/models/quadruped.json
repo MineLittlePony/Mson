@@ -4,7 +4,11 @@
 	},
 	"locals": {
 		"leg_length": 0,
-		"leg_inset": [24, "-", "#leg_length"],
+		"leg_rotation_z": -5,
+		"leg_rotation_z_neg": 6,
+		"leg_rotation_x": 3,
+		"leg_rotation_x_neg": [0, "-", "#leg_rotation_x"],
+		"leg_rotation_y": [24, "-", "#leg_length"],
 		"head_rotation_y": [18, "-", "#leg_length"],
 		"body_rotation_y": [17, "-", "#leg_length"]
 	},
@@ -22,28 +26,28 @@
 		]
 	},
 	"back_right_leg": {
-		"center": [-3, "#leg_inset", 7],
+		"center": ["#leg_rotation_x_neg", "#leg_rotation_y", "#leg_rotation_z_neg"],
 		"texture": { "u": 0, "v": 16 },
 		"cubes": [
 			{ "from": [-2, 0, -2], "size": [ 4, "#leg_length", 4] }
 		]
 	},
 	"back_left_leg": {
-		"center": [3, "#leg_inset", 7],
+		"center": ["#leg_rotation_x", "#leg_rotation_y", "#leg_rotation_z_neg"],
 		"texture": { "u": 0, "v": 16 },
 		"cubes": [
 			{ "from": [-2, 0, -2], "size": [ 4, "#leg_length", 4] }
 		]
 	},
 	"front_right_leg": {
-		"center": [-3, "#leg_inset", -5],
+		"center": ["#leg_rotation_x_neg", "#leg_rotation_y", "#leg_rotation_z"],
 		"texture": { "u": 0, "v": 16 },
 		"cubes": [
 			{ "from": [-2, 0, -2], "size": [ 4, "#leg_length", 4] }
 		]
 	},
 	"front_left_leg": {
-		"center": [3, "#leg_inset", -5],
+		"center": ["#leg_rotation_x", "#leg_rotation_y", "#leg_rotation_z"],
 		"texture": { "u": 0, "v": 16 },
 		"cubes": [
 			{ "from": [-2, 0, -2], "size": [ 4, "#leg_length", 4] }
