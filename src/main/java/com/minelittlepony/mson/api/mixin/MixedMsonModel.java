@@ -16,7 +16,7 @@ import com.minelittlepony.mson.impl.invoke.MsonModelMixinImpl;
  * the same parent class where the requested super does not introduce any
  * fields specific to itself.
  *
- * Calling {@link init} will delegate to that class as your super,
+ * Calling {@link MsonModel#init} will delegate to that class as your super,
  * and can be overridden normally by overriding the interface method.
  *
  */

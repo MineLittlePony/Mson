@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 /**
  * Used on implementors of the MsonModelMixin to indicate which type
- * should be looked at as their "super class" when calling {link init}
+ * should be looked at as their "super class" when calling {@link MsonModel#init}
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
