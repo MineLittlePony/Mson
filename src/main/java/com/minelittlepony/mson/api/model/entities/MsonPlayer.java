@@ -1,15 +1,21 @@
 package com.minelittlepony.mson.api.model.entities;
 
 import net.minecraft.client.model.Cuboid;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
+import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.entity.LivingEntity;
 
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.MsonModel;
+import com.minelittlepony.mson.api.ModelKey;
+import com.minelittlepony.mson.api.mixin.Extends;
+import com.minelittlepony.mson.api.mixin.MixedMsonModel;
 
+@Extends(MsonBiped.class)
 public class MsonPlayer<T extends LivingEntity>
     extends PlayerEntityModel<T>
-    implements MsonModel {
+    implements MixedMsonModel {
 
     private Cuboid cape;
     private Cuboid ears;
@@ -24,13 +30,7 @@ public class MsonPlayer<T extends LivingEntity>
 
     @Override
     public void init(ModelContext context) {
-        head = context.findByName("head");
-        headwear = context.findByName("helmet");
-        body = context.findByName("torso");
-        rightArm = context.findByName("right_arm");
-        leftArm = context.findByName("left_arm");
-        rightLeg = context.findByName("right_leg");
-        leftLeg = context.findByName("left_leg");
+        MixedMsonModel.super.init(context);
 
         context.findByName("left_sleeve", leftArmOverlay);
         context.findByName("right_sleeve", rightArmOverlay);
@@ -61,5 +61,12 @@ public class MsonPlayer<T extends LivingEntity>
         super.setVisible(visible);
         cape.visible = visible;
         ears.visible = visible;
-     }
+    }
+
+    public static class Renderer extends PlayerEntityRenderer {
+        public Renderer(EntityRenderDispatcher dispatcher, ModelKey<MsonPlayer<AbstractClientPlayerEntity>> key) {
+            super(dispatcher);
+            this.model = key.createModel();
+        }
+    }
 }

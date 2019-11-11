@@ -5,7 +5,9 @@ import net.minecraft.entity.LivingEntity;
 
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.MsonModel;
+import com.minelittlepony.mson.api.mixin.Trait;
 
+@Trait
 public class MsonQuadruped<T extends LivingEntity>
     extends QuadrupedEntityModel<T>
     implements MsonModel {

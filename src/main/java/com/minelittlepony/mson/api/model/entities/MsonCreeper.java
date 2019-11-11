@@ -1,11 +1,15 @@
 package com.minelittlepony.mson.api.model.entities;
 
 import net.minecraft.client.model.Cuboid;
+import net.minecraft.client.render.entity.CreeperEntityRenderer;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.model.CreeperEntityModel;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.util.math.MathHelper;
 
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
 import com.mojang.blaze3d.platform.GlStateManager;
 
@@ -65,5 +69,12 @@ public class MsonCreeper<T extends Entity>
        backRightLeg.pitch  = range * MathHelper.cos(freq + pi);
        frontLeftLeg.pitch  = range * MathHelper.cos(freq + pi);
        frontRightLeg.pitch = range * MathHelper.cos(freq);
+    }
+
+    public static class Renderer extends CreeperEntityRenderer {
+        public Renderer(EntityRenderDispatcher dispatcher, ModelKey<MsonCreeper<CreeperEntity>> key) {
+            super(dispatcher);
+            this.model = key.createModel();
+        }
     }
 }
