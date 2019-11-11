@@ -29,18 +29,15 @@ public class MsonModelMixinImpl {
     }
 
     private static MethodHandle constructSuper(Class<?> requestingClass) {
-        try {
-            Extends extend = Objects.requireNonNull(requestingClass.getAnnotation(Extends.class), "Mixin model must have a target");
+        Extends extend = Objects.requireNonNull(requestingClass.getAnnotation(Extends.class), "Mixin model must have a target");
 
-            Objects.requireNonNull(extend.value().getAnnotation(Trait.class), "Requested parent class was not a trait. It cannot be extended in this way.");
+        Objects.requireNonNull(extend.value().getAnnotation(Trait.class), "Requested parent class was not a trait. It cannot be extended in this way.");
 
-            if (!extend.force()) {
-                checkInheritance(requestingClass, extend.value());
-            }
-            return requestedLookupCache.computeIfAbsent(extend.value(), MsonModelMixinImpl::constructHandle);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
+        if (!extend.force()) {
+            checkInheritance(requestingClass, extend.value());
         }
+
+        return requestedLookupCache.computeIfAbsent(extend.value(), MsonModelMixinImpl::constructHandle);
     }
 
     private static MethodHandle constructHandle(Class<?> requestedClass) {
@@ -51,7 +48,7 @@ public class MsonModelMixinImpl {
                     MethodType.methodType(void.class, ModelContext.class),
                     requestedClass
             );
-        } catch (Throwable e) {
+        } catch (NoSuchMethodException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }

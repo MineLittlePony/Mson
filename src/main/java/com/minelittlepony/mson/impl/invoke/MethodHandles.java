@@ -18,7 +18,7 @@ final class MethodHandles {
             Field IMPL_LOOKUP = java.lang.invoke.MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
             IMPL_LOOKUP.setAccessible(true);
             return (Lookup)IMPL_LOOKUP.get(null);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             MsonImpl.LOGGER.error("Could not obtain elevated lookup privileges. All lookups will be performed as a filthy casual.", e);
             return java.lang.invoke.MethodHandles.lookup();
         }
@@ -44,7 +44,7 @@ final class MethodHandles {
                     return handle;
                 }
             };
-        } catch (Throwable e) {
+        } catch (Exception e) {
             MsonImpl.LOGGER.error("Could not obtain elevated bindTo privileges. All binds will follow casting restrictions..", e);
         }
         return MethodHandle::bindTo;
