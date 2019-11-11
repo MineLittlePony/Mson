@@ -84,7 +84,7 @@ final class LocalsImpl implements ModelContext.Locals {
             return new Local(json.getAsJsonArray());
         }
 
-        throw new JsonParseException("Unsupported local type. A local must be eithera value (number) string (#variable) or an array");
+        throw new JsonParseException("Unsupported local type. A local must be either a value (number) string (#variable) or an array");
     }
 
     private static final class StackFrame implements ModelContext.Locals {

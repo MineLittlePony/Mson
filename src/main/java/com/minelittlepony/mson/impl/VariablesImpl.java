@@ -2,6 +2,7 @@ package com.minelittlepony.mson.impl;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.json.Variables;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -21,6 +22,9 @@ final class VariablesImpl implements Variables {
             .map(JsonElement::getAsJsonArray)
             .ifPresent(arr -> {
                 for (int i = 0; i < len && i < arr.size(); i++) {
+                    if (!arr.get(i).isJsonPrimitive()) {
+                        throw new JsonParseException("Non-primitive type found in array. Can only be values (Number) or variable references (#variable). " + arr.toString());
+                    }
                     output[i] = LocalsImpl.variableReference(arr.get(i).getAsJsonPrimitive());
                 }
             });
