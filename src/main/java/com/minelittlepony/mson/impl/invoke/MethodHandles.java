@@ -10,15 +10,15 @@ import java.util.function.BiFunction;
 
 final class MethodHandles {
 
-    private static final Lookup lookup = findTrustedLookup();
-    private static final BiFunction<MethodHandle, Object, MethodHandle> bindTo = findBindTo();
+    private static final Lookup LOOKUP = findTrustedLookup();
+    private static final BiFunction<MethodHandle, Object, MethodHandle> BIND_TO = findBindTo();
 
     private static Lookup findTrustedLookup() {
         try {
             Field IMPL_LOOKUP = java.lang.invoke.MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
             IMPL_LOOKUP.setAccessible(true);
             return (Lookup)IMPL_LOOKUP.get(null);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+        } catch (Throwable e) {
             MsonImpl.LOGGER.error("Could not obtain elevated lookup privileges. All lookups will be performed as a filthy casual.", e);
             return java.lang.invoke.MethodHandles.lookup();
         }
@@ -28,7 +28,7 @@ final class MethodHandles {
         try {
             Class<?> BoundMethodHandle = Class.forName("java.lang.invoke.BoundMethodHandle");
 
-            MethodHandle bindAgumentL = MethodHandles.trustedLookup().findSpecial(
+            MethodHandle bindAgumentL = trustedLookup().findSpecial(
                     MethodHandle.class,
                     "bindArgumentL",
                     MethodType.methodType(BoundMethodHandle, int.class, Object.class),
@@ -44,14 +44,14 @@ final class MethodHandles {
                     return handle;
                 }
             };
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
+        } catch (Throwable e) {
             MsonImpl.LOGGER.error("Could not obtain elevated bindTo privileges. All binds will follow casting restrictions..", e);
         }
         return MethodHandle::bindTo;
     }
 
     public static Lookup trustedLookup() {
-        return lookup;
+        return LOOKUP;
     }
 
     /**
@@ -60,6 +60,6 @@ final class MethodHandles {
      * IMPORTANT: Instance type checks are disabled.
      */
     public static MethodHandle bind(MethodHandle handle, Object to) {
-        return bindTo.apply(handle, to);
+        return BIND_TO.apply(handle, to);
     }
 }

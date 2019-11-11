@@ -13,10 +13,11 @@ import java.util.Objects;
 
 public class MsonModelMixinImpl {
 
-    private static final Map<Class<?>, MethodHandle> handleLookupCache = new HashMap<>();
+    private static final Map<Class<?>, MethodHandle> requesterLookupCache = new HashMap<>();
+    private static final Map<Class<?>, MethodHandle> requestedLookupCache = new HashMap<>();
 
     public static MsonModel getSuper(MsonModel instance) {
-        MethodHandle handle = MethodHandles.bind(handleLookupCache.computeIfAbsent(instance.getClass(), MsonModelMixinImpl::constructSuper), instance);
+        MethodHandle handle = MethodHandles.bind(requesterLookupCache.computeIfAbsent(instance.getClass(), MsonModelMixinImpl::constructSuper), instance);
 
         return context -> {
             try {
@@ -36,11 +37,19 @@ public class MsonModelMixinImpl {
             if (!extend.force()) {
                 checkInheritance(requestingClass, extend.value());
             }
+            return requestedLookupCache.computeIfAbsent(extend.value(), MsonModelMixinImpl::constructHandle);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static MethodHandle constructHandle(Class<?> requestedClass) {
+        try {
             return MethodHandles.trustedLookup().findSpecial(
-                    extend.value(),
+                    requestedClass,
                     "init",
                     MethodType.methodType(void.class, ModelContext.class),
-                    extend.value()
+                    requestedClass
             );
         } catch (Throwable e) {
             throw new RuntimeException(e);

@@ -22,7 +22,7 @@ public class MsonQuadruped<T extends LivingEntity>
         body = context.findByName("torso");
         leg1 = context.findByName("back_right_leg");
         leg2 = context.findByName("back_left_leg");
-        leg3 = context.findByName("front_left_leg");
-        leg4 = context.findByName("front_right_leg");
+        leg3 = context.findByName("front_right_leg");
+        leg4 = context.findByName("front_left_leg");
     }
 }
