@@ -5,7 +5,7 @@
 	"locals": {
 		"leg_length": 0,
 		"leg_rotation_z": -5,
-		"leg_rotation_z_neg": 6,
+		"leg_rotation_z_neg": 7,
 		"leg_rotation_x": 3,
 		"leg_rotation_x_neg": [0, "-", "#leg_rotation_x"],
 		"leg_rotation_y": [24, "-", "#leg_length"],

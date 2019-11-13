@@ -1,0 +1,47 @@
+{
+	"parent": "mson:quadruped",
+	"locals": {
+		"leg_length": 12
+	},
+	"head": {
+		"center": [0, 6, -8],
+		"cubes": [
+			{ "from": [-3, -4, -4], "size": [ 6, 6, 6], "stretch": 0.6 }
+		]
+	},
+	"torso": {
+		"center": [0, 5, 2],
+		"texture": { "u": 28, "v": 8 },
+		"cubes": [
+			{ "from": [-4, -10, -7], "size": [ 8, 16, 6], "stretch": 1.75 }
+		]
+	},
+	"back_right_leg": {
+		"center": [-3, 12, 7],
+		"texture": { "v": 16 },
+		"cubes": [
+			{ "from": [-2, 0, -2], "size": [4, 6, 4], "stretch": 0.5 }
+		]
+	},
+	"back_left_leg": {
+		"center": [3, 12, 7],
+		"texture": { "v": 16 },
+		"cubes": [
+			{ "from": [-2, 0, -2], "size": [4, 6, 4], "stretch": 0.5 }
+		]
+	},
+	"front_right_leg": {
+		"center": [-3, 12, -5],
+		"texture": { "v": 16 },
+		"cubes": [
+			{ "from": [-2, 0, -2], "size": [4, 6, 4], "stretch": 0.5 }
+		]
+	},
+	"front_left_leg": {
+		"center": [3, 12, -5],
+		"texture": { "v": 16 },
+		"cubes": [
+			{ "from": [-2, 0, -2], "size": [4, 6, 4], "stretch": 0.5 }
+		]
+	}
+}

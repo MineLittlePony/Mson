@@ -4,6 +4,7 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.passive.CowEntity;
 import net.minecraft.entity.passive.PigEntity;
+import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.ModelKey;
@@ -12,6 +13,7 @@ import com.minelittlepony.mson.api.model.entities.MsonCow;
 import com.minelittlepony.mson.api.model.entities.MsonCreeper;
 import com.minelittlepony.mson.api.model.entities.MsonPig;
 import com.minelittlepony.mson.api.model.entities.MsonPlayer;
+import com.minelittlepony.mson.api.model.entities.MsonSheep;
 
 public final class Test {
 
@@ -22,6 +24,8 @@ public final class Test {
         ModelKey<MsonCreeper<CreeperEntity>> CREEPER = Mson.getInstance().registerModel(new Identifier("mson", "creeper"), MsonCreeper::new);
         ModelKey<MsonPig<PigEntity>> PIG = Mson.getInstance().registerModel(new Identifier("mson", "pig"), MsonPig::new);
         ModelKey<MsonCow<CowEntity>> COW = Mson.getInstance().registerModel(new Identifier("mson", "cow"), MsonCow::new);
+        ModelKey<MsonSheep<SheepEntity>> SHEEP = Mson.getInstance().registerModel(new Identifier("mson", "sheep"), MsonSheep::new);
+        ModelKey<MsonSheep<SheepEntity>> SHEEP_WOOL = Mson.getInstance().registerModel(new Identifier("mson", "sheep_wool"), MsonSheep::new);
         MsonImpl.DEBUG = false;
 
         Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("default", r -> new MsonPlayer.Renderer(r, STEVE));
@@ -29,5 +33,6 @@ public final class Test {
         Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(CreeperEntity.class, r -> new MsonCreeper.Renderer(r, CREEPER));
         Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(PigEntity.class, r -> new MsonPig.Renderer(r, PIG));
         Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(CowEntity.class, r -> new MsonCow.Renderer(r, COW));
+        Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(SheepEntity.class, r -> new MsonSheep.Renderer(r, SHEEP, SHEEP_WOOL));
     }
 }
