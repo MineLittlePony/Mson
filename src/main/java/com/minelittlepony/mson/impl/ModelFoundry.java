@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.client.model.Cuboid;
 import net.minecraft.client.model.Model;
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
@@ -256,7 +256,7 @@ class ModelFoundry {
             }
 
             @Override
-            public void findByName(String name, Cuboid output) {
+            public void findByName(String name, ModelPart output) {
                 if (elements.containsKey(name)) {
                     try {
                         elements.get(name).export(this, output);

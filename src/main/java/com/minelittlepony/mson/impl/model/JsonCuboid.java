@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.impl.model;
 
-import net.minecraft.client.model.Box;
-import net.minecraft.client.model.Cuboid;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
@@ -9,7 +9,8 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
-import com.minelittlepony.mson.api.model.MsonCuboid;
+import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
+import com.minelittlepony.mson.api.model.MsonPart;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -21,7 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-public class JsonCuboid implements JsonComponent<Cuboid> {
+public class JsonCuboid implements JsonComponent<ModelPart> {
     public static final Identifier ID = new Identifier("mson", "compound");
     private static final float RADS_DEGS_FACTOR = (float)Math.PI / 180F;
 
@@ -29,12 +30,9 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
 
     private final Incomplete<float[]> rotation;
 
-    private final Incomplete<float[]> position;
-
     private final boolean[] mirror = new boolean[3];
 
     private final boolean visible;
-    private final boolean hidden;
 
     private final List<JsonComponent<?>> children = new ArrayList<>();
     private final List<JsonComponent<?>> cubes = new ArrayList<>();
@@ -46,11 +44,9 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
     public JsonCuboid(JsonContext context, JsonObject json) {
         center = context.getVarLookup().getFloats(json, "center", 3);
         rotation = context.getVarLookup().getFloats(json, "rotate", 3);
-        position = context.getVarLookup().getFloats(json, "position", 3);
         JsonUtil.getBooleans(json, "mirror", mirror);
 
         visible = JsonUtils.getBooleanOr("visible", json, true);
-        hidden = JsonUtils.getBooleanOr("hidden", json, false);
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
         name = JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("");
 
@@ -69,9 +65,9 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
     }
 
     @Override
-    public Cuboid export(ModelContext context) {
+    public ModelPart export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            Cuboid cuboid = new MsonCuboidImpl(context.getModel(), key);
+            ModelPart cuboid = new MsonCuboidImpl(context.getModel());
 
             export(context, cuboid);
 
@@ -80,38 +76,35 @@ public class JsonCuboid implements JsonComponent<Cuboid> {
     }
 
     @Override
-    public void export(ModelContext context, Cuboid cuboid) throws InterruptedException, ExecutionException {
+    public void export(ModelContext context, ModelPart cuboid) throws InterruptedException, ExecutionException {
 
-        float[] position = this.position.complete(context);
         float[] center = this.center.complete(context);
         float[] rotation = this.rotation.complete(context);
 
-        ((MsonCuboid)cuboid).at(position[0], position[1], position[2]);
-        ((MsonCuboid)cuboid).around(center[0], center[1], center[2]);
-        ((MsonCuboid)cuboid).rotate(
+        cuboid.visible = visible;
+
+        ((MsonPart)cuboid).around(center[0], center[1], center[2]);
+        ((MsonPart)cuboid).rotate(
                 rotation[0] * RADS_DEGS_FACTOR,
                 rotation[1] * RADS_DEGS_FACTOR,
                 rotation[2] * RADS_DEGS_FACTOR
         );
-        ((MsonCuboid)cuboid).mirror(mirror[0], mirror[1], mirror[2]);
-        ((MsonCuboid)cuboid).tex(texture.complete(context));
-
-        cuboid.visible = visible;
-        cuboid.field_3664 = hidden;
-        cuboid.children = new ArrayList<>();
-        cuboid.boxes.clear();
+        ((MsonPart)cuboid).mirror(mirror[0], mirror[1], mirror[2]);
+        ((MsonPart)cuboid).tex(texture.complete(context));
+        ((ContentAccessor)cuboid).cubes().clear();
+        ((ContentAccessor)cuboid).children().clear();
 
         final ModelContext subContext = context.resolve(cuboid);
-        cuboid.children.addAll(children
+        ((ContentAccessor)cuboid).children().addAll(children
                 .stream()
-                .map(c -> c.tryExport(subContext, Cuboid.class))
+                .map(c -> c.tryExport(subContext, ModelPart.class))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList())
         );
-        cuboid.boxes.addAll(cubes
+        ((ContentAccessor)cuboid).cubes().addAll(cubes
                 .stream()
-                .map(c -> c.tryExport(subContext, Box.class))
+                .map(c -> c.tryExport(subContext, Cuboid.class))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList())

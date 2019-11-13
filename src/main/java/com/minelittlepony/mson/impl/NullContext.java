@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.client.model.Cuboid;
 import net.minecraft.client.model.Model;
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
@@ -50,7 +50,7 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public void findByName(String name, Cuboid output) {
+    public void findByName(String name, ModelPart output) {
         throw new IllegalArgumentException(String.format("Key not found `%s`", name));
     }
 

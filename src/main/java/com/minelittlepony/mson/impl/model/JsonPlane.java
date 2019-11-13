@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.impl.model;
 
-import net.minecraft.client.model.Box;
+import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
@@ -14,7 +14,7 @@ import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.concurrent.ExecutionException;
 
-public class JsonPlane implements JsonComponent<Box> {
+public class JsonPlane implements JsonComponent<Cuboid> {
 
     public static final Identifier ID = new Identifier("mson", "plane");
 
@@ -33,7 +33,7 @@ public class JsonPlane implements JsonComponent<Box> {
     }
 
     @Override
-    public Box export(ModelContext context) throws InterruptedException, ExecutionException {
+    public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
         return new BoxBuilder(context)
             .pos(face.transformPosition(position.complete(context), context))
             .size(face.getAxis(), size.complete(context))

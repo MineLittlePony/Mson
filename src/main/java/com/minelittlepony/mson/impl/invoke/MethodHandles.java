@@ -2,13 +2,16 @@ package com.minelittlepony.mson.impl.invoke;
 
 import com.minelittlepony.mson.impl.MsonImpl;
 
+import java.lang.invoke.CallSite;
+import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.function.BiFunction;
 
-final class MethodHandles {
+public final class MethodHandles {
 
     private static final Lookup LOOKUP = findTrustedLookup();
     private static final BiFunction<MethodHandle, Object, MethodHandle> BIND_TO = findBindTo();
@@ -50,7 +53,7 @@ final class MethodHandles {
         return MethodHandle::bindTo;
     }
 
-    public static Lookup trustedLookup() {
+    static Lookup trustedLookup() {
         return LOOKUP;
     }
 
@@ -61,5 +64,34 @@ final class MethodHandles {
      */
     public static MethodHandle bind(MethodHandle handle, Object to) {
         return BIND_TO.apply(handle, to);
+    }
+
+    public static Class<?> findHiddenInnerClass(Class<?> outerClass, Class<?> expectsToImplement) {
+        for (Class<?> c : outerClass.getDeclaredClasses()) {
+            if (expectsToImplement.isAssignableFrom(c)) {
+                return c;
+            }
+        }
+        throw new RuntimeException("Inner class was missing");
+    }
+
+    public static <T> T lookupInvoker(Class<T> ifaceClass, Class<?> owner) {
+
+        try {
+            Method ifaceMethod = ifaceClass.getMethods()[0];
+            MethodType ifaceMethType = MethodType.methodType(ifaceMethod.getReturnType(), ifaceMethod.getParameterTypes());
+
+            MethodType constrType = MethodType.methodType(void.class, ifaceMethod.getParameterTypes());
+            MethodHandle constr = trustedLookup().findConstructor(owner, constrType);
+
+            CallSite site = LambdaMetafactory.metafactory(trustedLookup(), ifaceMethod.getName(), ifaceMethType, ifaceMethType, constr, ifaceMethType);
+
+            return (T)site.dynamicInvoker().invoke();
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
     }
 }

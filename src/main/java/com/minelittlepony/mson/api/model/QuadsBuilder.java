@@ -1,8 +1,5 @@
 package com.minelittlepony.mson.api.model;
 
-import net.minecraft.client.model.Quad;
-import net.minecraft.client.model.Vertex;
-
 /**
  * A builder for creating box quads.
  */
@@ -23,7 +20,7 @@ public interface QuadsBuilder {
             float yMin = ctx.y - ctx.stretch;
             float zMin = ctx.z - ctx.stretch;
 
-            if (ctx.cuboid.getMirrorX()) {
+            if (ctx.part.getMirrorX()) {
                 float v = xMax;
                 xMax = xMin;
                 xMin = v;
@@ -35,16 +32,16 @@ public interface QuadsBuilder {
             float tipZMax = zMax - ctx.dz * tipInset;
 
             // w:west e:east d:down u:up s:south n:north
-            Vertex wds = ctx.vert(tipXmin, yMin, tipZmin, 0, 0);
-            Vertex eds = ctx.vert(tipXMax, yMin, tipZmin, 0, 8);
-            Vertex eus = ctx.vert(xMax,    yMax, zMin,    8, 8);
-            Vertex wus = ctx.vert(xMin,    yMax, zMin,    8, 0);
-            Vertex wdn = ctx.vert(tipXmin, yMin, tipZMax, 0, 0);
-            Vertex edn = ctx.vert(tipXMax, yMin, tipZMax, 0, 8);
-            Vertex eun = ctx.vert(xMax,    yMax, zMax,    8, 8);
-            Vertex wun = ctx.vert(xMin,    yMax, zMax,    8, 0);
+            Vert wds = ctx.vert(tipXmin, yMin, tipZmin, 0, 0);
+            Vert eds = ctx.vert(tipXMax, yMin, tipZmin, 0, 8);
+            Vert eus = ctx.vert(xMax,    yMax, zMin,    8, 8);
+            Vert wus = ctx.vert(xMin,    yMax, zMin,    8, 0);
+            Vert wdn = ctx.vert(tipXmin, yMin, tipZMax, 0, 0);
+            Vert edn = ctx.vert(tipXMax, yMin, tipZMax, 0, 8);
+            Vert eun = ctx.vert(xMax,    yMax, zMax,    8, 8);
+            Vert wun = ctx.vert(xMin,    yMax, zMax,    8, 0);
 
-            Quad[] quads = new Quad[] {
+            Rect[] quads = new Rect[] {
                 ctx.quad(ctx.u + ctx.dz + ctx.dx,          ctx.dz, ctx.v + ctx.dz,  ctx.dy, edn, eds, eus, eun),
                 ctx.quad(ctx.u,                            ctx.dz, ctx.v + ctx.dz,  ctx.dy, wds, wdn, wun, wus),
                 ctx.quad(ctx.u + ctx.dz,                   ctx.dx, ctx.v,           ctx.dz, edn, wdn, wds, eds),
@@ -53,8 +50,8 @@ public interface QuadsBuilder {
                 ctx.quad(ctx.u + ctx.dz + ctx.dx + ctx.dz, ctx.dx, ctx.v + ctx.dz,  ctx.dy, wdn, edn, eun, wun)
             };
 
-            if (ctx.cuboid.getMirrorX()) {
-                for (Quad i : quads) {
+            if (ctx.part.getMirrorX()) {
+                for (Rect i : quads) {
                     i.flip();
                 }
             }
@@ -76,35 +73,35 @@ public interface QuadsBuilder {
             float yMin = ctx.y - ctx.stretch;
             float zMin = ctx.z - ctx.stretch;
 
-            if (ctx.cuboid.getMirrorX()) {
+            if (ctx.part.getMirrorX()) {
                 float v = xMax;
                 xMax = xMin;
                 xMin = v;
             }
 
-            if (ctx.cuboid.getMirrorY()) {
+            if (ctx.part.getMirrorY()) {
                 float v = yMax;
                 yMax = yMin;
                 yMin = v;
             }
 
-            if (ctx.cuboid.getMirrorZ()) {
+            if (ctx.part.getMirrorZ()) {
                 float v = zMax;
                 zMax = zMin;
                 zMin = v;
             }
 
             // w:west e:east d:down u:up s:south n:north
-            Vertex wds = ctx.vert(xMin, yMin, zMin, 0, 0);
-            Vertex eds = ctx.vert(xMax, yMin, zMin, 0, 8);
-            Vertex eus = ctx.vert(xMax, yMax, zMin, 8, 8);
-            Vertex wus = ctx.vert(xMin, yMax, zMin, 8, 0);
-            Vertex wdn = ctx.vert(xMin, yMin, zMax, 0, 0);
-            Vertex edn = ctx.vert(xMax, yMin, zMax, 0, 8);
-            Vertex eun = ctx.vert(xMax, yMax, zMax, 8, 8);
-            Vertex wun = ctx.vert(xMin, yMax, zMax, 8, 0);
+            Vert wds = ctx.vert(xMin, yMin, zMin, 0, 0);
+            Vert eds = ctx.vert(xMax, yMin, zMin, 0, 8);
+            Vert eus = ctx.vert(xMax, yMax, zMin, 8, 8);
+            Vert wus = ctx.vert(xMin, yMax, zMin, 8, 0);
+            Vert wdn = ctx.vert(xMin, yMin, zMax, 0, 0);
+            Vert edn = ctx.vert(xMax, yMin, zMax, 0, 8);
+            Vert eun = ctx.vert(xMax, yMax, zMax, 8, 8);
+            Vert wun = ctx.vert(xMin, yMax, zMax, 8, 0);
 
-            Quad[] quads = new Quad[1];
+            Rect[] quads = new Rect[1];
 
             if (face == Face.EAST) {
                 quads[0] = ctx.quad(ctx.u, ctx.dz, ctx.v, ctx.dy, edn, eds, eus, eun);
@@ -125,7 +122,7 @@ public interface QuadsBuilder {
                 quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dy, wdn, edn, eun, wun);
             }
 
-            if (ctx.cuboid.getMirrorX() || ctx.cuboid.getMirrorY() || ctx.cuboid.getMirrorZ()) {
+            if (ctx.part.getMirrorX() || ctx.part.getMirrorY() || ctx.part.getMirrorZ()) {
                 quads[0].flip();
             }
 
@@ -136,5 +133,5 @@ public interface QuadsBuilder {
     /**
      * Builds the quads array using the provided box builder.
      */
-    Quad[] build(BoxBuilder ctx);
+    Rect[] build(BoxBuilder ctx);
 }

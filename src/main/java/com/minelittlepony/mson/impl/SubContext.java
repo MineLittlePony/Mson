@@ -1,8 +1,7 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.client.model.Cuboid;
 import net.minecraft.client.model.Model;
-
+import net.minecraft.client.model.ModelPart;
 import com.minelittlepony.mson.api.ModelContext;
 
 import java.util.Objects;
@@ -34,7 +33,7 @@ class SubContext implements ModelContext {
     }
 
     @Override
-    public void findByName(String name, Cuboid output) {
+    public void findByName(String name, ModelPart output) {
         parent.findByName(name, output);
     }
 

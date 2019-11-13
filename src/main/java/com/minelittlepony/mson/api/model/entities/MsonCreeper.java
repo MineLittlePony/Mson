@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.api.model.entities;
 
-import net.minecraft.client.model.Cuboid;
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.entity.CreeperEntityRenderer;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.model.CreeperEntityModel;
@@ -8,23 +8,23 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.util.math.MathHelper;
 
+import com.google.common.collect.ImmutableList;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
-import com.mojang.blaze3d.platform.GlStateManager;
 
 public class MsonCreeper<T extends Entity>
     extends CreeperEntityModel<T>
     implements MsonModel {
 
-    private Cuboid head;
-    private Cuboid helmet;
-    private Cuboid torso;
+    private ModelPart head;
+    private ModelPart helmet;
+    private ModelPart torso;
 
-    private Cuboid backLeftLeg;
-    private Cuboid backRightLeg;
-    private Cuboid frontLeftLeg;
-    private Cuboid frontRightLeg;
+    private ModelPart backLeftLeg;
+    private ModelPart backRightLeg;
+    private ModelPart frontLeftLeg;
+    private ModelPart frontRightLeg;
 
     @Override
     public void init(ModelContext context) {
@@ -38,38 +38,20 @@ public class MsonCreeper<T extends Entity>
     }
 
     @Override
-    public void render(T entity, float move, float swing, float ticks, float headYaw, float headPitch, float scale) {
-       setAngles(entity, move, swing, ticks, headYaw, headPitch, scale);
-       head.render(scale);
-
-       GlStateManager.pushMatrix();
-       head.applyTransform(scale);
-       helmet.render(scale);
-       GlStateManager.popMatrix();
-
-       torso.render(scale);
-       backLeftLeg.render(scale);
-       backRightLeg.render(scale);
-       frontLeftLeg.render(scale);
-       frontRightLeg.render(scale);
+    public Iterable<ModelPart> getParts() {
+       return ImmutableList.of(head, torso, helmet, backLeftLeg, backRightLeg, frontLeftLeg, frontRightLeg);
     }
 
     @Override
-    public void setAngles(T entity, float move, float swing, float ticks, float headYaw, float headPitch, float scale) {
-       float headRange = 0.017453292F;
-       float pi = (float)Math.PI;
-       float range = swing * 1.4F;
-       float freq = move * 0.6662F;
-
-       head.yaw   = headYaw   * headRange;
-       head.pitch = headPitch * headRange;
-       helmet.copyRotation(head);
-
-       backLeftLeg.pitch   = range * MathHelper.cos(freq);
-       backRightLeg.pitch  = range * MathHelper.cos(freq + pi);
-       frontLeftLeg.pitch  = range * MathHelper.cos(freq + pi);
-       frontRightLeg.pitch = range * MathHelper.cos(freq);
-    }
+    public void setAngles(T entity, float limbAngle, float limbDistance, float age, float headYaw, float headPitch) {
+        this.head.yaw = headYaw * 0.017453292F;
+        this.head.pitch = headPitch * 0.017453292F;
+        helmet.copyPositionAndRotation(head);
+        this.backLeftLeg.pitch = MathHelper.cos(limbAngle * 0.6662F) * 1.4F * limbDistance;
+        this.backRightLeg.pitch = MathHelper.cos(limbAngle * 0.6662F + 3.1415927F) * 1.4F * limbDistance;
+        this.frontLeftLeg.pitch = MathHelper.cos(limbAngle * 0.6662F + 3.1415927F) * 1.4F * limbDistance;
+        this.frontRightLeg.pitch = MathHelper.cos(limbAngle * 0.6662F) * 1.4F * limbDistance;
+     }
 
     public static class Renderer extends CreeperEntityRenderer {
         public Renderer(EntityRenderDispatcher dispatcher, ModelKey<MsonCreeper<CreeperEntity>> key) {

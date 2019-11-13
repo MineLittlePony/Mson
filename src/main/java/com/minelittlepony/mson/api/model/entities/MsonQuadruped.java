@@ -13,7 +13,7 @@ public class MsonQuadruped<T extends LivingEntity>
     implements MsonModel {
 
     public MsonQuadruped() {
-        super(0, 0);
+        super(0, 0, false, 0, 0, 0, 0, 0);
     }
 
     @Override

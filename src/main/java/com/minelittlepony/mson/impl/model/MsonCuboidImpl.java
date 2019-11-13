@@ -1,11 +1,10 @@
 package com.minelittlepony.mson.impl.model;
 
-import net.minecraft.client.model.Cuboid;
 import net.minecraft.client.model.Model;
+import net.minecraft.client.model.ModelPart;
+import com.minelittlepony.mson.api.model.MsonPart;
 
-import com.minelittlepony.mson.api.model.MsonCuboid;
-
-class MsonCuboidImpl extends Cuboid implements MsonCuboid {
+class MsonCuboidImpl extends ModelPart implements MsonPart {
 
     private int textureOffsetU;
     private int textureOffsetV;
@@ -17,8 +16,8 @@ class MsonCuboidImpl extends Cuboid implements MsonCuboid {
     private boolean mirrorY;
     private boolean mirrorZ;
 
-    MsonCuboidImpl(Model model, String name) {
-        super(model, name);
+    MsonCuboidImpl(Model model) {
+        super(model);
     }
 
     @Override
@@ -30,7 +29,7 @@ class MsonCuboidImpl extends Cuboid implements MsonCuboid {
     }
 
     @Override
-    public MsonCuboid offset(float x, float y, float z) {
+    public MsonPart offset(float x, float y, float z) {
         modelOffsetX = x;
         modelOffsetY = y;
         modelOffsetZ = z;
@@ -38,8 +37,8 @@ class MsonCuboidImpl extends Cuboid implements MsonCuboid {
     }
 
     @Override
-    public MsonCuboid mirror(boolean x, boolean y, boolean z) {
-        MsonCuboid.super.mirror(x, y, z);
+    public MsonPart mirror(boolean x, boolean y, boolean z) {
+        MsonPart.super.mirror(x, y, z);
         mirrorY = y;
         mirrorZ = z;
 
@@ -47,35 +46,33 @@ class MsonCuboidImpl extends Cuboid implements MsonCuboid {
     }
 
     @Override
-    public MsonCuboidImpl addBox(String partName, float x, float y, float z, int width, int height, int depth, float scale, int texX, int texY) {
-        partName = name + "." + partName;
+    public ModelPart addCuboid(String name, float x, float y, float z, int width, int height, int depth, float stretch, int u, int v) {
+        return super.addCuboid(name, (int)getModelOffsetX() + x, (int)getModelOffsetY() + y, (int)getModelOffsetZ() + z, width, height, depth, stretch, u, v);
+     }
 
-        setTextureOffset(texX, texY);
-        addBox(x, y, z, width, height, depth);
-        boxes.get(boxes.size() - 1).setName(partName);
-
-        return  this;
+    @Override
+    public ModelPart addCuboid(float x, float y, float z, float width, float height, float depth) {
+        return super.addCuboid(getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z, width, height, depth);
     }
 
     @Override
-    public MsonCuboidImpl addBox(float x, float y, float z, int width, int height, int depth) {
-        return addBox(x, y, z, width, height, depth, getMirrorX());
+    public ModelPart addCuboid(float x, float y, float z, float width, float height, float depth, boolean mirror) {
+        return super.addCuboid(getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z, width, height, depth, mirror);
     }
 
     @Override
-    public MsonCuboidImpl addBox(float x, float y, float z, int width, int height, int depth, boolean mirrored) {
-        addBox(x, y, z, width, height, depth, 0, mirrored);
-        return this;
+    public void addCuboid(float x, float y, float z, float width, float height, float depth, float stretch) {
+        super.addCuboid(getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z, width, height, depth, stretch);
     }
 
     @Override
-    public void addBox(float x, float y, float z, int width, int height, int depth, float scaleFactor) {
-        addBox(x, y, z, width, height, depth, scaleFactor, getMirrorX());
+    public void addCuboid(float x, float y, float z, float width, float height, float depth, float stretchX, float stretchY, float stretchZ) {
+        super.addCuboid(getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z, width, height, depth, stretchX, stretchY, stretchZ);
     }
 
     @Override
-    public void addBox(float x, float y, float z, int width, int height, int depth, float scaleFactor, boolean mirrored) {
-        super.addBox(getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z, width, height, depth, scaleFactor, mirrored);
+    public void addCuboid(float x, float y, float z, float width, float height, float depth, float stretch, boolean mirror) {
+        super.addCuboid(getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z, width, height, depth, stretch, mirror);
     }
 
     @Override

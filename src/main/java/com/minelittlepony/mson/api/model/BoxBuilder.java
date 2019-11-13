@@ -1,14 +1,14 @@
 package com.minelittlepony.mson.api.model;
 
-import net.minecraft.client.model.Box;
-import net.minecraft.client.model.Cuboid;
-import net.minecraft.client.model.Quad;
-import net.minecraft.client.model.Vertex;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.ModelPart.*;
 
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
+import com.minelittlepony.mson.impl.invoke.MethodHandles;
 import com.minelittlepony.mson.util.Qbit;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -19,7 +19,10 @@ import java.util.Optional;
  */
 public final class BoxBuilder {
 
-    public final MsonCuboid cuboid;
+    private static final RectFactory RECT_FACTORY = MethodHandles.lookupInvoker(RectFactory.class, MethodHandles.findHiddenInnerClass(ModelPart.class, Rect.class));
+    private static final VertFactory VERT_FACTORY = MethodHandles.lookupInvoker(VertFactory.class, MethodHandles.findHiddenInnerClass(ModelPart.class, Vert.class));
+
+    public final MsonPart part;
 
     public float x;
     public float y;
@@ -39,22 +42,22 @@ public final class BoxBuilder {
     public boolean mirrorZ;
 
     public BoxBuilder(ModelContext context) {
-        this.cuboid = (MsonCuboid)context.getContext();
+        this.part = (MsonPart)context.getContext();
 
         stretch = context.getScale();
 
-        u = cuboid.getTextureOffsetU();
-        v = cuboid.getTextureOffsetV();
+        u = part.getTextureOffsetU();
+        v = part.getTextureOffsetV();
 
-        mirrorX = cuboid.getMirrorX();
-        mirrorY = cuboid.getMirrorY();
-        mirrorZ = cuboid.getMirrorZ();
+        mirrorX = part.getMirrorX();
+        mirrorY = part.getMirrorY();
+        mirrorZ = part.getMirrorZ();
     }
 
     public BoxBuilder pos(float... pos) {
-        x = pos[0] + cuboid.getModelOffsetX();
-        y = pos[1] + cuboid.getModelOffsetY();
-        z = pos[2] + cuboid.getModelOffsetZ();
+        x = pos[0] + part.getModelOffsetX();
+        y = pos[1] + part.getModelOffsetY();
+        z = pos[2] + part.getModelOffsetZ();
         return this;
     }
 
@@ -103,37 +106,55 @@ public final class BoxBuilder {
     /**
      * Creates a new vertex mapping the given (x, y, z) coordinates to a texture offset.
      */
-    public Vertex vert(float x, float y, float z, int u, int v) {
-        return new Vertex(x, y, z, u, v);
+    public Vert vert(float x, float y, float z, int u, int v) {
+        return VERT_FACTORY.create(x, y, z, u, v);
     }
 
     /**
      * Creates a new quad with the given spatial vertices.
      */
-    public Quad quad(
+    public Rect quad(
             int x, int width,
-            int y, int height, Vertex ...vertices) {
-        return new Quad(vertices,
+            int y, int height, Vert ...vertices) {
+        return RECT_FACTORY.create(vertices,
                 x,         y,
                 x + width, y + height,
                 u, v);
     }
 
-    public Box build() {
-        return new Box((Cuboid)cuboid,
+    public Cuboid build() {
+        return new Cuboid(
                 u, v,
                 x, y, z,
                 dx, dy, dz,
-                stretch, cuboid.getMirrorX());
+                stretch, stretch, stretch,
+                part.getMirrorX(),
+                part.getTextureOffsetU(), part.getTextureOffsetV());
     }
 
-    public Box build(QuadsBuilder builder) {
-        Box box = build();
+    public Cuboid build(QuadsBuilder builder) {
+        Cuboid box = build();
         ((PolygonsSetter)box).setPolygons(builder.build(this));
         return box;
     }
 
+    @FunctionalInterface
+    interface VertFactory {
+        Vert create(float x, float y, float z, float u, float v);
+    }
+
+    @FunctionalInterface
+    interface RectFactory {
+        Rect create(Vert[] vertices, float u1, float v1, float u2, float v2, float squishU, float squishV);
+    }
+
     public interface PolygonsSetter {
-        void setPolygons(Quad[] quads);
+        void setPolygons(Rect[] quads);
+    }
+
+    public interface ContentAccessor {
+        List<Cuboid> cubes();
+
+        List<ModelPart> children();
     }
 }

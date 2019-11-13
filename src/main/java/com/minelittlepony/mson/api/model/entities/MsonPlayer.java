@@ -1,10 +1,12 @@
 package com.minelittlepony.mson.api.model.entities;
 
-import net.minecraft.client.model.Cuboid;
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 
 import com.minelittlepony.mson.api.ModelContext;
@@ -17,8 +19,8 @@ public class MsonPlayer<T extends LivingEntity>
     extends PlayerEntityModel<T>
     implements MixedMsonModel {
 
-    private Cuboid cape;
-    private Cuboid ears;
+    private ModelPart cape;
+    private ModelPart ears;
 
     public MsonPlayer() {
         this(false);
@@ -44,16 +46,16 @@ public class MsonPlayer<T extends LivingEntity>
     }
 
     @Override
-    public void renderEars(float scale) {
-        ears.copyRotation(head);
-        ears.rotationPointX = 0;
-        ears.rotationPointY = 0;
-        ears.render(scale);
+    public void renderEars(MatrixStack renderMatrix, VertexConsumer vertexBuffer, int i, int j) {
+        ears.copyPositionAndRotation(head);
+        ears.pivotX = 0;
+        ears.pivotY = 0;
+        ears.render(renderMatrix, vertexBuffer, i, j, null);
     }
 
     @Override
-    public void renderCape(float scale) {
-        cape.render(scale);
+    public void renderCape(MatrixStack renderMatrix, VertexConsumer vertexBuffer, int i, int j) {
+        cape.render(renderMatrix, vertexBuffer, i, j, null);
     }
 
     @Override

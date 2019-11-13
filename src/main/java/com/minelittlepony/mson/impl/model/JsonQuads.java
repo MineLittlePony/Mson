@@ -1,8 +1,6 @@
 package com.minelittlepony.mson.impl.model;
 
-import net.minecraft.client.model.Box;
-import net.minecraft.client.model.Quad;
-import net.minecraft.client.model.Vertex;
+import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
 
 import com.google.common.collect.Streams;
@@ -14,13 +12,15 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
+import com.minelittlepony.mson.api.model.Rect;
+import com.minelittlepony.mson.api.model.Vert;
 import com.minelittlepony.mson.util.JsonUtil;
 import com.mojang.realmsclient.util.JsonUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class JsonQuads implements JsonComponent<Box>, QuadsBuilder {
+public class JsonQuads implements JsonComponent<Cuboid>, QuadsBuilder {
 
     public static final Identifier ID = new Identifier("mson", "quads");
 
@@ -43,7 +43,7 @@ public class JsonQuads implements JsonComponent<Box>, QuadsBuilder {
     }
 
     @Override
-    public Box export(ModelContext context) {
+    public Cuboid export(ModelContext context) {
         BoxBuilder builder = new BoxBuilder(context);
         builder.u = texU;
         builder.v = texV;
@@ -51,8 +51,8 @@ public class JsonQuads implements JsonComponent<Box>, QuadsBuilder {
     }
 
     @Override
-    public Quad[] build(BoxBuilder box) {
-        return quads.stream().map(q -> q.build(box)).toArray(i -> new Quad[i]);
+    public Rect[] build(BoxBuilder box) {
+        return quads.stream().map(q -> q.build(box)).toArray(i -> new Rect[i]);
     }
 
     class JsonQuad {
@@ -77,10 +77,10 @@ public class JsonQuads implements JsonComponent<Box>, QuadsBuilder {
                 .collect(Collectors.toList());
         }
 
-        Quad build(BoxBuilder builder) {
+        Rect build(BoxBuilder builder) {
             return builder.quad(x, y, w, h, verts.stream()
                     .map(v -> v.build(builder))
-                    .toArray(i -> new Vertex[i])
+                    .toArray(i -> new Vert[i])
             );
         }
     }
@@ -112,7 +112,7 @@ public class JsonQuads implements JsonComponent<Box>, QuadsBuilder {
             }
         }
 
-        Vertex build(BoxBuilder builder) {
+        Vert build(BoxBuilder builder) {
             return builder.vert(x, y, z, u, v);
         }
     }

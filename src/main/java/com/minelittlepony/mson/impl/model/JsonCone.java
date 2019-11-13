@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.impl.model;
 
-import net.minecraft.client.model.Box;
+import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonObject;
@@ -25,7 +25,7 @@ public class JsonCone extends JsonBox {
     }
 
     @Override
-    public Box export(ModelContext context) throws InterruptedException, ExecutionException {
+    public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
         return new BoxBuilder(context)
             .tex(texture)
             .pos(from.complete(context))

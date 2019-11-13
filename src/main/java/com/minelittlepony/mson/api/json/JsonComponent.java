@@ -1,12 +1,11 @@
 package com.minelittlepony.mson.api.json;
 
-import net.minecraft.client.model.Cuboid;
-
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import net.minecraft.client.model.ModelPart;
 
 /**
  * A json component.
@@ -47,7 +46,7 @@ public interface JsonComponent<T> {
      *
      * @throws UnsupportedOperationException if this component would not have produced a cuboid.
      */
-    default void export(ModelContext context, Cuboid output) throws InterruptedException, ExecutionException {
+    default void export(ModelContext context, ModelPart output) throws InterruptedException, ExecutionException {
         throw new UnsupportedOperationException("I am not a cuboid");
     }
 

@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.api;
 
-import net.minecraft.client.model.Cuboid;
 import net.minecraft.client.model.Model;
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.model.Texture;
@@ -63,7 +63,7 @@ public interface ModelContext {
      * Gets the named element and loads it into the provided cuboid.
      * @throws InvalidInputException if the named element does not exist.
      */
-    void findByName(String name, Cuboid output);
+    void findByName(String name, ModelPart output);
 
     /**
      * Gets the root context.

@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.impl.model;
 
-import net.minecraft.client.model.Box;
-import net.minecraft.client.model.Cuboid;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonArray;
@@ -11,6 +11,7 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.BoxBuilder;
+import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
 import com.minelittlepony.mson.api.model.Face;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -35,16 +36,16 @@ public class JsonPlanar extends JsonCuboid {
     }
 
     @Override
-    public void export(ModelContext context, Cuboid cuboid) throws InterruptedException, ExecutionException {
+    public void export(ModelContext context, ModelPart cuboid) throws InterruptedException, ExecutionException {
         super.export(context , cuboid);
 
         ModelContext subContext = context.resolve(cuboid);
         faces.values().forEach(face -> {
-            cuboid.boxes.add(face.export(subContext));
+            ((ContentAccessor)cuboid).cubes().add(face.export(subContext));
         });
     }
 
-    class JsonFace implements JsonComponent<Box> {
+    class JsonFace implements JsonComponent<Cuboid> {
 
         private final Face face;
 
@@ -62,7 +63,7 @@ public class JsonPlanar extends JsonCuboid {
         }
 
         @Override
-        public Box export(ModelContext context) {
+        public Cuboid export(ModelContext context) {
             return new BoxBuilder(context)
                 .pos(face.transformPosition(position, context))
                 .size(face.getAxis(), size)

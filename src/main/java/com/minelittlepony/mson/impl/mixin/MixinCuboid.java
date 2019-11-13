@@ -1,23 +1,25 @@
 package com.minelittlepony.mson.impl.mixin;
 
-import net.minecraft.client.model.Cuboid;
+import net.minecraft.client.model.ModelPart.*;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.Shadow;
 
-import com.minelittlepony.mson.api.model.MsonCuboid;
+import com.minelittlepony.mson.api.model.BoxBuilder.PolygonsSetter;
+import com.minelittlepony.mson.api.model.Rect;
 
 @Mixin(Cuboid.class)
-abstract class MixinCuboid implements MsonCuboid {
-    @Override
-    @Accessor("textureOffsetU")
-    public abstract int getTextureOffsetU();
+abstract class MixinCuboid implements PolygonsSetter {
+
+    @Shadow
+    @Final
+    @Mutable
+    private Object[] sides;
 
     @Override
-    @Accessor("textureOffsetV")
-    public abstract int getTextureOffsetV();
-
-    @Override
-    @Accessor("mirror")
-    public abstract boolean getMirrorX();
+    public void setPolygons(Rect[] quads) {
+        sides = quads;
+    }
 }

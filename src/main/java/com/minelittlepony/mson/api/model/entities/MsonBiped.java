@@ -12,6 +12,10 @@ public class MsonBiped<T extends LivingEntity>
     extends BipedEntityModel<T>
     implements MsonModel {
 
+    public MsonBiped() {
+        super(0);
+    }
+
     @Override
     public void init(ModelContext context) {
         head = context.findByName("head");

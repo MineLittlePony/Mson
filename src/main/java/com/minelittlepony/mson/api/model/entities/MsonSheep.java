@@ -1,9 +1,11 @@
 package com.minelittlepony.mson.api.model.entities;
 
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.SheepEntityRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.model.SheepEntityModel;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
@@ -11,7 +13,6 @@ import net.minecraft.util.Identifier;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.mixin.Extends;
 import com.minelittlepony.mson.api.mixin.MixedMsonModel;
-import com.mojang.blaze3d.platform.GlStateManager;
 
 @Extends(MsonQuadruped.class)
 public class MsonSheep<T extends SheepEntity>
@@ -39,9 +40,13 @@ public class MsonSheep<T extends SheepEntity>
             }
 
             @Override
-            public void render(SheepEntity entity, float move, float swing, float time, float ticks, float headYaw, float headPitch, float scale) {
+            public void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, SheepEntity entity, float f, float g, float time, float j, float k, float l) {
                if (!entity.isSheared() && !entity.isInvisible()) {
-                  bindTexture(WOOL_SKIN);
+
+                   float red;
+                   float green;
+                   float blue;
+
                   if (entity.hasCustomName() && "jeb_".equals(entity.getName().asString())) {
                      int age = entity.age / 25 + entity.getEntityId();
                      int totalColours = DyeColor.values().length;
@@ -51,25 +56,18 @@ public class MsonSheep<T extends SheepEntity>
 
                      float diff = (entity.age % 25 + time) / 25F;
 
-                     GlStateManager.color3f(
-                             from[0] * (1 - diff) + to[0] * diff,
-                             from[1] * (1 - diff) + to[1] * diff,
-                             from[2] * (1 - diff) + to[2] * diff
-                     );
+                     red = from[0] * (1 - diff) + to[0] * diff;
+                     green = from[1] * (1 - diff) + to[1] * diff;
+                     blue = from[2] * (1 - diff) + to[2] * diff;
                   } else {
                      float[] colour = SheepEntity.getRgbColor(entity.getColor());
-                     GlStateManager.color3f(colour[0], colour[1], colour[2]);
+                     red = colour[0];
+                     green = colour[1];
+                     blue = colour[2];
                   }
 
-                  getModel().copyStateTo(model);
-                  model.animateModel(entity, move, swing, time);
-                  model.render(entity, move, swing, ticks, headYaw, headPitch, scale);
+                  render(getModel(), model, WOOL_SKIN, matrixStack, vertexConsumerProvider, i, entity, f, g, j, k, l, time, red, green, blue);
                }
-            }
-
-            @Override
-            public boolean hasHurtOverlay() {
-               return true;
             }
          }
     }

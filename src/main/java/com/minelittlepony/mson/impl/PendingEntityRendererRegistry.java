@@ -6,7 +6,6 @@ import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.entity.Entity;
 
 import com.minelittlepony.mson.api.EntityRendererRegistry;
-
 import javax.annotation.Nullable;
 
 import java.util.HashMap;
