@@ -2,6 +2,7 @@ package com.minelittlepony.mson.api.model;
 
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPart.*;
+import net.minecraft.util.math.Direction;
 
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.mixin.Lambdas;
@@ -124,16 +125,29 @@ public final class BoxBuilder {
         return VERT_FACTORY.create(x, y, z, u, v);
     }
 
+    public Rect quad(
+            int x, int width,
+            int y, int height,
+            Direction direction,
+            Vert ...vertices) {
+        return quad(x, width, y, height, direction, vertices);
+    }
+
     /**
      * Creates a new quad with the given spatial vertices.
      */
     public Rect quad(
             int x, int width,
-            int y, int height, Vert ...vertices) {
+            int y, int height,
+            Direction direction,
+            boolean mirror,
+            Vert ...vertices) {
         return RECT_FACTORY.create(vertices,
                 x,         y,
                 x + width, y + height,
-                u, v);
+                u, v,
+                part.getMirrorX(),
+                direction);
     }
 
     public Cuboid build() {

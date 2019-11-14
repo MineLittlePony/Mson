@@ -1,5 +1,7 @@
 package com.minelittlepony.mson.api.model;
 
+import net.minecraft.util.math.Direction;
+
 /**
  * A builder for creating box quads.
  */
@@ -41,22 +43,14 @@ public interface QuadsBuilder {
             Vert eun = ctx.vert(xMax,    yMax, zMax,    8, 8);
             Vert wun = ctx.vert(xMin,    yMax, zMax,    8, 0);
 
-            Rect[] quads = new Rect[] {
-                ctx.quad(ctx.u + ctx.dz + ctx.dx,          ctx.dz, ctx.v + ctx.dz,  ctx.dy, edn, eds, eus, eun),
-                ctx.quad(ctx.u,                            ctx.dz, ctx.v + ctx.dz,  ctx.dy, wds, wdn, wun, wus),
-                ctx.quad(ctx.u + ctx.dz,                   ctx.dx, ctx.v,           ctx.dz, edn, wdn, wds, eds),
-                ctx.quad(ctx.u + ctx.dz + ctx.dx,          ctx.dx, ctx.v + ctx.dz, -ctx.dz, eus, wus, wun, eun),
-                ctx.quad(ctx.u + ctx.dz,                   ctx.dx, ctx.v + ctx.dz,  ctx.dy, eds, wds, wus, eus),
-                ctx.quad(ctx.u + ctx.dz + ctx.dx + ctx.dz, ctx.dx, ctx.v + ctx.dz,  ctx.dy, wdn, edn, eun, wun)
+            return new Rect[] {
+                ctx.quad(ctx.u + ctx.dz + ctx.dx,          ctx.dz, ctx.v + ctx.dz,  ctx.dy, Direction.EAST,  edn, eds, eus, eun),
+                ctx.quad(ctx.u,                            ctx.dz, ctx.v + ctx.dz,  ctx.dy, Direction.WEST,  wds, wdn, wun, wus),
+                ctx.quad(ctx.u + ctx.dz,                   ctx.dx, ctx.v,           ctx.dz, Direction.DOWN,  edn, wdn, wds, eds),
+                ctx.quad(ctx.u + ctx.dz + ctx.dx,          ctx.dx, ctx.v + ctx.dz, -ctx.dz, Direction.UP,    eus, wus, wun, eun),
+                ctx.quad(ctx.u + ctx.dz,                   ctx.dx, ctx.v + ctx.dz,  ctx.dy, Direction.NORTH, eds, wds, wus, eus),
+                ctx.quad(ctx.u + ctx.dz + ctx.dx + ctx.dz, ctx.dx, ctx.v + ctx.dz,  ctx.dy, Direction.SOUTH, wdn, edn, eun, wun)
             };
-
-            if (ctx.part.getMirrorX()) {
-                for (Rect i : quads) {
-                    i.invertNormals();
-                }
-            }
-
-            return quads;
         };
     }
 
@@ -103,27 +97,25 @@ public interface QuadsBuilder {
 
             Rect[] quads = new Rect[1];
 
+            boolean mirror = ctx.part.getMirrorX() || ctx.part.getMirrorY() || ctx.part.getMirrorZ();
+
             if (face == Face.EAST) {
-                quads[0] = ctx.quad(ctx.u, ctx.dz, ctx.v, ctx.dy, edn, eds, eus, eun);
+                quads[0] = ctx.quad(ctx.u, ctx.dz, ctx.v, ctx.dy, Direction.EAST, mirror, edn, eds, eus, eun);
             }
             if (face == Face.WEST) {
-                quads[0] = ctx.quad(ctx.u, ctx.dz, ctx.v, ctx.dy, wds, wdn, wun, wus);
+                quads[0] = ctx.quad(ctx.u, ctx.dz, ctx.v, ctx.dy, Direction.WEST, mirror, wds, wdn, wun, wus);
             }
             if (face == Face.UP) {
-                quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dz, edn, wdn, wds, eds);
+                quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dz, Direction.UP, mirror, edn, wdn, wds, eds);
             }
             if (face == Face.DOWN) {
-                quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dz, eus, wus, wun, eun);
+                quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dz, Direction.DOWN, mirror, eus, wus, wun, eun);
             }
             if (face == Face.SOUTH) {
-                quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dy, eds, wds, wus, eus);
+                quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dy, Direction.SOUTH, mirror, eds, wds, wus, eus);
             }
             if (face == Face.NORTH) {
-                quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dy, wdn, edn, eun, wun);
-            }
-
-            if (ctx.part.getMirrorX() || ctx.part.getMirrorY() || ctx.part.getMirrorZ()) {
-                quads[0].invertNormals();
+                quads[0] = ctx.quad(ctx.u, ctx.dx, ctx.v, ctx.dy, Direction.NORTH, mirror, wdn, edn, eun, wun);
             }
 
             return quads;

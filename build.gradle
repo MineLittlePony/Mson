@@ -50,11 +50,11 @@ dependencies {
 
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
-	modApi "net.fabricmc.fabric-api:fabric-api:0.4.12+build.261-1.15"
+    //modApi "net.fabricmc.fabric-api:fabric-api:0.4.12+build.261-1.15"
 
-    //modApi "net.fabricmc.fabric-api:fabric-api-base:0.4.12+"
-    //modApi "net.fabricmc.fabric-api:fabric-events-lifecycle-v0:0.1.2+"
-    //modApi "net.fabricmc.fabric-api:fabric-resource-loader-v0:0.1.8+"
+    modApi "net.fabricmc.fabric-api:fabric-api-base:0.1.2+"
+    modApi "net.fabricmc.fabric-api:fabric-events-lifecycle-v0:0.1.2+"
+    modApi "net.fabricmc.fabric-api:fabric-resource-loader-v0:0.1.8+"
 
     //modImplementation "io.github.prospector.modmenu:ModMenu:1.6.2-93"
 }

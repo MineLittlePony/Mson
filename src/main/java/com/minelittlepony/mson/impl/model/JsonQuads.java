@@ -2,6 +2,7 @@ package com.minelittlepony.mson.impl.model;
 
 import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Direction;
 
 import com.google.common.collect.Streams;
 import com.google.gson.JsonArray;
@@ -78,7 +79,7 @@ public class JsonQuads implements JsonComponent<Cuboid>, QuadsBuilder {
         }
 
         Rect build(BoxBuilder builder) {
-            return builder.quad(x, y, w, h, verts.stream()
+            return builder.quad(x, y, w, h, Direction.UP, verts.stream()
                     .map(v -> v.build(builder))
                     .toArray(i -> new Vert[i])
             );

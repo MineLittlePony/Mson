@@ -8,21 +8,9 @@ public interface MsonPart {
      * Sets the cuboid's texture parameters.
      */
     default MsonPart tex(Texture tex) {
-        return tex(tex.getU(), tex.getV()).size(tex.getWidth(), tex.getHeight());
-    }
-
-    /**
-     * Sets the texture offset
-     */
-    default MsonPart tex(int x, int y) {
-        return (MsonPart)((ModelPart)this).setTextureOffset(x, y);
-    }
-
-    /**
-     * Sets the texture size for this renderer.
-     */
-    default MsonPart size(int w, int h) {
-        return (MsonPart)((ModelPart)this).setTextureSize(w, h);
+        ((ModelPart)this).setTextureOffset(tex.getU(), tex.getV());
+        ((ModelPart)this).setTextureSize(tex.getWidth(), tex.getHeight());
+        return this;
     }
 
     /**

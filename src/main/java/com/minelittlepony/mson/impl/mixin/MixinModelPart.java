@@ -7,8 +7,7 @@ import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
 import com.minelittlepony.mson.api.model.MsonPart;
 import com.minelittlepony.mson.api.model.Texture;
 
-import java.util.List;
-
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPart.Cuboid;
 
@@ -44,9 +43,9 @@ abstract class MixinModelPart implements MsonPart, Texture, ContentAccessor {
 
     @Override
     @Accessor("cuboids")
-    public abstract List<Cuboid> cubes();
+    public abstract ObjectList<Cuboid> cubes();
 
     @Override
     @Accessor("children")
-    public abstract List<ModelPart> children();
+    public abstract ObjectList<ModelPart> children();
 }
