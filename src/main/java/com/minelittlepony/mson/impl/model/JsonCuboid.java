@@ -28,6 +28,8 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
 
     private final Incomplete<float[]> center;
 
+    private final Incomplete<float[]> offset;
+
     private final Incomplete<float[]> rotation;
 
     private final boolean[] mirror = new boolean[3];
@@ -44,6 +46,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
 
     public JsonCuboid(JsonContext context, JsonObject json) {
         center = context.getVarLookup().getFloats(json, "center", 3);
+        offset = context.getVarLookup().getFloats(json, "offset", 3);
         rotation = context.getVarLookup().getFloats(json, "rotate", 3);
         JsonUtil.getBooleans(json, "mirror", mirror);
 
@@ -81,12 +84,14 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     public void export(ModelContext context, ModelPart cuboid) throws InterruptedException, ExecutionException {
 
         float[] center = this.center.complete(context);
+        float[] offset = this.offset.complete(context);
         float[] rotation = this.rotation.complete(context);
 
         cuboid.visible = visible;
 
         ((MsonPart)cuboid).setHidden(hidden);
         ((MsonPart)cuboid).around(center[0], center[1], center[2]);
+        ((MsonPart)cuboid).offset(offset[0], offset[1], offset[2]);
         ((MsonPart)cuboid).rotate(
                 rotation[0] * RADS_DEGS_FACTOR,
                 rotation[1] * RADS_DEGS_FACTOR,
