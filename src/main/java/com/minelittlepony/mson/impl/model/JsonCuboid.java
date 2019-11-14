@@ -33,9 +33,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     private final Incomplete<float[]> rotation;
 
     private final boolean[] mirror = new boolean[3];
-
     private final boolean visible;
-    private final boolean hidden;
 
     private final List<JsonComponent<?>> children = new ArrayList<>();
     private final List<JsonComponent<?>> cubes = new ArrayList<>();
@@ -51,7 +49,6 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
         JsonUtil.getBooleans(json, "mirror", mirror);
 
         visible = JsonUtils.getBooleanOr("visible", json, true);
-        hidden = JsonUtils.getBooleanOr("hidden", json, false);
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
         name = JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("");
 
@@ -87,9 +84,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
         float[] offset = this.offset.complete(context);
         float[] rotation = this.rotation.complete(context);
 
-        cuboid.visible = visible;
-
-        ((MsonPart)cuboid).setHidden(hidden);
+        ((MsonPart)cuboid).setHidden(!visible);
         ((MsonPart)cuboid).around(center[0], center[1], center[2]);
         ((MsonPart)cuboid).offset(offset[0], offset[1], offset[2]);
         ((MsonPart)cuboid).rotate(
