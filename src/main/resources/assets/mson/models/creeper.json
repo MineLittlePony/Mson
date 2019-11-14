@@ -3,6 +3,7 @@
 		"w": 64, "h": 32
 	},
 	"head": {
+		"hidden": true,
 		"center": [0, 6, 0],
 		"cubes": [
 			{ "from": [-4, -8, -4], "size": [ 8, 8, 8] }

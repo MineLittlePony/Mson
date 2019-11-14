@@ -4,6 +4,7 @@ import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 
 import com.minelittlepony.mson.api.EntityRendererRegistry;
 import javax.annotation.Nullable;
@@ -30,7 +31,7 @@ final class PendingEntityRendererRegistry implements EntityRendererRegistry {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends Entity, R extends EntityRenderer<? super T>> void registerEntityRenderer(Class<T> type, Function<EntityRenderDispatcher, R> constructor) {
+    public <T extends Entity, R extends EntityRenderer<? super T>> void registerEntityRenderer(EntityType<T> type, Function<EntityRenderDispatcher, R> constructor) {
         ((PendingList<T, R>)pendingEntityRenderers).put(type, constructor);
         if (runtimeRegistry != null) {
             runtimeRegistry.registerEntityRenderer(type, constructor);
@@ -46,7 +47,7 @@ final class PendingEntityRendererRegistry implements EntityRendererRegistry {
         pendingEntityRenderers.forEach(runtimeRegistry::registerEntityRenderer);
     }
 
-    class PendingList<T extends Entity, R extends EntityRenderer<? super T>> extends HashMap<Class<T>, Function<EntityRenderDispatcher, R>> {
+    class PendingList<T extends Entity, R extends EntityRenderer<? super T>> extends HashMap<EntityType<T>, Function<EntityRenderDispatcher, R>> {
         private static final long serialVersionUID = -4586716048493207127L;
     }
 }

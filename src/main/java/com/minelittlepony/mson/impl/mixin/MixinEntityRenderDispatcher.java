@@ -4,6 +4,7 @@ import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,7 +21,7 @@ import java.util.function.Function;
 class MixinEntityRenderDispatcher implements EntityRendererRegistry {
 
     @Shadow @Final
-    private Map<Class<? extends Entity>, EntityRenderer<? extends Entity>> renderers;
+    private Map<EntityType<?>, EntityRenderer<? extends Entity>> renderers;
 
     @Shadow @Final
     private Map<String, PlayerEntityRenderer> modelRenderers;
@@ -43,7 +44,7 @@ class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     }
 
     @Override
-    public <T extends Entity, R extends EntityRenderer<? super T>> void registerEntityRenderer(Class<T> type, Function<EntityRenderDispatcher, R> constructor) {
+    public <T extends Entity, R extends EntityRenderer<? super T>> void registerEntityRenderer(EntityType<T> type, Function<EntityRenderDispatcher, R> constructor) {
         try {
             renderers.put(type, constructor.apply((EntityRenderDispatcher)(Object)this));
         } catch (Exception e) {

@@ -1,6 +1,7 @@
 package com.minelittlepony.mson.impl;
 
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.passive.CowEntity;
 import net.minecraft.entity.passive.PigEntity;
@@ -30,9 +31,9 @@ public final class Test {
 
         Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("default", r -> new MsonPlayer.Renderer(r, STEVE));
         Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("slim", r -> new MsonPlayer.Renderer(r, ALEX));
-        Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(CreeperEntity.class, r -> new MsonCreeper.Renderer(r, CREEPER));
-        Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(PigEntity.class, r -> new MsonPig.Renderer(r, PIG));
-        Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(CowEntity.class, r -> new MsonCow.Renderer(r, COW));
-        Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(SheepEntity.class, r -> new MsonSheep.Renderer(r, SHEEP, SHEEP_WOOL));
+        Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(EntityType.CREEPER, r -> new MsonCreeper.Renderer(r, CREEPER));
+        Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(EntityType.PIG, r -> new MsonPig.Renderer(r, PIG));
+        Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(EntityType.COW, r -> new MsonCow.Renderer(r, COW));
+        Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(EntityType.SHEEP, r -> new MsonSheep.Renderer(r, SHEEP, SHEEP_WOOL));
     }
 }

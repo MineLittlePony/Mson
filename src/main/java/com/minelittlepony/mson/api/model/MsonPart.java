@@ -36,6 +36,13 @@ public interface MsonPart {
     }
 
     /**
+     * Sets whether this part is hidden or not.
+     */
+    default MsonPart setHidden(boolean hidden) {
+        return this;
+    }
+
+    /**
      * Sets the rotation point.
      */
     default MsonPart around(float x, float y, float z) {
@@ -83,9 +90,9 @@ public interface MsonPart {
         return this;
     }
 
-    int getTextureOffsetU();
-
-    int getTextureOffsetV();
+    default Texture getTexture() {
+        return (Texture)this;
+    }
 
     default float getModelOffsetX() {
         return 0;
@@ -99,7 +106,9 @@ public interface MsonPart {
         return 0;
     }
 
-    boolean getMirrorX();
+    default boolean getMirrorX() {
+        return ((ModelPart)this).mirror;
+    }
 
     default boolean getMirrorY() {
         return false;

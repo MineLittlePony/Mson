@@ -4,6 +4,7 @@
 		"leg_length": 12
 	},
 	"head": {
+		"hidden": true,
 		"center": [0, 6, -8],
 		"cubes": [
 			{ "from": [-3, -4, -6], "size": [ 6, 6, 8] }

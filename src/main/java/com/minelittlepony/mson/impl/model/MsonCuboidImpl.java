@@ -2,12 +2,15 @@ package com.minelittlepony.mson.impl.model;
 
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.util.math.MatrixStack;
+
 import com.minelittlepony.mson.api.model.MsonPart;
 
-class MsonCuboidImpl extends ModelPart implements MsonPart {
+import javax.annotation.Nullable;
 
-    private int textureOffsetU;
-    private int textureOffsetV;
+class MsonCuboidImpl extends ModelPart implements MsonPart {
 
     private float modelOffsetX;
     private float modelOffsetY;
@@ -16,16 +19,10 @@ class MsonCuboidImpl extends ModelPart implements MsonPart {
     private boolean mirrorY;
     private boolean mirrorZ;
 
+    private boolean hidden;
+
     MsonCuboidImpl(Model model) {
         super(model);
-    }
-
-    @Override
-    public MsonCuboidImpl setTextureOffset(int u, int v) {
-        this.textureOffsetU = u;
-        this.textureOffsetV = v;
-        super.setTextureOffset(u, v);
-        return this;
     }
 
     @Override
@@ -46,33 +43,16 @@ class MsonCuboidImpl extends ModelPart implements MsonPart {
     }
 
     @Override
-    public ModelPart addCuboid(String name, float x, float y, float z, int width, int height, int depth, float stretch, int u, int v) {
-        return super.addCuboid(name, (int)getModelOffsetX() + x, (int)getModelOffsetY() + y, (int)getModelOffsetZ() + z, width, height, depth, stretch, u, v);
-     }
-
-    @Override
-    public ModelPart addCuboid(float x, float y, float z, float width, float height, float depth) {
-        return super.addCuboid(getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z, width, height, depth);
+    public MsonPart setHidden(boolean hidden) {
+        this.hidden = hidden;
+        return this;
     }
 
     @Override
-    public ModelPart addCuboid(float x, float y, float z, float width, float height, float depth, boolean mirror) {
-        return super.addCuboid(getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z, width, height, depth, mirror);
-    }
-
-    @Override
-    public void addCuboid(float x, float y, float z, float width, float height, float depth, float stretch) {
-        super.addCuboid(getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z, width, height, depth, stretch);
-    }
-
-    @Override
-    public void addCuboid(float x, float y, float z, float width, float height, float depth, float stretchX, float stretchY, float stretchZ) {
-        super.addCuboid(getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z, width, height, depth, stretchX, stretchY, stretchZ);
-    }
-
-    @Override
-    public void addCuboid(float x, float y, float z, float width, float height, float depth, float stretch, boolean mirror) {
-        super.addCuboid(getModelOffsetX() + x, getModelOffsetY() + y, getModelOffsetZ() + z, width, height, depth, stretch, mirror);
+    public void render(MatrixStack matrix, VertexConsumer vertexConsumer, int i, int j, @Nullable Sprite sprite, float f, float g, float h) {
+        if (!hidden) {
+            super.render(matrix, vertexConsumer, i, j, sprite, f, g, h);
+        }
     }
 
     @Override
@@ -88,21 +68,6 @@ class MsonCuboidImpl extends ModelPart implements MsonPart {
     @Override
     public float getModelOffsetZ() {
         return modelOffsetZ;
-    }
-
-    @Override
-    public int getTextureOffsetU() {
-        return textureOffsetU;
-    }
-
-    @Override
-    public int getTextureOffsetV() {
-        return textureOffsetV;
-    }
-
-    @Override
-    public boolean getMirrorX() {
-        return mirror;
     }
 
     @Override

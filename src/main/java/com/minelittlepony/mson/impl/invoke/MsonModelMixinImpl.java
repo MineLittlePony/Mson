@@ -17,7 +17,7 @@ public class MsonModelMixinImpl {
     private static final Map<Class<?>, MethodHandle> requestedLookupCache = new HashMap<>();
 
     public static MsonModel getSuper(MsonModel instance) {
-        MethodHandle handle = MethodHandles.bind(requesterLookupCache.computeIfAbsent(instance.getClass(), MsonModelMixinImpl::constructSuper), instance);
+        MethodHandle handle = MethodHandles.BIND_TO.apply(requesterLookupCache.computeIfAbsent(instance.getClass(), MsonModelMixinImpl::constructSuper), instance);
 
         return context -> {
             try {
@@ -42,7 +42,7 @@ public class MsonModelMixinImpl {
 
     private static MethodHandle constructHandle(Class<?> requestedClass) {
         try {
-            return MethodHandles.trustedLookup().findSpecial(
+            return MethodHandles.LOOKUP.findSpecial(
                     requestedClass,
                     "init",
                     MethodType.methodType(void.class, ModelContext.class),

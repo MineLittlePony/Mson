@@ -1,17 +1,19 @@
 package com.minelittlepony.mson.impl.invoke;
 
+import com.minelittlepony.mson.api.mixin.Lambdas;
 import com.minelittlepony.mson.impl.MsonImpl;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.function.BiFunction;
 
 public final class MethodHandles {
 
-    private static final Lookup LOOKUP = findTrustedLookup();
-    private static final BiFunction<MethodHandle, Object, MethodHandle> BIND_TO = findBindTo();
+    static final Lookup LOOKUP = findTrustedLookup();
+    static final BiFunction<MethodHandle, Object, MethodHandle> BIND_TO = findBindTo();
 
     private static Lookup findTrustedLookup() {
         try {
@@ -28,7 +30,7 @@ public final class MethodHandles {
         try {
             Class<?> BoundMethodHandle = Class.forName("java.lang.invoke.BoundMethodHandle");
 
-            MethodHandle bindAgumentL = trustedLookup().findSpecial(
+            MethodHandle bindAgumentL = LOOKUP.findSpecial(
                     MethodHandle.class,
                     "bindArgumentL",
                     MethodType.methodType(BoundMethodHandle, int.class, Object.class),
@@ -50,19 +52,33 @@ public final class MethodHandles {
         return MethodHandle::bindTo;
     }
 
-    static Lookup trustedLookup() {
-        return LOOKUP;
+    public static Lambdas lambdas() {
+        return new LambdasImpl();
+    }
+
+    public static Class<?> createArrayClass(Class<?> componentType) {
+        return Array.newInstance(componentType, 0).getClass();
+    }
+
+    public static Class<?> getRawClass(Class<?> arrayClass) {
+        if (arrayClass.isArray()) {
+            return getRawClass(arrayClass.getComponentType());
+        }
+        return arrayClass;
+    }
+
+    public static Class<?> changeArrayType(Class<?> arrayClass, Class<?> componentType) {
+        if (arrayClass.isArray()) {
+            return createArrayClass(changeArrayType(arrayClass.getComponentType(), componentType));
+        }
+        return componentType;
     }
 
     /**
-     * Binds a method handle to a specific object instance.
+     * Finds the class object for a specific inner class implementing a specific interface.
      *
-     * IMPORTANT: Instance type checks are disabled.
+     * This is intended to work together with a mixin that adds an interface to the targetted class.
      */
-    public static MethodHandle bind(MethodHandle handle, Object to) {
-        return BIND_TO.apply(handle, to);
-    }
-
     public static Class<?> findHiddenInnerClass(Class<?> outerClass, Class<?> expectsToImplement) {
         for (Class<?> c : outerClass.getDeclaredClasses()) {
             if (expectsToImplement.isAssignableFrom(c)) {

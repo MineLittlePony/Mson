@@ -4,13 +4,14 @@ import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPart.*;
 
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.mixin.Lambdas;
 import com.minelittlepony.mson.api.model.Face.Axis;
-import com.minelittlepony.mson.impl.invoke.Lambdas;
 import com.minelittlepony.mson.impl.invoke.MethodHandles;
 import com.minelittlepony.mson.util.Qbit;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 /**
  * A builder for building boxes.
@@ -20,13 +21,20 @@ import java.util.Optional;
  */
 public final class BoxBuilder {
 
-    private static final Class<?> Rect = MethodHandles.findHiddenInnerClass(ModelPart.class, Rect.class);
-    private static final Class<?> Vert = MethodHandles.findHiddenInnerClass(ModelPart.class, Vert.class);
+    private static final Rect.Factory RECT_FACTORY;
+    private static final Vert.Factory VERT_FACTORY;
+    private static final BiConsumer<Cuboid, Rect[]> POLY_SETTER;
 
-    private static final RectFactory RECT_FACTORY = Lambdas.lookupFactoryInvoker(RectFactory.class, Rect);
-    private static final VertFactory VERT_FACTORY = Lambdas.lookupFactoryInvoker(VertFactory.class, Vert);
+    static {
+        final Class<?> Rect = MethodHandles.findHiddenInnerClass(ModelPart.class, Rect.class);
+        final Class<?> Vert = MethodHandles.findHiddenInnerClass(ModelPart.class, Vert.class);
 
-    private static final PolygonsSetter POLY_SETTER = Lambdas.lookupSetter(PolygonsSetter.class, Cuboid.class, "sides", "[Lnet/minecraft/client/model/ModelPart$Quad");
+        Lambdas lambdas = MethodHandles.lambdas().remap(Vert.class, Vert).remap(Rect.class, Rect);
+
+        RECT_FACTORY = lambdas.lookupFactoryInvoker(Rect.Factory.class, Rect);
+        VERT_FACTORY = lambdas.lookupFactoryInvoker(Vert.Factory.class, Vert);
+        POLY_SETTER = lambdas.lookupSetter(Cuboid.class, Rect[].class, "sides");
+    }
 
     public final MsonPart part;
 
@@ -48,12 +56,12 @@ public final class BoxBuilder {
     public boolean mirrorZ;
 
     public BoxBuilder(ModelContext context) {
-        this.part = (MsonPart)context.getContext();
+        part = (MsonPart)context.getContext();
 
         stretch = context.getScale();
 
-        u = part.getTextureOffsetU();
-        v = part.getTextureOffsetV();
+        u = part.getTexture().getU();
+        v = part.getTexture().getV();
 
         mirrorX = part.getMirrorX();
         mirrorY = part.getMirrorY();
@@ -135,27 +143,13 @@ public final class BoxBuilder {
                 dx, dy, dz,
                 stretch, stretch, stretch,
                 part.getMirrorX(),
-                part.getTextureOffsetU(), part.getTextureOffsetV());
+                part.getTexture().getWidth(), part.getTexture().getHeight());
     }
 
     public Cuboid build(QuadsBuilder builder) {
         Cuboid box = build();
-        POLY_SETTER.setPolygons(box, builder.build(this));
+        POLY_SETTER.accept(box, builder.build(this));
         return box;
-    }
-
-    @FunctionalInterface
-    interface VertFactory {
-        Vert create(float x, float y, float z, float u, float v);
-    }
-
-    @FunctionalInterface
-    interface RectFactory {
-        Rect create(Vert[] vertices, float u1, float v1, float u2, float v2, float squishU, float squishV);
-    }
-
-    public interface PolygonsSetter {
-        void setPolygons(Cuboid cuboid, Rect[] quads);
     }
 
     public interface ContentAccessor {
