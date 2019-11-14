@@ -14,13 +14,13 @@ public interface QuadsBuilder {
      */
     static QuadsBuilder cone(float tipInset) {
         return ctx -> {
-            float xMax = ctx.x + ctx.dx + ctx.stretch;
-            float yMax = ctx.y + ctx.dy + ctx.stretch;
-            float zMax = ctx.z + ctx.dz + ctx.stretch;
+            float xMax = ctx.x + ctx.dx + ctx.stretchX;
+            float yMax = ctx.y + ctx.dy + ctx.stretchY;
+            float zMax = ctx.z + ctx.dz + ctx.stretchZ;
 
-            float xMin = ctx.x - ctx.stretch;
-            float yMin = ctx.y - ctx.stretch;
-            float zMin = ctx.z - ctx.stretch;
+            float xMin = ctx.x - ctx.stretchX;
+            float yMin = ctx.y - ctx.stretchY;
+            float zMin = ctx.z - ctx.stretchZ;
 
             if (ctx.mirrorX) {
                 float v = xMax;
@@ -59,13 +59,13 @@ public interface QuadsBuilder {
      */
     static QuadsBuilder plane(Face face) {
         return ctx -> {
-            float xMax = ctx.x + ctx.dx + ctx.stretch;
-            float yMax = ctx.y + ctx.dy + ctx.stretch;
-            float zMax = ctx.z + ctx.dz + ctx.stretch;
+            float xMax = ctx.x + ctx.dx + ctx.stretchX;
+            float yMax = ctx.y + ctx.dy + ctx.stretchY;
+            float zMax = ctx.z + ctx.dz + ctx.stretchZ;
 
-            float xMin = ctx.x - ctx.stretch;
-            float yMin = ctx.y - ctx.stretch;
-            float zMin = ctx.z - ctx.stretch;
+            float xMin = ctx.x - ctx.stretchX;
+            float yMin = ctx.y - ctx.stretchY;
+            float zMin = ctx.z - ctx.stretchZ;
 
             if (ctx.mirrorX) {
                 float v = xMax;

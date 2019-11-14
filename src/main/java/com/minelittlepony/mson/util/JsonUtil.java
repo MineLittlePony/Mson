@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.realmsclient.util.JsonUtils;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 public class JsonUtil {
@@ -37,6 +38,22 @@ public class JsonUtil {
             return el.getAsFloat();
         }
         return def;
+    }
+
+    public static void getFloats(JsonObject json, String member, float[] output) {
+        accept(json, member).ifPresent(el -> {
+            if (el.isJsonArray()) {
+                getAsFloats(el.getAsJsonArray(), output);
+            } else {
+                Arrays.fill(output, el.getAsFloat());
+            }
+        });
+    }
+
+    public static void getAsFloats(JsonArray arr, float[] output) {
+        for (int i = 0; i < output.length && i < arr.size(); i++) {
+            output[i] = arr.get(i).getAsInt();
+        }
     }
 
     public static void getAsInts(JsonArray arr, int[] output) {

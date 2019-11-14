@@ -50,7 +50,9 @@ public final class BoxBuilder {
     public int u;
     public int v;
 
-    public float stretch;
+    public float stretchX;
+    public float stretchY;
+    public float stretchZ;
 
     public boolean mirrorX;
     public boolean mirrorY;
@@ -59,7 +61,9 @@ public final class BoxBuilder {
     public BoxBuilder(ModelContext context) {
         part = (MsonPart)context.getContext();
 
-        stretch = context.getScale();
+        stretchX = context.getScale();
+        stretchY = context.getScale();
+        stretchZ = context.getScale();
 
         u = part.getTexture().getU();
         v = part.getTexture().getV();
@@ -98,8 +102,10 @@ public final class BoxBuilder {
                 axis.getDeptch(dimension));
     }
 
-    public BoxBuilder stretch(float stretch) {
-        this.stretch =+ stretch;
+    public BoxBuilder stretch(float... stretch) {
+        this.stretchX =+ stretch[0];
+        this.stretchY =+ stretch[1];
+        this.stretchZ =+ stretch[2];
         return this;
     }
 
@@ -155,7 +161,7 @@ public final class BoxBuilder {
                 u, v,
                 x, y, z,
                 dx, dy, dz,
-                stretch, stretch, stretch,
+                stretchX, stretchY, stretchZ,
                 part.getMirrorX(),
                 part.getTexture().getWidth(), part.getTexture().getHeight());
     }

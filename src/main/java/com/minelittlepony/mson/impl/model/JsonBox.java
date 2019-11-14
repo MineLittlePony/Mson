@@ -25,7 +25,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
 
     protected final Incomplete<int[]> size;
 
-    protected final float stretch;
+    protected final float[] stretch = new float[3];
 
     protected final Qbit mirror;
 
@@ -35,7 +35,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
         from = context.getVarLookup().getFloats(json, "from", 3);
         size = context.getVarLookup().getInts(json, "size", 3);
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::create);
-        stretch = JsonUtil.getFloatOr("stretch", json, 0);
+        JsonUtil.getFloats(json, "stretch", stretch);
         mirror = JsonUtil.getQBit("mirror", json);
     }
 
