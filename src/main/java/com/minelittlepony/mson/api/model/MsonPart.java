@@ -53,13 +53,6 @@ public interface MsonPart {
     }
 
     /**
-     * Sets an offset to be used on all shapes and children created through this renderer.
-     */
-    default MsonPart offset(float x, float y, float z) {
-        return this;
-    }
-
-    /**
      * Adjusts the rotation center of the given renderer by the given amounts in each direction.
      */
     default MsonPart shift(float x, float y, float z) {
@@ -74,24 +67,11 @@ public interface MsonPart {
      */
     default MsonPart mirror(boolean x, boolean y, boolean z) {
         ((ModelPart)this).mirror = x;
-
         return this;
     }
 
     default Texture getTexture() {
         return (Texture)this;
-    }
-
-    default float getModelOffsetX() {
-        return 0;
-    }
-
-    default float getModelOffsetY() {
-        return 0;
-    }
-
-    default float getModelOffsetZ() {
-        return 0;
     }
 
     default boolean getMirrorX() {

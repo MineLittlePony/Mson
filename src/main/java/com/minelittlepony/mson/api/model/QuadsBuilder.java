@@ -22,7 +22,7 @@ public interface QuadsBuilder {
             float yMin = ctx.y - ctx.stretch;
             float zMin = ctx.z - ctx.stretch;
 
-            if (ctx.part.getMirrorX()) {
+            if (ctx.mirrorX) {
                 float v = xMax;
                 xMax = xMin;
                 xMin = v;
@@ -67,19 +67,19 @@ public interface QuadsBuilder {
             float yMin = ctx.y - ctx.stretch;
             float zMin = ctx.z - ctx.stretch;
 
-            if (ctx.part.getMirrorX()) {
+            if (ctx.mirrorX) {
                 float v = xMax;
                 xMax = xMin;
                 xMin = v;
             }
 
-            if (ctx.part.getMirrorY()) {
+            if (ctx.mirrorY) {
                 float v = yMax;
                 yMax = yMin;
                 yMin = v;
             }
 
-            if (ctx.part.getMirrorZ()) {
+            if (ctx.mirrorZ) {
                 float v = zMax;
                 zMax = zMin;
                 zMin = v;
@@ -97,7 +97,7 @@ public interface QuadsBuilder {
 
             Rect[] quads = new Rect[1];
 
-            boolean mirror = ctx.part.getMirrorX() || ctx.part.getMirrorY() || ctx.part.getMirrorZ();
+            boolean mirror = ctx.mirrorX || ctx.mirrorY || ctx.mirrorZ;
 
             if (face == Face.EAST) {
                 quads[0] = ctx.quad(ctx.u, ctx.dz, ctx.v, ctx.dy, Direction.EAST, mirror, edn, eds, eus, eun);

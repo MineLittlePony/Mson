@@ -12,10 +12,6 @@ import javax.annotation.Nullable;
 
 class MsonCuboidImpl extends ModelPart implements MsonPart {
 
-    private float modelOffsetX;
-    private float modelOffsetY;
-    private float modelOffsetZ;
-
     private boolean mirrorY;
     private boolean mirrorZ;
 
@@ -23,14 +19,6 @@ class MsonCuboidImpl extends ModelPart implements MsonPart {
 
     MsonCuboidImpl(Model model) {
         super(model);
-    }
-
-    @Override
-    public MsonPart offset(float x, float y, float z) {
-        modelOffsetX = x;
-        modelOffsetY = y;
-        modelOffsetZ = z;
-        return  this;
     }
 
     @Override
@@ -53,21 +41,6 @@ class MsonCuboidImpl extends ModelPart implements MsonPart {
         if (!hidden) {
             super.render(matrix, vertexConsumer, i, j, sprite, f, g, h);
         }
-    }
-
-    @Override
-    public float getModelOffsetX() {
-        return modelOffsetX;
-    }
-
-    @Override
-    public float getModelOffsetY() {
-        return modelOffsetY;
-    }
-
-    @Override
-    public float getModelOffsetZ() {
-        return modelOffsetZ;
     }
 
     @Override
