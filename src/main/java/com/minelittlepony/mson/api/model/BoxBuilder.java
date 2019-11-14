@@ -74,9 +74,9 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder pos(float... pos) {
-        x = pos[0];
-        y = pos[1];
-        z = pos[2];
+        x = pos[0] + part.getModelOffsetX();
+        y = pos[1] + part.getModelOffsetY();
+        z = pos[2] + part.getModelOffsetZ();
         return this;
     }
 
