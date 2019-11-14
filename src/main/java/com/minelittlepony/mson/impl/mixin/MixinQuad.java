@@ -5,9 +5,9 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 import com.minelittlepony.mson.api.model.Rect;
 
-@Mixin(targets = {"net.minecraft.client.model.ModelPart.Quad"})
+@Mixin(targets = {"net.minecraft.client.model.ModelPart$Quad"})
 abstract class MixinQuad implements Rect {
     @Override
     @Invoker("flip")
-    public abstract void flip();
+    public abstract void invertNormals();
 }

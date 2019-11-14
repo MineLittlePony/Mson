@@ -52,7 +52,7 @@ public interface QuadsBuilder {
 
             if (ctx.part.getMirrorX()) {
                 for (Rect i : quads) {
-                    i.flip();
+                    i.invertNormals();
                 }
             }
 
@@ -123,7 +123,7 @@ public interface QuadsBuilder {
             }
 
             if (ctx.part.getMirrorX() || ctx.part.getMirrorY() || ctx.part.getMirrorZ()) {
-                quads[0].flip();
+                quads[0].invertNormals();
             }
 
             return quads;

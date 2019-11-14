@@ -2,13 +2,10 @@ package com.minelittlepony.mson.impl.invoke;
 
 import com.minelittlepony.mson.impl.MsonImpl;
 
-import java.lang.invoke.CallSite;
-import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.function.BiFunction;
 
 public final class MethodHandles {
@@ -73,25 +70,5 @@ public final class MethodHandles {
             }
         }
         throw new RuntimeException("Inner class was missing");
-    }
-
-    public static <T> T lookupInvoker(Class<T> ifaceClass, Class<?> owner) {
-
-        try {
-            Method ifaceMethod = ifaceClass.getMethods()[0];
-            MethodType ifaceMethType = MethodType.methodType(ifaceMethod.getReturnType(), ifaceMethod.getParameterTypes());
-
-            MethodType constrType = MethodType.methodType(void.class, ifaceMethod.getParameterTypes());
-            MethodHandle constr = trustedLookup().findConstructor(owner, constrType);
-
-            CallSite site = LambdaMetafactory.metafactory(trustedLookup(), ifaceMethod.getName(), ifaceMethType, ifaceMethType, constr, ifaceMethType);
-
-            return (T)site.dynamicInvoker().invoke();
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        return null;
-
     }
 }

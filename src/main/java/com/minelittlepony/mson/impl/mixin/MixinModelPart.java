@@ -26,7 +26,7 @@ abstract class MixinModelPart implements MsonPart, ContentAccessor {
     public abstract boolean getMirrorX();
 
     @Override
-    @Accessor("cubes")
+    @Accessor("cuboids")
     public abstract List<Cuboid> cubes();
 
     @Override

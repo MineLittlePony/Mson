@@ -5,6 +5,7 @@ import net.minecraft.client.model.ModelPart.*;
 
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
+import com.minelittlepony.mson.impl.invoke.Lambdas;
 import com.minelittlepony.mson.impl.invoke.MethodHandles;
 import com.minelittlepony.mson.util.Qbit;
 
@@ -19,8 +20,13 @@ import java.util.Optional;
  */
 public final class BoxBuilder {
 
-    private static final RectFactory RECT_FACTORY = MethodHandles.lookupInvoker(RectFactory.class, MethodHandles.findHiddenInnerClass(ModelPart.class, Rect.class));
-    private static final VertFactory VERT_FACTORY = MethodHandles.lookupInvoker(VertFactory.class, MethodHandles.findHiddenInnerClass(ModelPart.class, Vert.class));
+    private static final Class<?> Rect = MethodHandles.findHiddenInnerClass(ModelPart.class, Rect.class);
+    private static final Class<?> Vert = MethodHandles.findHiddenInnerClass(ModelPart.class, Vert.class);
+
+    private static final RectFactory RECT_FACTORY = Lambdas.lookupFactoryInvoker(RectFactory.class, Rect);
+    private static final VertFactory VERT_FACTORY = Lambdas.lookupFactoryInvoker(VertFactory.class, Vert);
+
+    private static final PolygonsSetter POLY_SETTER = Lambdas.lookupSetter(PolygonsSetter.class, Cuboid.class, "sides", "[Lnet/minecraft/client/model/ModelPart$Quad");
 
     public final MsonPart part;
 
@@ -134,7 +140,7 @@ public final class BoxBuilder {
 
     public Cuboid build(QuadsBuilder builder) {
         Cuboid box = build();
-        ((PolygonsSetter)box).setPolygons(builder.build(this));
+        POLY_SETTER.setPolygons(box, builder.build(this));
         return box;
     }
 
@@ -149,7 +155,7 @@ public final class BoxBuilder {
     }
 
     public interface PolygonsSetter {
-        void setPolygons(Rect[] quads);
+        void setPolygons(Cuboid cuboid, Rect[] quads);
     }
 
     public interface ContentAccessor {

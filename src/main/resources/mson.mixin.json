@@ -5,7 +5,6 @@
     "refmap": "mson.mixin.refmap.json",
     "compatibilityLevel": "JAVA_8",
     "client": [
-        "MixinCuboid",
         "MixinEntityRenderDispatcher",
         "MixinModelPart",
         "MixinQuad",
