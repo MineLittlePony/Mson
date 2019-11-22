@@ -1,4 +1,4 @@
-package com.minelittlepony.mson.api.model.entities;
+package com.minelittlepony.mson.api.model.quadruped;
 
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;

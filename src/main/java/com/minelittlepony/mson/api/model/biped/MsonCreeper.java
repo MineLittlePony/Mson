@@ -1,4 +1,4 @@
-package com.minelittlepony.mson.api.model.entities;
+package com.minelittlepony.mson.api.model.biped;
 
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.entity.CreeperEntityRenderer;

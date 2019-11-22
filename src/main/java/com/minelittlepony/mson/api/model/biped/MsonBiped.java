@@ -1,4 +1,4 @@
-package com.minelittlepony.mson.api.model.entities;
+package com.minelittlepony.mson.api.model.biped;
 
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.entity.LivingEntity;
