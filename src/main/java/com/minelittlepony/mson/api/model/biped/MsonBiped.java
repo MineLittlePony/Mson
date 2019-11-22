@@ -19,8 +19,8 @@ public class MsonBiped<T extends LivingEntity>
     @Override
     public void init(ModelContext context) {
         head = context.findByName("head");
-        headwear = context.findByName("helmet");
-        body = context.findByName("torso");
+        helmet = context.findByName("helmet");
+        torso = context.findByName("torso");
         rightArm = context.findByName("right_arm");
         leftArm = context.findByName("left_arm");
         rightLeg = context.findByName("right_leg");

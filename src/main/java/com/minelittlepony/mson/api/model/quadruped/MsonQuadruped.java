@@ -19,10 +19,10 @@ public class MsonQuadruped<T extends LivingEntity>
     @Override
     public void init(ModelContext context) {
         head = context.findByName("head");
-        body = context.findByName("torso");
-        leg1 = context.findByName("back_right_leg");
-        leg2 = context.findByName("back_left_leg");
-        leg3 = context.findByName("front_right_leg");
-        leg4 = context.findByName("front_left_leg");
+        torso = context.findByName("torso");
+        backRightLeg = context.findByName("back_right_leg");
+        backLeftLeg = context.findByName("back_left_leg");
+        frontRightLeg = context.findByName("front_right_leg");
+        frontLeftLeg = context.findByName("front_left_leg");
     }
 }

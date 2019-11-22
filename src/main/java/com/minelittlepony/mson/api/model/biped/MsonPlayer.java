@@ -34,13 +34,13 @@ public class MsonPlayer<T extends LivingEntity>
     public void init(ModelContext context) {
         MixedMsonModel.super.init(context);
 
-        context.findByName("left_sleeve", leftArmOverlay);
-        context.findByName("right_sleeve", rightArmOverlay);
+        context.findByName("left_sleeve", leftSleeve);
+        context.findByName("right_sleeve", rightSleeve);
 
-        context.findByName("left_pant_leg", leftLegOverlay);
-        context.findByName("right_pant_leg", rightLegOverlay);
+        context.findByName("left_pant_leg", leftPantLeg);
+        context.findByName("right_pant_leg", rightPantLeg);
 
-        context.findByName("jacket", bodyOverlay);
+        context.findByName("jacket", jacket);
         cape = context.findByName("cape");
         ears = context.findByName("ears");
     }
@@ -50,12 +50,12 @@ public class MsonPlayer<T extends LivingEntity>
         ears.copyPositionAndRotation(head);
         ears.pivotX = 0;
         ears.pivotY = 0;
-        ears.render(renderMatrix, vertexBuffer, i, j, null);
+        ears.render(renderMatrix, vertexBuffer, i, j);
     }
 
     @Override
     public void renderCape(MatrixStack renderMatrix, VertexConsumer vertexBuffer, int i, int j) {
-        cape.render(renderMatrix, vertexBuffer, i, j, null);
+        cape.render(renderMatrix, vertexBuffer, i, j);
     }
 
     @Override
