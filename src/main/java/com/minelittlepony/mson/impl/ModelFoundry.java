@@ -12,7 +12,6 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
@@ -25,7 +24,6 @@ import com.minelittlepony.mson.impl.model.JsonTexture;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
@@ -72,7 +70,7 @@ class ModelFoundry {
                     try (Resource res = manager.getResource(file);
                          Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
                         return new StoredModelData(GSON.fromJson(reader, JsonObject.class));
-                    } catch (JsonParseException | IOException e) {
+                    } catch (Exception e) {
                         MsonImpl.LOGGER.error("Could not load model json for {}", file, e);
                     } finally {
                         clientProfiler.pop();
