@@ -5,7 +5,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
 import com.minelittlepony.mson.api.model.MsonPart;
+import com.minelittlepony.mson.api.model.Rect;
 import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.api.model.Vert;
 
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.client.model.ModelPart;
@@ -49,3 +51,9 @@ abstract class MixinModelPart implements MsonPart, Texture, ContentAccessor {
     @Accessor("children")
     public abstract ObjectList<ModelPart> children();
 }
+
+@Mixin(targets = {"net.minecraft.client.model.ModelPart$Quad"})
+abstract class MixinQuad implements Rect { }
+
+@Mixin(targets = {"net.minecraft.client.model.ModelPart$Vertex"})
+abstract class MixinVertex implements Vert { }
