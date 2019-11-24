@@ -12,6 +12,7 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
@@ -20,6 +21,7 @@ import com.minelittlepony.mson.api.json.Variables;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
+import com.minelittlepony.mson.impl.model.JsonLink;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -126,7 +128,7 @@ class ModelFoundry {
                     .filter(this::isElement)
                     .collect(Collectors.toMap(
                             Map.Entry::getKey,
-                            entry -> loadComponent(entry.getValue().getAsJsonObject(), JsonCuboid.ID).orElseGet(null)
+                            entry -> loadComponent(entry.getValue(), JsonCuboid.ID).orElseGet(null)
             ));
         }
 
@@ -162,8 +164,14 @@ class ModelFoundry {
                                 .orElse(defaultAs)))
                         .map(c -> (JsonComponent<T>)c.loadJson(this, o));
             }
+            if (json.isJsonPrimitive()) {
+                JsonPrimitive prim = json.getAsJsonPrimitive();
+                if (prim.isString()) {
+                    return Optional.of((JsonComponent<T>)new JsonLink(prim.getAsString()));
+                }
+            }
 
-            throw new UnsupportedOperationException("Json was not a js object");
+            throw new UnsupportedOperationException("Json was not a js object and could not be resolved to  js link");
         }
 
         @Override
