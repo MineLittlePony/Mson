@@ -222,9 +222,10 @@ class ModelFoundry {
                 return model;
             }
 
+            @SuppressWarnings("unchecked")
             @Override
-            public Object getContext() {
-                return model;
+            public <T> T getContext() {
+                return (T)model;
             }
 
             @Override
@@ -277,6 +278,9 @@ class ModelFoundry {
 
             @Override
             public ModelContext resolve(Object child) {
+                if (child == getContext()) {
+                    return this;
+                }
                 return new SubContext(this, child);
             }
 

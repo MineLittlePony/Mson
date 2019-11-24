@@ -30,7 +30,7 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public Object getContext() {
+    public <T> T getContext() {
         throw new EmptyContextException("getContext");
     }
 

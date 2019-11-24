@@ -29,8 +29,10 @@ public interface ModelContext {
      * May be the same as the model if called on the root context.
      *
      * Otherwise it is the object this context was resolved against.
+     *
+     * @throws ClassCastException if the context doesn't match the requested type.
      */
-    Object getContext();
+    <T> T getContext() throws ClassCastException;
 
     /**
      * Gets the json context creating this model.
