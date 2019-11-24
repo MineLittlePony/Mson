@@ -16,7 +16,7 @@ import java.util.function.Function;
 final class PendingEntityRendererRegistry implements EntityRendererRegistry {
 
     private final Map<String, Function<EntityRenderDispatcher, ? extends PlayerEntityRenderer>> pendingPlayerRenderers = new HashMap<>();
-    private final PendingList<?, ?> pendingEntityRenderers = new PendingList<>();
+    private final PendingList<Entity, ?> pendingEntityRenderers = new PendingList<>();
 
     @Nullable
     private EntityRendererRegistry runtimeRegistry;
