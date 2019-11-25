@@ -106,11 +106,6 @@ publishing {
                 }
                 developers {
                     developer {
-                        id = "killjoy1221"
-                        name = "Matthew Messinger"
-                        email = "mattmess1221@gmail.com"
-                    }
-                    developer {
                         id = "sollace"
                     }
                 }
