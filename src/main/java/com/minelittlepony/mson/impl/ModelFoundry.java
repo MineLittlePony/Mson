@@ -92,7 +92,7 @@ class ModelFoundry {
 
     class StoredModelData implements JsonContext {
 
-        private final Map<String, JsonComponent<?>> elements;
+        private final Map<String, JsonComponent<?>> elements = new HashMap<>();
 
         private final Map<String, Incomplete<Float>> locals;
 
@@ -124,12 +124,12 @@ class ModelFoundry {
                             Map.Entry::getKey,
                             e -> LocalsImpl.createLocal(e.getValue())));
 
-            elements = json.entrySet().stream()
+            elements.putAll(json.entrySet().stream()
                     .filter(this::isElement)
                     .collect(Collectors.toMap(
                             Map.Entry::getKey,
                             entry -> loadComponent(entry.getValue(), JsonCuboid.ID).orElseGet(null)
-            ));
+            )));;
         }
 
         private boolean isElement(Map.Entry<String, JsonElement> entry) {
