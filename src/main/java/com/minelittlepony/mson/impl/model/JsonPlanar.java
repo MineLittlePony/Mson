@@ -96,16 +96,25 @@ public class JsonPlanar extends JsonCuboid {
                 size[1] = (int)json.get(4).getAsFloat();
 
                 if (json.size() > 6) {
-                    texture = createTexture(json.get(5).getAsInt(), json.get(6).getAsInt());
+                    texture = createTexture(
+                            context.getVarLookup().getFloat(json.get(5).getAsJsonPrimitive()),
+                            context.getVarLookup().getFloat(json.get(6).getAsJsonPrimitive())
+                    );
                 } else {
                     texture = Incomplete.completed(Optional.empty());
                 }
             }
 
-            private Incomplete<Optional<Texture>> createTexture(int u, int v) {
+            private Incomplete<Optional<Texture>> createTexture(Incomplete<Float> u, Incomplete<Float> v) {
                 return locals -> {
                     Texture parent = locals.getTexture().get();
-                    return Optional.of(new JsonTexture(u, v, parent.getWidth(), parent.getHeight()));
+
+                    return Optional.of(new JsonTexture(
+                            u.complete(locals).intValue(),
+                            v.complete(locals).intValue(),
+                            parent.getWidth(),
+                            parent.getHeight()
+                    ));
                 };
             }
 

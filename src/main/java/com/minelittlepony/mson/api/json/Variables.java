@@ -1,6 +1,7 @@
 package com.minelittlepony.mson.api.json;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.util.Incomplete;
 
 /**
@@ -8,6 +9,11 @@ import com.minelittlepony.mson.util.Incomplete;
  * Returns mostly Incomplete<>'s which have to be resolved against the ModelContext at construction time.
  */
 public interface Variables {
+
+    /**
+     * Reads a json value into an incomplete holding an unresolved floating point number.
+     */
+    Incomplete<Float> getFloat(JsonPrimitive json);
 
     /**
      * Reads a json member into an incomplete holding a unresolved integer array.

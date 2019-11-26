@@ -3,6 +3,7 @@ package com.minelittlepony.mson.impl;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.json.Variables;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -30,6 +31,11 @@ final class VariablesImpl implements Variables {
             });
 
         return output;
+    }
+
+    @Override
+    public Incomplete<Float> getFloat(JsonPrimitive json) {
+        return LocalsImpl.variableReference(json);
     }
 
     @Override
