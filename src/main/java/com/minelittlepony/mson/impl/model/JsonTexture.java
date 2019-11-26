@@ -94,7 +94,7 @@ public class JsonTexture implements Texture {
         );
     }
 
-    private JsonTexture(int... params) {
+    public JsonTexture(int... params) {
         parameters = params;
     }
 

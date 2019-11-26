@@ -14,10 +14,14 @@ import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
 import com.minelittlepony.mson.api.model.Face;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
+import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.impl.exception.FutureAwaitException;
+import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class JsonPlanar extends JsonCuboid {
@@ -41,7 +45,11 @@ public class JsonPlanar extends JsonCuboid {
 
         ModelContext subContext = context.resolve(cuboid);
         faces.values().forEach(face -> {
-            ((ContentAccessor)cuboid).cubes().add(face.export(subContext));
+            try {
+                ((ContentAccessor)cuboid).cubes().add(face.export(subContext));
+            } catch (InterruptedException | ExecutionException e) {
+                throw new FutureAwaitException(e);
+            }
         });
     }
 
@@ -52,6 +60,8 @@ public class JsonPlanar extends JsonCuboid {
         private final float[] position = new float[3];
         private final int[] size = new int[2];
 
+        private final Incomplete<Optional<Texture>> texture;
+
         public JsonFace(JsonContext context, JsonArray json, Face face) {
             this.face = face;
 
@@ -60,11 +70,25 @@ public class JsonPlanar extends JsonCuboid {
             position[2] =  json.get(2).getAsFloat();
             size[0] = (int)json.get(3).getAsFloat();
             size[1] = (int)json.get(4).getAsFloat();
+
+            if (json.size() > 6) {
+                texture = createTexture(json.get(5).getAsInt(), json.get(6).getAsInt());
+            } else {
+                texture = Incomplete.completed(Optional.empty());
+            }
+        }
+
+        private Incomplete<Optional<Texture>> createTexture(int u, int v) {
+            return locals -> {
+                Texture parent = locals.getTexture().get();
+                return Optional.of(new JsonTexture(u, v, parent.getWidth(), parent.getHeight()));
+            };
         }
 
         @Override
-        public Cuboid export(ModelContext context) {
+        public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
             return new BoxBuilder(context)
+                .tex(texture.complete(context))
                 .pos(face.transformPosition(position, context))
                 .size(face.getAxis(), size)
                 .build(QuadsBuilder.plane(face));
