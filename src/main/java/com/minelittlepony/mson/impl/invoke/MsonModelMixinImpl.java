@@ -29,15 +29,7 @@ public class MsonModelMixinImpl {
     }
 
     private static MethodHandle constructSuper(Class<?> requestingClass) {
-        Extends extend = Objects.requireNonNull(requestingClass.getAnnotation(Extends.class), "Mixin model must have a target");
-
-        Objects.requireNonNull(extend.value().getAnnotation(Trait.class), "Requested parent class was not a trait. It cannot be extended in this way.");
-
-        if (!extend.force()) {
-            checkInheritance(requestingClass, extend.value());
-        }
-
-        return requestedLookupCache.computeIfAbsent(extend.value(), MsonModelMixinImpl::constructHandle);
+        return requestedLookupCache.computeIfAbsent(TypeExtension.get(requestingClass).value(), MsonModelMixinImpl::constructHandle);
     }
 
     private static MethodHandle constructHandle(Class<?> requestedClass) {
@@ -53,26 +45,58 @@ public class MsonModelMixinImpl {
         }
     }
 
-    private static void checkInheritance(Class<?> requestingClass, Class<?> requestedClass) {
+    static final class TypeExtension {
+        static TypeExtension get(Class<?> requestingClass) {
+            if (requestingClass == Object.class || requestingClass.getSuperclass() == Object.class) {
+                throw new NullPointerException("Mixin model must have a target");
+            }
 
-        if (requestingClass.isAssignableFrom(requestedClass)) {
-            throw new AssertionError(String.format("%s cannot extend a class (%s) that is already in its hierarchy",
-                    requestingClass.getCanonicalName(),
-                    requestedClass.getCanonicalName()
-            ));
+            Extends extend = requestingClass.getAnnotation(Extends.class);
+
+            if (extend != null) {
+                return new TypeExtension(requestingClass, extend);
+            }
+
+            return get(requestingClass.getSuperclass());
         }
 
-        if (!requestedClass.getSuperclass().isAssignableFrom(requestingClass)) {
-            throw new AssertionError(String.format("Requesting class (%s) and requested class (%s) are too far apart",
-                    requestingClass.getCanonicalName(),
-                    requestedClass.getCanonicalName()
-            ));
+        final Extends extend;
+
+        private TypeExtension(Class<?> declaringType, Extends extend) {
+            this.extend = extend;
+
+            Objects.requireNonNull(extend.value().getAnnotation(Trait.class), "Requested parent class was not a trait. It cannot be extended in this way.");
+
+            if (!extend.force()) {
+                checkInheritance(declaringType);
+            }
         }
 
-        if (requestedClass.getDeclaredFields().length > 0) {
-            throw new AssertionError(String.format("Requested class (%s) contains fields. You can only force-extend empty shell classes.",
-                    requestedClass.getCanonicalName()
-            ));
+        Class<? extends MsonModel> value() {
+            return extend.value();
+        }
+
+        private void checkInheritance(Class<?> declaringType) {
+
+            if (declaringType.isAssignableFrom(value())) {
+                throw new AssertionError(String.format("%s cannot extend a class (%s) that is already in its hierarchy",
+                        declaringType.getCanonicalName(),
+                        value().getCanonicalName()
+                ));
+            }
+
+            if (!value().getSuperclass().isAssignableFrom(declaringType)) {
+                throw new AssertionError(String.format("Requesting class (%s) and requested class (%s) are too far apart",
+                        declaringType.getCanonicalName(),
+                        value().getCanonicalName()
+                ));
+            }
+
+            if (value().getDeclaredFields().length > 0) {
+                throw new AssertionError(String.format("Requested class (%s) contains fields. You can only force-extend empty shell classes.",
+                        value().getCanonicalName()
+                ));
+            }
         }
     }
 }
