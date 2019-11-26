@@ -63,9 +63,14 @@ public class JsonUtil {
     }
 
     public static void getBooleans(JsonObject json, String member, boolean[] output) {
-        accept(json, member).map(JsonElement::getAsJsonArray).ifPresent(arr -> {
-            for (int i = 0; i < output.length && i < arr.size(); i++) {
-                output[i] = arr.get(i).getAsBoolean();
+        accept(json, member).ifPresent(el -> {
+            if (el.isJsonPrimitive() && el.getAsJsonPrimitive().isBoolean()) {
+                output[0] = el.getAsBoolean();
+            } else {
+                JsonArray arr = el.getAsJsonArray();
+                for (int i = 0; i < output.length && i < arr.size(); i++) {
+                    output[i] = arr.get(i).getAsBoolean();
+                }
             }
         });
     }
