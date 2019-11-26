@@ -3,7 +3,7 @@
 	"texture": {
 		"w": 64, "h": 64
 	},
-	"ears": {
+	"deadms_ears": {
 		"texture": { "u": 24, "v": 0 },
 		"cubes": [
 			{ "from": [-3, -6, -1], "size": [6, 6, 1] }

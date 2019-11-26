@@ -19,8 +19,8 @@ public class MsonPlayer<T extends LivingEntity>
     extends PlayerEntityModel<T>
     implements MixedMsonModel {
 
-    private ModelPart cape;
-    private ModelPart ears;
+    protected ModelPart cape;
+    protected ModelPart deadmsEars;
 
     public MsonPlayer() {
         this(false);
@@ -42,15 +42,15 @@ public class MsonPlayer<T extends LivingEntity>
 
         context.findByName("jacket", jacket);
         cape = context.findByName("cape");
-        ears = context.findByName("ears");
+        deadmsEars = context.findByName("deadms_ears");
     }
 
     @Override
     public void renderEars(MatrixStack renderMatrix, VertexConsumer vertexBuffer, int i, int j) {
-        ears.copyPositionAndRotation(head);
-        ears.pivotX = 0;
-        ears.pivotY = 0;
-        ears.render(renderMatrix, vertexBuffer, i, j);
+        deadmsEars.copyPositionAndRotation(head);
+        deadmsEars.pivotX = 0;
+        deadmsEars.pivotY = 0;
+        deadmsEars.render(renderMatrix, vertexBuffer, i, j);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class MsonPlayer<T extends LivingEntity>
     public void setVisible(boolean visible) {
         super.setVisible(visible);
         cape.visible = visible;
-        ears.visible = visible;
+        deadmsEars.visible = visible;
     }
 
     public static class Renderer extends PlayerEntityRenderer {
