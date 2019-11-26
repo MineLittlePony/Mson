@@ -24,7 +24,7 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
     @SuppressWarnings("unchecked")
     private ReflectedModelKey(String className) {
 
-        id = new Identifier("dynamic", className);
+        id = new Identifier("dynamic", className.replaceAll("[\\.\\$]", "/").toLowerCase());
 
         try {
             Class<T> implementation = (Class<T>)Class.forName(className, false, ReflectedModelKey.class.getClassLoader());
@@ -33,9 +33,9 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
                 throw new JsonParseException("Slot implementation does not implement MsonModel");
             }
 
-            handle = MethodHandles.publicLookup().findConstructor(implementation, MethodType.methodType(implementation));
+            handle = MethodHandles.publicLookup().findConstructor(implementation, MethodType.methodType(void.class));
         } catch (Throwable e) {
-            throw new JsonParseException("Unknown implementation", e);
+            throw new JsonParseException("Exception getting handle for implementation " + className, e);
         }
     }
 
