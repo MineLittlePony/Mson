@@ -21,14 +21,14 @@ public class JsonPlane implements JsonComponent<Cuboid> {
     private final Incomplete<float[]> position;
     private final Incomplete<int[]> size;
 
-    private final float stretch;
+    private final float[] stretch = new float[3];
 
     private final Face face;
 
     public JsonPlane(JsonContext context, JsonObject json) {
         position = context.getVarLookup().getFloats(json, "position", 3);
         size = context.getVarLookup().getInts(json, "size", 3);
-        stretch = JsonUtil.getFloatOr("stretch", json, 0);
+        JsonUtil.getFloats(json, "stretch", stretch);
         face = Face.valueOf(JsonUtil.require(json, "face").getAsString().toUpperCase());
     }
 
