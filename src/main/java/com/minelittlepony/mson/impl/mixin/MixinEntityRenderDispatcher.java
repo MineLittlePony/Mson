@@ -44,7 +44,7 @@ class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     }
 
     @Override
-    public <T extends Entity, R extends EntityRenderer<? super T>> void registerEntityRenderer(EntityType<T> type, Function<EntityRenderDispatcher, R> constructor) {
+    public <T extends Entity, R extends EntityRenderer<? extends Entity>> void registerEntityRenderer(EntityType<T> type, Function<EntityRenderDispatcher, R> constructor) {
         try {
             renderers.put(type, constructor.apply((EntityRenderDispatcher)(Object)this));
         } catch (Exception e) {

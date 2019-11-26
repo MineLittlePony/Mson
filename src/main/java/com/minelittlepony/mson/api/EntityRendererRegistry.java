@@ -21,5 +21,5 @@ public interface EntityRendererRegistry {
     /**
      * Adds a custom entity renderer.
      */
-    <T extends Entity, R extends EntityRenderer<? super T>> void registerEntityRenderer(EntityType<T> type, Function<EntityRenderDispatcher, R> constructor);
+    <T extends Entity, R extends EntityRenderer<? extends Entity>> void registerEntityRenderer(EntityType<T> type, Function<EntityRenderDispatcher, R> constructor);
 }
