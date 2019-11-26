@@ -140,7 +140,8 @@ class ModelFoundry {
                 case "locals":
                     return false;
                 default:
-                    return entry.getValue().isJsonObject();
+                    return entry.getValue().isJsonObject()
+                       || (entry.getValue().isJsonPrimitive() && entry.getValue().getAsJsonPrimitive().isString());
             }
         }
 
