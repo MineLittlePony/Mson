@@ -9,6 +9,7 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public final class MethodHandles {
 
@@ -72,6 +73,17 @@ public final class MethodHandles {
             return createArrayClass(changeArrayType(arrayClass.getComponentType(), componentType));
         }
         return componentType;
+    }
+
+    public static <I, K> Function<I[], K[]> createArrayCast(Class<K> outputType) {
+        return input -> {
+            @SuppressWarnings("unchecked")
+            K[] output = (K[])Array.newInstance(outputType, input.length);
+
+            System.arraycopy(input, 0, output, 0, input.length);
+
+            return output;
+        };
     }
 
     /**

@@ -13,6 +13,7 @@ import com.minelittlepony.mson.util.Qbit;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * A builder for building boxes.
@@ -20,21 +21,29 @@ import java.util.function.BiConsumer;
  * Holds all the parameters so we don't have to shove them into a Box sub-class.
  *
  */
+@SuppressWarnings("unchecked")
 public final class BoxBuilder {
+
+    private static final Function<Rect[], ?> RECT_ARR_CAST;
+    private static final Function<Vert[], ?> VERT_ARR_CAST;
 
     private static final Rect.Factory RECT_FACTORY;
     private static final Vert.Factory VERT_FACTORY;
-    private static final BiConsumer<Cuboid, Rect[]> POLY_SETTER;
+
+    private static final BiConsumer<Cuboid, Object> POLY_SETTER;
 
     static {
         final Class<?> Rect = MethodHandles.findHiddenInnerClass(ModelPart.class, Rect.class);
         final Class<?> Vert = MethodHandles.findHiddenInnerClass(ModelPart.class, Vert.class);
 
+        RECT_ARR_CAST = MethodHandles.createArrayCast(Rect);
+        VERT_ARR_CAST = MethodHandles.createArrayCast(Vert);
+
         Lambdas lambdas = MethodHandles.lambdas().remap(Vert.class, Vert).remap(Rect.class, Rect);
 
-        RECT_FACTORY = lambdas.lookupFactoryInvoker(Rect.Factory.class, Rect);
-        VERT_FACTORY = lambdas.lookupFactoryInvoker(Vert.Factory.class, Vert);
-        POLY_SETTER = lambdas.lookupSetter(Cuboid.class, Rect[].class, "sides");
+        RECT_FACTORY = lambdas.lookupFactory(Rect.Factory.class, Rect, Rect.ConstrDefinition.class);
+        VERT_FACTORY = lambdas.lookupFactory(Vert.Factory.class, Vert);
+        POLY_SETTER = (BiConsumer<Cuboid, Object>)(Object)lambdas.lookupSetter(Cuboid.class, Rect[].class, "sides");
     }
 
     public final MsonPart part;
@@ -131,12 +140,15 @@ public final class BoxBuilder {
         return VERT_FACTORY.create(x, y, z, u, v);
     }
 
+    /**
+     * Creates a new quad with the given spatial vertices.
+     */
     public Rect quad(
             int x, int width,
             int y, int height,
             Direction direction,
             Vert ...vertices) {
-        return quad(x, width, y, height, direction, vertices);
+        return quad(x, width, y, height, direction, part.getMirrorX(), vertices);
     }
 
     /**
@@ -148,11 +160,12 @@ public final class BoxBuilder {
             Direction direction,
             boolean mirror,
             Vert ...vertices) {
-        return RECT_FACTORY.create(vertices,
+        return RECT_FACTORY.create(
+                VERT_ARR_CAST.apply(vertices),
                 x,         y,
                 x + width, y + height,
                 u, v,
-                part.getMirrorX(),
+                mirror,
                 direction);
     }
 
@@ -168,7 +181,7 @@ public final class BoxBuilder {
 
     public Cuboid build(QuadsBuilder builder) {
         Cuboid box = build();
-        POLY_SETTER.accept(box, builder.build(this));
+        POLY_SETTER.accept(box, RECT_ARR_CAST.apply(builder.build(this)));
         return box;
     }
 

@@ -13,15 +13,33 @@ public interface Lambdas {
     Lambdas remap(Class<?> from, Class<?> to);
 
     /**
-     * Generates an instance of the specifid class to invoke a matching constructor.
+     * Generates an instance of the specified class to invoke a matching constructor.
      *
      * The interface must have one class, with parameters matching a constructor
      * on the target class, and a return type compatible with owner type.
      */
-    <T> T lookupFactoryInvoker(Class<T> ifaceClass, Class<?> owner);
+    default <T> T lookupFactory(Class<T> ifaceClass, Class<?> owner) {
+        return lookupFactory(ifaceClass, owner, ifaceClass);
+    }
+
+    /**
+     * Generates an instance of the specified class to invoke a matching constructor.
+     *
+     * The interface must have one class, with parameters matching a constructor
+     * on the target class, and a return type compatible with owner type.
+     */
+    <T> T lookupFactory(Class<T> ifaceClass, Class<?> owner, Class<?> definitionClass);
+
+    /**
+     * Generates an instance of the specified class to invoke a matching constructor.
+     *
+     * The interface must have one class, with parameters matching a constructor
+     * on the target class, and a return type compatible with owner type.
+     */
+    <T> T lookupGenericFactory(Class<T> ifaceClass, Class<?> owner, Class<?> definitionClss);
 
     /**
      * Creates a setter.
      */
-    <Owner, Type> BiConsumer<Owner, Type> lookupSetter(Class<Owner> owner, Class<Type> fieldType, String fieldName);
+    <Owner, Type> BiConsumer<Owner, ? extends Type> lookupSetter(Class<Owner> owner, Class<Type> fieldType, String fieldName);
 }

@@ -6,10 +6,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.MsonModel;
+import com.minelittlepony.mson.api.mixin.Lambdas;
 import com.minelittlepony.mson.impl.invoke.MethodHandles;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelKeyImpl<T> {
@@ -27,7 +29,7 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
         }
     }
 
-    private final Factory<T> factory;
+    private final Function<ModelContext, T> factory;
 
     private ReflectedModelKey(String className) {
         id = new Identifier("dynamic", className.replaceAll("[\\.\\$]", "/").toLowerCase());
@@ -35,7 +37,7 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
     }
 
     @SuppressWarnings("unchecked")
-    private Factory<T> lookupFactory(String className) {
+    private Function<ModelContext, T> lookupFactory(String className) {
         try {
             Class<T> implementation = (Class<T>)Class.forName(className, false, ReflectedModelKey.class.getClassLoader());
 
@@ -43,11 +45,13 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
                 throw new JsonParseException("Slot implementation does not implement MsonModel");
             }
 
+            Lambdas lambdas = MethodHandles.lambdas().remap(MsonModel.class, implementation);
+
             try {
-                final Supplier<T> supplier = MethodHandles.lambdas().lookupFactoryInvoker(Supplier.class, implementation);
+                final Supplier<T> supplier = lambdas.lookupGenericFactory(Supplier.class, implementation, Construct.class);
                 return ctx -> supplier.get();
-            } catch (Exception e) {
-                return MethodHandles.lambdas().lookupFactoryInvoker(Factory.class, implementation);
+            } catch (Error | Exception e) {
+                return lambdas.lookupGenericFactory(Function.class, implementation, Factory.class);
             }
         } catch (Exception e) {
             throw new JsonParseException("Exception getting handle for implementation " + className, e);
@@ -55,7 +59,7 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
     }
 
     public T createModel(ModelContext context) {
-        return factory.create(context);
+        return factory.apply(context);
     }
 
     @Override
@@ -63,7 +67,13 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
         return createModel(null);
     }
 
-    interface Factory<T extends MsonModel> {
-        T create(ModelContext context);
+    @FunctionalInterface
+    public interface Construct {
+        MsonModel get();
+    }
+
+    @FunctionalInterface
+    public interface Factory {
+        MsonModel create(ModelContext context);
     }
 }

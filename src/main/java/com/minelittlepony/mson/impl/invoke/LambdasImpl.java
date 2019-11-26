@@ -46,19 +46,45 @@ final class LambdasImpl implements Lambdas {
     }
 
     @Override
-    public <T> T lookupFactoryInvoker(Class<T> ifaceClass, Class<?> owner) {
+    public <T> T lookupFactory(Class<T> ifaceClass, Class<?> owner, Class<?> definitionClass) {
         try {
+            Method idefMethod = definitionClass.getMethods()[0];
             Method ifaceMethod = ifaceClass.getMethods()[0];
+
+            MethodType constrType = MethodType.methodType(void.class, remapClasses(idefMethod.getParameterTypes()));
+
+            MethodType implType = MethodType.methodType(ifaceMethod.getReturnType(), ifaceMethod.getParameterTypes());
+
+            MethodHandle constr = MethodHandles.LOOKUP.findConstructor(owner, constrType);
+
+            CallSite site = LambdaMetafactory.metafactory(
+                    MethodHandles.LOOKUP.in(ifaceClass),
+                    idefMethod.getName(),
+                    MethodType.methodType(ifaceClass),
+                    implType,
+                    constr,
+                    constrType.changeReturnType(owner));
+
+            return (T)site.dynamicInvoker().invoke();
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public <T> T lookupGenericFactory(Class<T> ifaceClass, Class<?> owner, Class<?> definitionClass) {
+        try {
+            Method ifaceMethod = definitionClass.getMethods()[0];
             MethodType constrType = MethodType.methodType(void.class, remapClasses(ifaceMethod.getParameterTypes()));
             MethodType callType = constrType.changeReturnType(owner);
 
             MethodHandle constr = MethodHandles.LOOKUP.findConstructor(owner, constrType);
 
             CallSite site = LambdaMetafactory.metafactory(
-                    MethodHandles.LOOKUP.in(ifaceClass),
+                    MethodHandles.LOOKUP.in(owner),
                     ifaceMethod.getName(),
                     MethodType.methodType(ifaceClass),
-                    callType,
+                    callType.erase(),
                     constr,
                     callType);
 
@@ -69,7 +95,7 @@ final class LambdasImpl implements Lambdas {
     }
 
     @Override
-    public <Owner, Type> BiConsumer<Owner, Type> lookupSetter(Class<Owner> owner, Class<Type> fieldType, String fieldName) {
+    public <Owner, Type> BiConsumer<Owner, ? extends Type> lookupSetter(Class<Owner> owner, Class<Type> fieldType, String fieldName) {
         try {
             MappingResolver resolver = FabricLoader.getInstance().getMappingResolver();
 
@@ -82,7 +108,7 @@ final class LambdasImpl implements Lambdas {
             MethodHandle setter = MethodHandles.LOOKUP.findSetter(owner, fieldName, actualFieldType);
 
             final CallSite site = LambdaMetafactory.metafactory(
-                    MethodHandles.LOOKUP,
+                    MethodHandles.LOOKUP.in(owner),
                     "accept",
                     MethodType.methodType(BiConsumer.class, MethodHandle.class),
                     setter.type().erase(),
