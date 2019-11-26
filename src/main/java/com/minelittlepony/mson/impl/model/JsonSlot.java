@@ -4,7 +4,6 @@ import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
@@ -19,7 +18,7 @@ public class JsonSlot<T extends MsonModel> implements JsonComponent<T> {
 
     public static final Identifier ID = new Identifier("mson", "slot");
 
-    private final ModelKey<T> implementation;
+    private final ReflectedModelKey<T> implementation;
 
     private final CompletableFuture<JsonContext> content;
 
@@ -36,12 +35,12 @@ public class JsonSlot<T extends MsonModel> implements JsonComponent<T> {
     @Override
     public T export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            T inst = implementation.createModel();
-
-            inst.init(content.get()
+            ModelContext subContext = content.get()
                     .createContext(context.getModel(), context.getLocals())
-                    .resolve(context.getContext())
-            );
+                    .resolve(context.getContext());
+
+            T inst = implementation.createModel(subContext);
+            inst.init(subContext);
 
             return inst;
         });
