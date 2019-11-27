@@ -108,7 +108,8 @@ public final class BoxBuilder {
         return size(
                 axis.getWidth(dimension),
                 axis.getHeight(dimension),
-                axis.getDeptch(dimension));
+                axis.getDeptch(dimension)
+        );
     }
 
     public BoxBuilder stretch(float... stretch) {
@@ -144,27 +145,27 @@ public final class BoxBuilder {
      * Creates a new quad with the given spatial vertices.
      */
     public Rect quad(
-            int x, int width,
-            int y, int height,
+            float u, float v,
+            float w, float h,
             Direction direction,
             Vert ...vertices) {
-        return quad(x, width, y, height, direction, part.getMirrorX(), vertices);
+        return quad(u, v, w, h, direction, part.getMirrorX(), vertices);
     }
 
     /**
      * Creates a new quad with the given spatial vertices.
      */
     public Rect quad(
-            int x, int width,
-            int y, int height,
+            float u, float v,
+            float w, float h,
             Direction direction,
             boolean mirror,
             Vert ...vertices) {
         return RECT_FACTORY.create(
                 VERT_ARR_CAST.apply(vertices),
-                x,         y,
-                x + width, y + height,
-                u, v,
+                u,         v,
+                u + w, u + h,
+                part.getTexture().getWidth(), part.getTexture().getHeight(),
                 mirror,
                 direction);
     }
