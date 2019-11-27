@@ -64,7 +64,12 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
 
     @Override
     public T createModel() {
-        return createModel(null);
+        return createModel((ModelContext)null);
+    }
+
+    @Override
+    public <V extends T> V createModel(Supplier<V> supplier) {
+        return null;
     }
 
     @FunctionalInterface
@@ -76,4 +81,5 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
     public interface Factory {
         MsonModel create(ModelContext context);
     }
+
 }

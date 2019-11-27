@@ -141,11 +141,16 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
         @Override
         public T createModel() {
+            return createModel(constr);
+        }
+
+        @Override
+        public <V extends T> V createModel(Supplier<V> supplier) {
             if (foundry == null) {
                 throw new IllegalStateException("You're too early. Wait for Mson to load first.");
             }
 
-            T t = constr.get();
+            V t = supplier.get();
             try {
                 JsonContext context = foundry.getModelData(this);
 
