@@ -78,7 +78,17 @@ public interface ModelContext {
      *
      * @throws NullPointerException if the passed in object is null.
      */
-    ModelContext resolve(Object child);
+    default ModelContext resolve(Object child) {
+        return resolve(child, getLocals());
+    }
+
+    /**
+     * Resolves this context against the given object and local variables.
+     * Returns a new sub-context as a child of this one where the result of `getContext()` returns the passed in object.
+     *
+     * @throws NullPointerException if the passed in object is null.
+     */
+    ModelContext resolve(Object child, Locals locals);
 
     @FunctionalInterface
     interface ContentSupplier<T> extends Function<String, T> {

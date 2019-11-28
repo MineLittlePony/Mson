@@ -286,11 +286,11 @@ class ModelFoundry {
             }
 
             @Override
-            public ModelContext resolve(Object child) {
-                if (child == getContext()) {
+            public ModelContext resolve(Object child, Locals locals) {
+                if (child == getContext() && locals == getLocals()) {
                     return this;
                 }
-                return new SubContext(this, child);
+                return new SubContext(this, locals, child);
             }
 
             @Override

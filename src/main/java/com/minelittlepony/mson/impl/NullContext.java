@@ -21,6 +21,7 @@ final class NullContext implements JsonContext, ModelContext {
 
     static NullContext INSTANCE = new NullContext();
     static Identifier ID = new Identifier("null");
+    static Locals EMPTY_LOCALS = new LocalsImpl(ID, INSTANCE);
 
     private NullContext() {}
 
@@ -60,7 +61,7 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public ModelContext resolve(Object child) {
+    public ModelContext resolve(Object child, Locals locals) {
         return this;
     }
 
@@ -95,7 +96,7 @@ final class NullContext implements JsonContext, ModelContext {
 
     @Override
     public Locals getLocals() {
-        return new LocalsImpl(ID, this);
+        return EMPTY_LOCALS;
     }
 
     @Override

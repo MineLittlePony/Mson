@@ -12,6 +12,7 @@ import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
 import com.minelittlepony.mson.api.model.MsonPart;
 import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 import com.mojang.realmsclient.util.JsonUtils;
@@ -19,6 +20,7 @@ import com.mojang.realmsclient.util.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -97,7 +99,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
         ((ContentAccessor)cuboid).cubes().clear();
         ((ContentAccessor)cuboid).children().clear();
 
-        final ModelContext subContext = context.resolve(cuboid);
+        final ModelContext subContext = context.resolve(cuboid, new Locals(context.getLocals()));
         ((ContentAccessor)cuboid).children().addAll(children
                 .stream()
                 .map(c -> c.tryExport(subContext, ModelPart.class))
@@ -112,5 +114,33 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
                 .map(Optional::get)
                 .collect(Collectors.toList())
         );
+    }
+
+    class Locals implements ModelContext.Locals {
+
+        private final ModelContext.Locals parent;
+
+        Locals(ModelContext.Locals parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        public Identifier getModelId() {
+            return parent.getModelId();
+        }
+
+        @Override
+        public CompletableFuture<Texture> getTexture() {
+            try {
+                return CompletableFuture.completedFuture(texture.complete(parent));
+            } catch (InterruptedException | ExecutionException e) {
+                throw new FutureAwaitException(e);
+            }
+        }
+
+        @Override
+        public CompletableFuture<Float> getValue(String name) {
+            return parent.getValue(name);
+        }
     }
 }

@@ -10,10 +10,13 @@ class SubContext extends InnerScope {
 
     private final InnerScope parent;
 
+    private final Locals locals;
+
     private final Object context;
 
-    SubContext(InnerScope parent, Object context) {
+    SubContext(InnerScope parent, Locals locals, Object context) {
         this.parent = Objects.requireNonNull(parent, "Parent context is required");
+        this.locals = Objects.requireNonNull(locals, "Locals is required");
         this.context = Objects.requireNonNull(context, "Sub-context element is required");
     }
 
@@ -44,11 +47,11 @@ class SubContext extends InnerScope {
     }
 
     @Override
-    public ModelContext resolve(Object child) {
-        if (child == getContext()) {
+    public ModelContext resolve(Object child, Locals locals) {
+        if (child == getContext() && locals == getLocals()) {
             return this;
         }
-        return new SubContext(this, child);
+        return new SubContext(parent, locals, child);
     }
 
     @Override
@@ -63,6 +66,6 @@ class SubContext extends InnerScope {
 
     @Override
     public Locals getLocals() {
-        return parent.getLocals();
+        return locals;
     }
 }
