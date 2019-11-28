@@ -51,7 +51,7 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
                 final Supplier<T> supplier = lambdas.lookupGenericFactory(Supplier.class, implementation, Construct.class);
                 return ctx -> supplier.get();
             } catch (Error | Exception e) {
-                return lambdas.lookupGenericFactory(Function.class, implementation, Factory.class);
+                return lambdas.lookupFactory(Function.class, implementation, Factory.class);
             }
         } catch (Exception e) {
             throw new JsonParseException("Exception getting handle for implementation " + className, e);
