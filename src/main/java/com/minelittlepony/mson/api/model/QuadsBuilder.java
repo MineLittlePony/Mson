@@ -106,10 +106,10 @@ public interface QuadsBuilder {
                 quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dz, ctx.dy, Direction.WEST, mirror, wds, wdn, wun, wus);
             }
             if (face == Face.UP) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dz, Direction.UP, mirror, eus, wus, wun, eun);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dz, Direction.DOWN, mirror, eus, wus, wun, eun);
             }
             if (face == Face.DOWN) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dz, Direction.DOWN, mirror, edn, wdn, wds, eds);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dz, Direction.UP, mirror, edn, wdn, wds, eds);
             }
             if (face == Face.SOUTH) {
                 quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dy, Direction.SOUTH, mirror, wdn, edn, eun, wun);

@@ -164,7 +164,7 @@ public final class BoxBuilder {
         return RECT_FACTORY.create(
                 VERT_ARR_CAST.apply(vertices),
                 u,         v,
-                u + w, u + h,
+                u + w, v + h,
                 part.getTexture().getWidth(), part.getTexture().getHeight(),
                 mirror,
                 direction);
