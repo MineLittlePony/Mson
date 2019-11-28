@@ -8,7 +8,7 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.mixin.Lambdas;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.impl.invoke.MethodHandles;
-import com.minelittlepony.mson.util.Qbit;
+import com.minelittlepony.mson.util.TriState;
 
 import java.util.List;
 import java.util.Optional;
@@ -119,7 +119,7 @@ public final class BoxBuilder {
         return this;
     }
 
-    public BoxBuilder mirror(Axis axis, Qbit mirror) {
+    public BoxBuilder mirror(Axis axis, TriState mirror) {
         if (mirror.isKnown()) {
             if (axis == Axis.X) {
                 mirrorX = mirror.toBoolean();

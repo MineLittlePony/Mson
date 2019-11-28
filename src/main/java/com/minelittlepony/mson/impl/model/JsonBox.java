@@ -12,7 +12,7 @@ import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
-import com.minelittlepony.mson.util.Qbit;
+import com.minelittlepony.mson.util.TriState;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -27,7 +27,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
 
     protected final float[] stretch = new float[3];
 
-    protected final Qbit mirror;
+    protected final TriState mirror;
 
     protected final Optional<Texture> texture;
 
@@ -36,7 +36,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
         size = context.getVarLookup().getInts(json, "size", 3);
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::create);
         JsonUtil.getFloats(json, "stretch", stretch);
-        mirror = JsonUtil.getQBit("mirror", json);
+        mirror = JsonUtil.getTriState("mirror", json);
     }
 
     @Override

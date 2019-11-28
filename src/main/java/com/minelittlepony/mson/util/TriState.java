@@ -5,7 +5,7 @@ package com.minelittlepony.mson.util;
  *
  * yes/no/neither - https://en.wikipedia.org/wiki/Qubit
  */
-public enum Qbit {
+public enum TriState {
     TRUE,
     FALSE,
     UNKNOWN;
@@ -27,7 +27,7 @@ public enum Qbit {
     /**
      * Return a qbit with the equivalent boolean representation.
      */
-    public static Qbit of(boolean value) {
+    public static TriState of(boolean value) {
         return value ? TRUE : FALSE;
     }
 }
