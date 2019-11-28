@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import com.minelittlepony.mson.api.EntityRendererRegistry;
 import com.minelittlepony.mson.impl.MsonImpl;
-import com.minelittlepony.mson.util.ThrowableUtils;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -40,7 +39,7 @@ class MixinEntityRenderDispatcher implements EntityRendererRegistry {
             }
             modelRenderers.put(skinType, renderer);
         } catch (Exception e) {
-            MsonImpl.LOGGER.error("Error whilst updating player renderer " + skinType + ": " + ThrowableUtils.getRootCause(e).getMessage());
+            MsonImpl.LOGGER.error("Error whilst updating player renderer " + skinType + ": " + e.getMessage());
         }
     }
 
@@ -49,7 +48,7 @@ class MixinEntityRenderDispatcher implements EntityRendererRegistry {
         try {
             renderers.put(type, constructor.apply((EntityRenderDispatcher)(Object)this));
         } catch (Exception e) {
-            MsonImpl.LOGGER.error("Error whilst updating entity renderer " + EntityType.getId(type) + ": " + ThrowableUtils.getRootCause(e).getMessage());
+            MsonImpl.LOGGER.error("Error whilst updating entity renderer " + EntityType.getId(type) + ": " + e.getMessage());
         }
     }
 }
