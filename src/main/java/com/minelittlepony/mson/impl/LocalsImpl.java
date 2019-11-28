@@ -6,7 +6,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.api.json.JsonVariables;
+import com.minelittlepony.mson.api.json.Variables;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.util.Incomplete;
@@ -16,16 +17,26 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-final class LocalsImpl implements ModelContext.Locals {
+public final class LocalsImpl implements ModelContext.Locals, JsonVariables {
 
     private final Identifier id;
-    private final JsonContext context;
+    private final JsonVariables context;
 
     private final Map<String, CompletableFuture<Float>> precalculatedValues = new HashMap<>();
 
-    LocalsImpl(Identifier id, JsonContext context) {
+    public LocalsImpl(Identifier id, JsonVariables context) {
         this.id = id;
         this.context = context;
+    }
+
+    @Override
+    public Variables getVarLookup() {
+        return context.getVarLookup();
+    }
+
+    @Override
+    public CompletableFuture<Incomplete<Float>> getLocalVariable(String name) {
+        return context.getLocalVariable(name);
     }
 
     @Override
@@ -76,7 +87,7 @@ final class LocalsImpl implements ModelContext.Locals {
         throw new JsonParseException("Unsupported local value type: " + prim.toString());
     }
 
-    static Incomplete<Float> createLocal(JsonElement json) {
+    public static Incomplete<Float> createLocal(JsonElement json) {
         if (json.isJsonPrimitive()) {
             return variableReference(json.getAsJsonPrimitive());
         }

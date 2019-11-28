@@ -10,6 +10,7 @@ import net.minecraft.util.profiler.Profiler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.base.Preconditions;
 import com.minelittlepony.mson.api.EntityRendererRegistry;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
@@ -97,10 +98,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         Objects.requireNonNull(id, "Id must not be null");
         Objects.requireNonNull(constructor, "Implementation class must not be null");
         checkNamespace(id.getNamespace());
-
-        if (registeredModels.containsKey(id)) {
-            throw new IllegalArgumentException(String.format("A model with the id `%s` was already registered", id.toString()));
-        }
+        Preconditions.checkArgument(!registeredModels.containsKey(id), "A model with the id `%s` was already registered", id);
 
         return (ModelKey<T>)registeredModels.computeIfAbsent(id, i -> new Key<>(id, constructor));
     }
@@ -110,24 +108,15 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         Objects.requireNonNull(id, "Id must not be null");
         Objects.requireNonNull(constructor, "Constructor must not be null");
         checkNamespace(id.getNamespace());
-
-        if (componentTypes.containsKey(id)) {
-            throw new IllegalArgumentException(String.format("A component with the id `%s` was already registered", id.toString()));
-        }
+        Preconditions.checkArgument(!componentTypes.containsKey(id), "A component with the id `%s` was already registered", id);
 
         componentTypes.put(id, constructor);
     }
 
     private void checkNamespace(String namespace) {
-        if ("minecraft".equalsIgnoreCase(namespace)) {
-            throw new IllegalArgumentException("Id must have a namespace other than `minecraft`.");
-        }
-        if (!DEBUG && "mson".equalsIgnoreCase(namespace)) {
-            throw new IllegalArgumentException("`mson` is a reserved namespace.");
-        }
-        if ("dynamic".equalsIgnoreCase(namespace)) {
-            throw new IllegalArgumentException("`dynamic` is a reserved namespace.");
-        }
+        Preconditions.checkArgument(!"minecraft".equalsIgnoreCase(namespace), "Id must have a namespace other than `minecraft`.");
+        Preconditions.checkArgument(DEBUG || !"mson".equalsIgnoreCase(namespace), "`mson` is a reserved namespace.");
+        Preconditions.checkArgument(!"dynamic".equalsIgnoreCase(namespace), "`dynamic` is a reserved namespace.");
     }
 
     class Key<T extends Model & MsonModel> extends AbstractModelKeyImpl<T> {

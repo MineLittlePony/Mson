@@ -5,8 +5,6 @@ import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -16,19 +14,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * Allows for components to read and write contextual information during parsing.
  */
-public interface JsonContext {
-
-    /**
-     * Gets the texture information from the enclosing context or its parent.
-     */
-    CompletableFuture<Texture> getTexture();
-
-    /**
-     * Gets the variable lookup mechanism.
-     */
-    Variables getVarLookup();
-
-    CompletableFuture<Incomplete<Float>> getLocalVariable(String name);
+public interface JsonContext extends JsonVariables {
 
     /**
      * Registers a component with a name to the enclosing scope.
