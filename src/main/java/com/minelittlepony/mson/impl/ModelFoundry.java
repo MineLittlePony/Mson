@@ -66,8 +66,6 @@ class ModelFoundry {
                 load.put(id, CompletableFuture.supplyAsync(() -> {
                     serverProfiler.startTick();
                     clientProfiler.push("Loading MSON model - " + id);
-                    MsonImpl.LOGGER.info("Loading MSON model - {}", id);
-
                     Identifier file = new Identifier(id.getNamespace(), "models/" + id.getPath() + ".json");
 
                     try (Resource res = manager.getResource(file);
