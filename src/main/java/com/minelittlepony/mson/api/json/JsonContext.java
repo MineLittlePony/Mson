@@ -1,10 +1,10 @@
 package com.minelittlepony.mson.api.json;
 
-import net.minecraft.client.model.Model;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.MsonModel;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -31,7 +31,7 @@ public interface JsonContext extends JsonVariables {
     /**
      * Creates a new model context for the supplied model instance.
      */
-    ModelContext createContext(Model model, ModelContext.Locals locals);
+    ModelContext createContext(MsonModel model, ModelContext.Locals locals);
 
     /**
      * Resolves a new json context against the passed in json block.

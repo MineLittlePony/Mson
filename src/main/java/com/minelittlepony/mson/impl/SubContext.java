@@ -1,8 +1,8 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.MsonModel;
 
 import java.util.Objects;
 
@@ -18,7 +18,7 @@ class SubContext implements ModelContext {
     }
 
     @Override
-    public Model getModel() {
+    public <T extends MsonModel> T getModel() {
         return parent.getModel();
     }
 

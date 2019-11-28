@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.api;
 
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
@@ -22,7 +21,7 @@ public interface ModelContext {
     /**
      * Gets the currently-active model instance.
      */
-    Model getModel();
+    <T extends MsonModel> T getModel();
 
     /**
      * Gets the immediate object in this context.

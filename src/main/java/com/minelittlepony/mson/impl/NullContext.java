@@ -1,11 +1,11 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.json.Variables;
@@ -25,7 +25,7 @@ final class NullContext implements JsonContext, ModelContext {
     private NullContext() {}
 
     @Override
-    public Model getModel() {
+    public <T extends MsonModel> T getModel() {
         throw new EmptyContextException("getModel");
     }
 
@@ -74,7 +74,7 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public ModelContext createContext(Model model, Locals locals) {
+    public ModelContext createContext(MsonModel model, Locals locals) {
         return this;
     }
 

@@ -2,7 +2,6 @@ package com.minelittlepony.mson.impl;
 
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.model.Model;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
@@ -94,7 +93,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends Model & MsonModel> ModelKey<T> registerModel(Identifier id, Supplier<T> constructor) {
+    public <T extends MsonModel> ModelKey<T> registerModel(Identifier id, Supplier<T> constructor) {
         Objects.requireNonNull(id, "Id must not be null");
         Objects.requireNonNull(constructor, "Implementation class must not be null");
         checkNamespace(id.getNamespace());
@@ -119,7 +118,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         Preconditions.checkArgument(!"dynamic".equalsIgnoreCase(namespace), "`dynamic` is a reserved namespace.");
     }
 
-    class Key<T extends Model & MsonModel> extends AbstractModelKeyImpl<T> {
+    class Key<T extends MsonModel> extends AbstractModelKeyImpl<T> {
 
         private final Supplier<T> constr;
 

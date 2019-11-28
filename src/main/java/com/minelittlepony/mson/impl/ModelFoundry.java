@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -14,6 +13,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.ModelKey;
+import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
@@ -199,7 +199,7 @@ class ModelFoundry {
         }
 
         @Override
-        public ModelContext createContext(Model model, ModelContext.Locals locals) {
+        public ModelContext createContext(MsonModel model, ModelContext.Locals locals) {
             return new RootContext(model, scale, parent.getNow(NullContext.INSTANCE).createContext(model, locals), locals);
         }
 
@@ -210,7 +210,7 @@ class ModelFoundry {
 
         class RootContext implements ModelContext {
 
-            private final Model model;
+            private final MsonModel model;
 
             private final Map<String, Object> objectCache = new HashMap<>();
 
@@ -219,16 +219,17 @@ class ModelFoundry {
 
             private final float scale;
 
-            RootContext(Model model, float scale, ModelContext inherited, Locals locals) {
+            RootContext(MsonModel model, float scale, ModelContext inherited, Locals locals) {
                 this.model = model;
                 this.scale = scale;
                 this.inherited = inherited;
                 this.locals = locals;
             }
 
+            @SuppressWarnings("unchecked")
             @Override
-            public Model getModel() {
-                return model;
+            public <T extends MsonModel> T getModel() {
+                return (T)model;
             }
 
             @SuppressWarnings("unchecked")
