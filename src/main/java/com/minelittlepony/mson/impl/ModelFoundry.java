@@ -25,6 +25,7 @@ import com.minelittlepony.mson.impl.model.JsonLink;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
+import com.minelittlepony.mson.util.ThrowableUtils;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -73,7 +74,7 @@ class ModelFoundry {
                          Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
                         return new StoredModelData(GSON.fromJson(reader, JsonObject.class));
                     } catch (Exception e) {
-                        MsonImpl.LOGGER.error("Could not load model json for {}", file, e);
+                        MsonImpl.LOGGER.error("Could not load model json for {}", file, ThrowableUtils.getRootCause(e));
                     } finally {
                         clientProfiler.pop();
                         serverProfiler.endTick();
@@ -208,7 +209,7 @@ class ModelFoundry {
             return VariablesImpl.INSTANCE;
         }
 
-        class RootContext implements ModelContext {
+        class RootContext extends InnerScope {
 
             private final MsonModel model;
 
@@ -253,10 +254,10 @@ class ModelFoundry {
 
             @SuppressWarnings("unchecked")
             @Override
-            public <T> T findByName(String name) {
+            <T> T findByName(ModelContext context, String name) {
                 if (elements.containsKey(name)) {
                     try {
-                        return (T)elements.get(name).export(this);
+                        return (T)elements.get(name).export(context);
                     } catch (InterruptedException | ExecutionException e) {
                         throw new FutureAwaitException(e);
                     }
@@ -265,10 +266,10 @@ class ModelFoundry {
             }
 
             @Override
-            public void findByName(String name, ModelPart output) {
+            void findByName(ModelContext context, String name, ModelPart output) {
                 if (elements.containsKey(name)) {
                     try {
-                        elements.get(name).export(this, output);
+                        elements.get(name).export(context, output);
                     } catch (InterruptedException | ExecutionException e) {
                         throw new FutureAwaitException(e);
                     }

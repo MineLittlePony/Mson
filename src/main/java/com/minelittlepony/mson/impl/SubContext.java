@@ -6,13 +6,13 @@ import com.minelittlepony.mson.api.MsonModel;
 
 import java.util.Objects;
 
-class SubContext implements ModelContext {
+class SubContext extends InnerScope {
 
-    private final ModelContext parent;
+    private final InnerScope parent;
 
     private final Object context;
 
-    SubContext(ModelContext parent, Object context) {
+    SubContext(InnerScope parent, Object context) {
         this.parent = Objects.requireNonNull(parent, "Parent context is required");
         this.context = Objects.requireNonNull(context, "Sub-context element is required");
     }
@@ -29,13 +29,13 @@ class SubContext implements ModelContext {
     }
 
     @Override
-    public <T> T findByName(String name) {
-        return parent.findByName(name);
+    <T> T findByName(ModelContext context, String name) {
+        return parent.findByName(context, name);
     }
 
     @Override
-    public void findByName(String name, ModelPart output) {
-        parent.findByName(name, output);
+    void findByName(ModelContext context, String name, ModelPart output) {
+        parent.findByName(context, name, output);
     }
 
     @Override
