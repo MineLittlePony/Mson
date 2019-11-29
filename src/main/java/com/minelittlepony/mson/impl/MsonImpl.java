@@ -1,7 +1,6 @@
 package com.minelittlepony.mson.impl;
 
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
@@ -81,9 +80,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         CompletableFuture<?> all = CompletableFuture.allOf(tasks);
 
         sync.getClass();
-        return all.thenCompose(sync::whenPrepared).thenRunAsync(() -> {
-            renderers.initialize((EntityRendererRegistry)MinecraftClient.getInstance().getEntityRenderManager());
-        }, clientExecutor);
+        return all.thenCompose(sync::whenPrepared).thenRunAsync(renderers::initialize, clientExecutor);
     }
 
     @Override

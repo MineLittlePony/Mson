@@ -1,5 +1,10 @@
 package com.minelittlepony.mson.impl;
 
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
+import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
@@ -15,39 +20,76 @@ import java.util.function.Function;
 
 final class PendingEntityRendererRegistry implements EntityRendererRegistry {
 
-    private final Map<String, Function<EntityRenderDispatcher, ? extends PlayerEntityRenderer>> pendingPlayerRenderers = new HashMap<>();
-    private final PendingList<Entity, ?> pendingEntityRenderers = new PendingList<>();
-
-    @Nullable
-    private EntityRendererRegistry runtimeRegistry;
+    private final RendererList<
+                    String,
+                    EntityRenderDispatcher,
+                    PlayerEntityRenderer
+                > player = new RendererList<>(EntityRendererRegistry::registerPlayerRenderer);
+    private final RendererList<
+                    EntityType<?>,
+                    EntityRenderDispatcher,
+                    EntityRenderer<?>
+                > entity = new RendererList<>(EntityRendererRegistry::registerEntityRenderer);
+    private final RendererList<
+                    BlockEntityType<?>,
+                    BlockEntityRenderDispatcher,
+                    BlockEntityRenderer<?>
+                > block = new RendererList<>(EntityRendererRegistry::registerBlockRenderer);
 
     @Override
-    public <R extends PlayerEntityRenderer> void registerPlayerRenderer(String skinType, Function<EntityRenderDispatcher, R> constructor) {
-        pendingPlayerRenderers.put(skinType, constructor);
-        if (runtimeRegistry != null) {
-            runtimeRegistry.registerPlayerRenderer(skinType, constructor);
-        }
+    public <T extends PlayerEntityRenderer> void registerPlayerRenderer(String skinType, Function<EntityRenderDispatcher, T> constructor) {
+        player.register(skinType, constructor);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends Entity, R extends EntityRenderer<? extends Entity>> void registerEntityRenderer(EntityType<T> type, Function<EntityRenderDispatcher, R> constructor) {
-        ((PendingList<T, R>)pendingEntityRenderers).put(type, constructor);
-        if (runtimeRegistry != null) {
-            runtimeRegistry.registerEntityRenderer(type, constructor);
+    public <T extends Entity, R extends EntityRenderer<?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRenderDispatcher, R> constructor) {
+        entity.register(type, constructor);
+    }
+
+    @Override
+    public <P extends BlockEntity, R extends BlockEntityRenderer<?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRenderDispatcher, R> constructor) {
+        block.register(type, constructor);
+    }
+
+    void initialize() {
+        EntityRendererRegistry runtimeEntityRegistry = (EntityRendererRegistry)MinecraftClient.getInstance().getEntityRenderManager();
+        EntityRendererRegistry runtimeBlockEntityRegistry = (EntityRendererRegistry)BlockEntityRenderDispatcher.INSTANCE;
+
+        player.publish(runtimeEntityRegistry);
+        entity.publish(runtimeEntityRegistry);
+        block.publish(runtimeBlockEntityRegistry);
+    }
+
+    class RendererList<Type, Dispatcher, Renderer> {
+        private final HashMap<? extends Type, ? extends Function<Dispatcher, Renderer>> entries = new HashMap<>();
+
+        private final RegisterAction<Type, Dispatcher, Renderer> runtimeAdd;
+
+        @Nullable
+        private EntityRendererRegistry runtimeRegistry;
+
+        public RendererList(RegisterAction<Type, Dispatcher, Renderer> runtimeAdd) {
+            this.runtimeAdd = runtimeAdd;
+        }
+
+        @SuppressWarnings("unchecked")
+        public <T extends Type, R extends Renderer> void register(T type, Function<Dispatcher, R> constructor) {
+            ((Map<T, Function<Dispatcher, R>>)entries).put(type, constructor);
+            if (runtimeRegistry != null) {
+                ((RegisterAction<T, Dispatcher, R>)runtimeAdd).call(runtimeRegistry, type, constructor);
+            }
+        }
+
+        void publish(EntityRendererRegistry runtimeRegistry) {
+            if (runtimeRegistry instanceof PendingEntityRendererRegistry) {
+                throw new IllegalStateException("Uh oh");
+            }
+            this.runtimeRegistry = runtimeRegistry;
+            entries.forEach((k, v) -> runtimeAdd.call(runtimeRegistry, k, v));
         }
     }
 
-    void initialize(EntityRendererRegistry runtimeRegistry) {
-        if (runtimeRegistry instanceof PendingEntityRendererRegistry) {
-            throw new IllegalStateException("Uh oh");
-        }
-        this.runtimeRegistry = runtimeRegistry;
-        pendingPlayerRenderers.forEach(runtimeRegistry::registerPlayerRenderer);
-        pendingEntityRenderers.forEach(runtimeRegistry::registerEntityRenderer);
-    }
-
-    class PendingList<T extends Entity, R extends EntityRenderer<? extends Entity>> extends HashMap<EntityType<T>, Function<EntityRenderDispatcher, R>> {
-        private static final long serialVersionUID = -4586716048493207127L;
+    interface RegisterAction<Type, Dispatcher, Renderer> {
+        void call(EntityRendererRegistry registry, Type type, Function<Dispatcher, Renderer> constructor);
     }
 }
