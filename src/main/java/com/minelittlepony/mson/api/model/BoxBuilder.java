@@ -2,6 +2,8 @@ package com.minelittlepony.mson.api.model;
 
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPart.*;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 
 import com.minelittlepony.mson.api.ModelContext;
@@ -190,5 +192,11 @@ public final class BoxBuilder {
         List<Cuboid> cubes();
 
         List<ModelPart> children();
+    }
+
+    public interface RenderLayerSetter {
+        Function<Identifier, RenderLayer> getRenderLayerFactory();
+
+        void setRenderLayerFactory(Function<Identifier, RenderLayer> supplier);
     }
 }
