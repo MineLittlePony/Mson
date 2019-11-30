@@ -3,6 +3,7 @@ package com.minelittlepony.mson.impl.model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -12,15 +13,18 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
+import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.api.model.Face;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.impl.FixtureImpl;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,18 +56,23 @@ public class JsonPlanar extends JsonCuboid {
         });
     }
 
-    class JsonFaceSet {
+    class JsonFaceSet extends FixtureImpl {
+
+        private final Face face;
 
         private final List<JsonFace> elements = new ArrayList<>();
 
+        private final Map<Vec3d, Integer> axisLockingMesh = new HashMap<>();
+
         public JsonFaceSet(JsonContext context, JsonArray json, Face face) {
+            this.face = face;
 
             if (json.get(0).isJsonArray()) {
                 for (int i = 0; i < json.size(); i++) {
-                    elements.add(new JsonFace(context, json.get(i).getAsJsonArray(), face));
+                    elements.add(new JsonFace(context, json.get(i).getAsJsonArray()));
                 }
             } else {
-                elements.add(new JsonFace(context, json, face));
+                elements.add(new JsonFace(context, json));
             }
         }
 
@@ -77,23 +86,31 @@ public class JsonPlanar extends JsonCuboid {
             }).collect(Collectors.toList()));
         }
 
-        class JsonFace implements JsonComponent<Cuboid> {
+        @Override
+        protected boolean isFixed(Axis axis, float x, float y, float z) {
+            return axisLockingMesh.getOrDefault(new Vec3d(x, y, z), 0) > 1;
+        }
 
-            private final Face face;
+        protected void consumeVertex(Vec3d vert) {
+            int count = axisLockingMesh.computeIfAbsent(vert, v -> 0);
+            axisLockingMesh.put(vert, count + 1);
+        }
+
+        class JsonFace implements JsonComponent<Cuboid> {
 
             private final float[] position = new float[3];
             private final int[] size = new int[2];
 
             private final Incomplete<Optional<Texture>> texture;
 
-            public JsonFace(JsonContext context, JsonArray json, Face face) {
-                this.face = face;
-
+            public JsonFace(JsonContext context, JsonArray json) {
                 position[0] =  json.get(0).getAsFloat();
                 position[1] =  json.get(1).getAsFloat();
                 position[2] =  json.get(2).getAsFloat();
                 size[0] = (int)json.get(3).getAsFloat();
                 size[1] = (int)json.get(4).getAsFloat();
+
+                face.getVertices(position, size).forEach(JsonFaceSet.this::consumeVertex);
 
                 if (json.size() > 6) {
                     texture = createTexture(
@@ -121,6 +138,7 @@ public class JsonPlanar extends JsonCuboid {
             @Override
             public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
                 return new BoxBuilder(context)
+                    .fix(JsonFaceSet.this)
                     .tex(texture.complete(context))
                     .pos(face.transformPosition(position, context))
                     .size(face.getAxis(), size)

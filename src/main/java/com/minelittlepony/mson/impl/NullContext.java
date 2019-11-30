@@ -46,12 +46,12 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public <T> T findByName(String name) {
+    public <T> T findByName(ModelContext context, String name) {
         throw new IllegalArgumentException(String.format("Key not found `%s`", name));
     }
 
     @Override
-    public void findByName(String name, ModelPart output) {
+    public void findByName(ModelContext context, String name, ModelPart output) {
         throw new IllegalArgumentException(String.format("Key not found `%s`", name));
     }
 

@@ -207,7 +207,7 @@ class ModelFoundry {
             return VariablesImpl.INSTANCE;
         }
 
-        class RootContext extends InnerScope {
+        class RootContext implements ModelContext {
 
             private final MsonModel model;
 
@@ -252,7 +252,7 @@ class ModelFoundry {
 
             @SuppressWarnings("unchecked")
             @Override
-            <T> T findByName(ModelContext context, String name) {
+            public <T> T findByName(ModelContext context, String name) {
                 if (elements.containsKey(name)) {
                     try {
                         return (T)elements.get(name).export(context);
@@ -260,11 +260,11 @@ class ModelFoundry {
                         throw new FutureAwaitException(e);
                     }
                 }
-                return inherited.findByName(name);
+                return inherited.findByName(context, name);
             }
 
             @Override
-            void findByName(ModelContext context, String name, ModelPart output) {
+            public void findByName(ModelContext context, String name, ModelPart output) {
                 if (elements.containsKey(name)) {
                     try {
                         elements.get(name).export(context, output);
@@ -272,7 +272,7 @@ class ModelFoundry {
                         throw new FutureAwaitException(e);
                     }
                 } else {
-                    inherited.findByName(name, output);
+                    inherited.findByName(context, name, output);
                 }
             }
 

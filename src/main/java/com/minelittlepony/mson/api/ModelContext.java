@@ -58,13 +58,21 @@ public interface ModelContext {
      * @throws ClassCastException if the requested named element does not use the requested implementation.
      * @throws InvalidInputException if the named element does not exist.
      */
-    <T> T findByName(String name);
+    default <T> T findByName(String name) {
+        return findByName(this, name);
+    }
+
+    <T> T findByName(ModelContext context, String name);
 
     /**
      * Gets the named element and loads it into the provided cuboid.
      * @throws InvalidInputException if the named element does not exist.
      */
-    void findByName(String name, ModelPart output);
+    default void findByName(String name, ModelPart output) {
+        findByName(this, name, output);
+    }
+
+    void findByName(ModelContext context, String name, ModelPart output);
 
     /**
      * Gets the root context.
