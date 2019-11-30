@@ -1,12 +1,16 @@
 package com.minelittlepony.mson.api.model;
 
+import net.minecraft.util.math.Vec3d;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.minelittlepony.mson.api.ModelContext;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public enum Face {
     NONE(Axis.Y, -1),
@@ -46,6 +50,27 @@ public enum Face {
 
     public Axis getAxis() {
         return axis;
+    }
+
+    public Stream<Vec3d> getVertices(float[] position, int[] dimensions) {
+        float x = position[0];
+        float y = position[1];
+        float z = position[2];
+
+        int dx = getAxis().getWidth(dimensions);
+        int dy = getAxis().getHeight(dimensions);
+        int dz = getAxis().getDeptch(dimensions);
+
+        return Lists.newArrayList(
+                new Vec3d(x,      y,      z),
+                new Vec3d(x,      y,      z + dz),
+                new Vec3d(x,      y + dy, z),
+                new Vec3d(x,      y + dy, z + dz),
+                new Vec3d(x + dx, y,      z),
+                new Vec3d(x + dx, y,      z + dz),
+                new Vec3d(x + dx, y + dy, z),
+                new Vec3d(x + dx, y + dy, z + dz)
+        ).stream().distinct();
     }
 
     public static Face of(String s) {

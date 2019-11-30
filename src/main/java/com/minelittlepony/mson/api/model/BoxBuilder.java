@@ -69,6 +69,8 @@ public final class BoxBuilder {
     public boolean mirrorY;
     public boolean mirrorZ;
 
+    public CoordinateFixture fixture = CoordinateFixture.unfixed();
+
     public BoxBuilder(ModelContext context) {
         part = (MsonPart)context.getContext();
 
@@ -82,6 +84,11 @@ public final class BoxBuilder {
         mirrorX = part.getMirrorX();
         mirrorY = part.getMirrorY();
         mirrorZ = part.getMirrorZ();
+    }
+
+    public BoxBuilder fix(CoordinateFixture fixture) {
+        this.fixture = fixture;
+        return this;
     }
 
     public BoxBuilder pos(float... pos) {

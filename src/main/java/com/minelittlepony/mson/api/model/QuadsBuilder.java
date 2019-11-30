@@ -2,6 +2,8 @@ package com.minelittlepony.mson.api.model;
 
 import net.minecraft.util.math.Direction;
 
+import com.minelittlepony.mson.api.model.Face.Axis;
+
 /**
  * A builder for creating box quads.
  */
@@ -59,13 +61,17 @@ public interface QuadsBuilder {
      */
     static QuadsBuilder plane(Face face) {
         return ctx -> {
-            float xMax = ctx.x + ctx.dx + ctx.stretchX;
-            float yMax = ctx.y + ctx.dy + ctx.stretchY;
-            float zMax = ctx.z + ctx.dz + ctx.stretchZ;
+            float xMax = ctx.x + ctx.dx;
+            float yMax = ctx.y + ctx.dy;
+            float zMax = ctx.z + ctx.dz;
 
-            float xMin = ctx.x - ctx.stretchX;
-            float yMin = ctx.y - ctx.stretchY;
-            float zMin = ctx.z - ctx.stretchZ;
+            xMax = ctx.fixture.stretchCoordinate(Axis.X, xMax, yMax, zMax, ctx.stretchX);
+            yMax = ctx.fixture.stretchCoordinate(Axis.Y, xMax, yMax, zMax, ctx.stretchY);
+            zMax = ctx.fixture.stretchCoordinate(Axis.Z, xMax, yMax, zMax, ctx.stretchZ);
+
+            float xMin = ctx.fixture.stretchCoordinate(Axis.X, ctx.x, ctx.y, ctx.z, -ctx.stretchX);
+            float yMin = ctx.fixture.stretchCoordinate(Axis.Y, ctx.x, ctx.y, ctx.z, -ctx.stretchY);
+            float zMin = ctx.fixture.stretchCoordinate(Axis.Z, ctx.x, ctx.y, ctx.z, -ctx.stretchZ);
 
             if (ctx.mirrorX) {
                 float v = xMax;
