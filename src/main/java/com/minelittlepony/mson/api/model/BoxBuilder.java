@@ -115,9 +115,9 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder stretch(float... stretch) {
-        this.stretchX =+ stretch[0];
-        this.stretchY =+ stretch[1];
-        this.stretchZ =+ stretch[2];
+        this.stretchX += stretch[0];
+        this.stretchY += stretch[1];
+        this.stretchZ += stretch[2];
         return this;
     }
 
@@ -175,7 +175,7 @@ public final class BoxBuilder {
     public Cuboid build() {
         return new Cuboid(
                 u, v,
-                x, y, z,
+                part.getModelOffsetX() + x, part.getModelOffsetY() + y, part.getModelOffsetZ() + z,
                 dx, dy, dz,
                 stretchX, stretchY, stretchZ,
                 part.getMirrorX(),
