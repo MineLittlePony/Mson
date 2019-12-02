@@ -1,6 +1,8 @@
 package com.minelittlepony.mson.impl.mixin;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
@@ -47,9 +49,12 @@ abstract class MixinModelPart implements MsonPart, Texture, ContentAccessor {
     @Accessor("cuboids")
     public abstract ObjectList<Cuboid> cubes();
 
+    @Shadow @Final
+    private ObjectList<ModelPart> children;
     @Override
-    @Accessor("children")
-    public abstract ObjectList<ModelPart> children();
+    public ObjectList<ModelPart> children() {
+        return children;
+    }
 }
 
 @Mixin(targets = {"net.minecraft.client.model.ModelPart$Quad"})
