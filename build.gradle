@@ -13,6 +13,10 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 
 version = "${project.minecraft_version}-${project.version}"
 
+if (System.env.TRAVIS_BRANCH != 'master') {
+    version += "-${System.env.TRAVIS_BRANCH}"
+}
+
 if (project.release != 'RELEASE') {
     version += "-${project.release}"
 }
@@ -22,14 +26,7 @@ description = project.displayname
 archivesBaseName = project.name
 
 minecraft {
-    refmapName = 'presencefootsteps.mixin.refmap.json'
-}
-
-// check for updates every build when on CI
-if (System.env.CI) {
-    configurations.all {
-        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-    }
+    refmapName = 'mson.mixin.refmap.json'
 }
 
 repositories {
