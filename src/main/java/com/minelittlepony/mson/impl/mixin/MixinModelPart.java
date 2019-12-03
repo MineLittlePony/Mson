@@ -25,29 +25,30 @@ abstract class MixinModelPart implements MsonPart, Texture, ContentAccessor {
     @Accessor("textureOffsetV")
     public abstract int getV();
 
-    @Accessor("textureWidth")
-    abstract float getFloatidth();
-
+    @Shadow
+    private float textureWidth;
     @Override
     public int getWidth() {
-        return (int)getFloatidth();
+        return (int)textureWidth;
     }
 
-    @Accessor("textureHeight")
-    public abstract float getFloatHeight();
-
+    @Shadow
+    private float textureHeight;
     @Override
     public int getHeight() {
-        return (int)getFloatHeight();
+        return (int)textureHeight;
     }
 
     @Override
     @Accessor("mirror")
     public abstract boolean getMirrorX();
 
+    @Shadow @Final
+    private ObjectList<ModelPart.Cuboid> cuboids;
     @Override
-    @Accessor("cuboids")
-    public abstract ObjectList<Cuboid> cubes();
+    public ObjectList<Cuboid> cubes() {
+        return cuboids;
+    }
 
     @Shadow @Final
     private ObjectList<ModelPart> children;
