@@ -13,11 +13,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public enum Face {
-    NONE(Axis.Y, -1),
-    UP(Axis.Y, -1),
-    DOWN(Axis.Y, 1),
-    WEST(Axis.X, -1),
-    EAST(Axis.X, 1),
+    NONE (Axis.Y, -1),
+    UP   (Axis.Y, -1),
+    DOWN (Axis.Y,  1),
+    WEST (Axis.X, -1),
+    EAST (Axis.X,  1),
     NORTH(Axis.Z, -1),
     SOUTH(Axis.Z,  1);
 
@@ -57,9 +57,9 @@ public enum Face {
         float y = position[1];
         float z = position[2];
 
-        int dx = getAxis().getWidth(dimensions);
-        int dy = getAxis().getHeight(dimensions);
-        int dz = getAxis().getDeptch(dimensions);
+        int dx = getAxis().getWidth().getInt(dimensions);
+        int dy = getAxis().getHeight().getInt(dimensions);
+        int dz = getAxis().getDeptch().getInt(dimensions);
 
         return Lists.newArrayList(
                 new Vec3d(x,      y,      z),
@@ -78,39 +78,52 @@ public enum Face {
     }
 
     public enum Axis {
-        X(-1,  0,  1),
-        Y(0, -1,  1),
-        Z(0,  1, -1);
+        X(-1,  1,  0),
+        Y( 0, -1,  1),
+        Z( 0,  1, -1);
 
-        private int widthIndex;
-        private int heightIndex;
-        private int depthIndex;
+        private Parameter widthIndex;
+        private Parameter heightIndex;
+        private Parameter depthIndex;
 
         Axis(int w, int h, int d) {
-            widthIndex = w;
-            heightIndex = h;
-            depthIndex = d;
+            widthIndex = new Parameter(w);
+            heightIndex = new Parameter(h);
+            depthIndex = new Parameter(d);
         }
 
-        public int getWidth(int[] dimensions) {
-            if (widthIndex < 0) {
-                return 0;
-            }
-            return dimensions[widthIndex];
+        public Parameter getWidth() {
+           return widthIndex;
         }
 
-        public int getHeight(int[] dimensions) {
-            if (heightIndex < 0) {
-                return 0;
-            }
-            return dimensions[heightIndex];
+        public Parameter getHeight() {
+            return heightIndex;
         }
 
-        public int getDeptch(int[] dimensions) {
-            if (depthIndex < 0) {
-                return 0;
+        public Parameter getDeptch() {
+            return depthIndex;
+        }
+
+        public static final class Parameter {
+            private final int index;
+
+            private Parameter(int index) {
+                this.index = index;
             }
-            return dimensions[depthIndex];
+
+            public int getInt(int[] dimensions) {
+                if (index < 0) {
+                    return 0;
+                }
+                return dimensions[index];
+            }
+
+            public boolean getBoolean(boolean[] dimensions) {
+                if (index < 0) {
+                    return false;
+                }
+                return dimensions[index];
+            }
         }
     }
 }

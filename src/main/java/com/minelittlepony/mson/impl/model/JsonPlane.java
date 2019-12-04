@@ -27,12 +27,15 @@ public class JsonPlane implements JsonComponent<Cuboid> {
 
     private final float[] stretch = new float[3];
 
+    private final boolean[] mirror = new boolean[3];
+
     private final Face face;
 
     public JsonPlane(JsonContext context, JsonObject json) {
         position = context.getVarLookup().getFloats(json, "position", 3);
         size = context.getVarLookup().getInts(json, "size", 3);
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
+        JsonUtil.getBooleans(json, "mirror", mirror);
         JsonUtil.getFloats(json, "stretch", stretch);
         face = Face.valueOf(JsonUtil.require(json, "face").getAsString().toUpperCase());
     }
@@ -41,6 +44,7 @@ public class JsonPlane implements JsonComponent<Cuboid> {
     public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
         return new BoxBuilder(context)
             .tex(Optional.of(texture.complete(context)))
+            .mirror(face.getAxis(), mirror)
             .pos(face.transformPosition(position.complete(context), context))
             .size(face.getAxis(), size.complete(context))
             .stretch(stretch)

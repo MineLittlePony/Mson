@@ -115,9 +115,9 @@ public final class BoxBuilder {
 
     public BoxBuilder size(Axis axis, int...dimension) {
         return size(
-                axis.getWidth(dimension),
-                axis.getHeight(dimension),
-                axis.getDeptch(dimension)
+                axis.getWidth().getInt(dimension),
+                axis.getHeight().getInt(dimension),
+                axis.getDeptch().getInt(dimension)
         );
     }
 
@@ -125,6 +125,13 @@ public final class BoxBuilder {
         this.stretchX += stretch[0];
         this.stretchY += stretch[1];
         this.stretchZ += stretch[2];
+        return this;
+    }
+
+    public BoxBuilder mirror(Axis axis, boolean... mirror) {
+        mirrorX = axis.getWidth().getBoolean(mirror);
+        mirrorY = axis.getHeight().getBoolean(mirror);
+        mirrorZ = axis.getDeptch().getBoolean(mirror);
         return this;
     }
 
