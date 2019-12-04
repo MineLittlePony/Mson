@@ -21,19 +21,23 @@ import com.minelittlepony.mson.api.model.quadruped.MsonSheep;
 public final class Test {
 
     public static void init() {
-        MsonImpl.DEBUG = true;
+        /*MsonImpl.DEBUG = true;
         ModelKey<MsonPlayer<AbstractClientPlayerEntity>> STEVE = Mson.getInstance().registerModel(new Identifier("mson", "steve"), MsonPlayer::new);
-        ModelKey<MsonPlayer<AbstractClientPlayerEntity>> ALEX = Mson.getInstance().registerModel(new Identifier("mson", "rayman"), MsonPlayer::new);
-        ModelKey<MsonCreeper<CreeperEntity>> CREEPER = Mson.getInstance().registerModel(new Identifier("mson", "creeper"), MsonCreeper::new);
-        ModelKey<MsonPig<PigEntity>> PIG = Mson.getInstance().registerModel(new Identifier("mson", "pig"), MsonPig::new);
-        ModelKey<MsonCow<CowEntity>> COW = Mson.getInstance().registerModel(new Identifier("mson", "cow"), MsonCow::new);
-        ModelKey<MsonSheep<SheepEntity>> SHEEP = Mson.getInstance().registerModel(new Identifier("mson", "sheep"), MsonSheep::new);
-        ModelKey<MsonSheep<SheepEntity>> SHEEP_WOOL = Mson.getInstance().registerModel(new Identifier("mson", "sheep_wool"), MsonSheep::new);
-        ModelKey<MsonEnderman<EndermanEntity>> ENDERMAN = Mson.getInstance().registerModel(new Identifier("mson", "enderman"), MsonEnderman::new);
-        MsonImpl.DEBUG = false;
+        ModelKey<MsonPlayer<AbstractClientPlayerEntity>> ALEX = Mson.getInstance().registerModel(new Identifier("mson", "alex"), MsonPlayer::new);
+        MsonImpl.DEBUG = false;*/
 
-        Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("default", r -> new MsonPlayer.Renderer(r, STEVE));
-        Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("slim", r -> new MsonPlayer.Renderer(r, ALEX));
+        ModelKey<MsonCreeper<CreeperEntity>> CREEPER = Mson.getInstance().registerModel(new Identifier("mson_test", "creeper"), MsonCreeper::new);
+        ModelKey<MsonPig<PigEntity>> PIG = Mson.getInstance().registerModel(new Identifier("mson_test", "pig"), MsonPig::new);
+        ModelKey<MsonCow<CowEntity>> COW = Mson.getInstance().registerModel(new Identifier("mson_test", "cow"), MsonCow::new);
+        ModelKey<MsonSheep<SheepEntity>> SHEEP = Mson.getInstance().registerModel(new Identifier("mson_test", "sheep"), MsonSheep::new);
+        ModelKey<MsonSheep<SheepEntity>> SHEEP_WOOL = Mson.getInstance().registerModel(new Identifier("mson_test", "sheep_wool"), MsonSheep::new);
+        ModelKey<MsonEnderman<EndermanEntity>> ENDERMAN = Mson.getInstance().registerModel(new Identifier("mson_test", "enderman"), MsonEnderman::new);
+
+        //ModelKey<MsonPlayer<AbstractClientPlayerEntity>> RAYMAN = Mson.getInstance().registerModel(new Identifier("mson_test", "rayman"), MsonPlayer::new);
+        ModelKey<MsonPlayer<AbstractClientPlayerEntity>> PLANE = Mson.getInstance().registerModel(new Identifier("mson_test", "plane"), MsonPlayer::new);
+
+        Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("default", r -> new MsonPlayer.Renderer(r, PLANE));
+        Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("slim", r -> new MsonPlayer.Renderer(r, PLANE));
         Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(EntityType.CREEPER, r -> new MsonCreeper.Renderer(r, CREEPER));
         Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(EntityType.PIG, r -> new MsonPig.Renderer(r, PIG));
         Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(EntityType.COW, r -> new MsonCow.Renderer(r, COW));
