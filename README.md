@@ -1,4 +1,6 @@
  # M-SON
+  ![](https://travis-ci.org/MineLittlePony/Mson.svg?branch=1.15-pre6)
+ 
  ## /ˈmeɪs(ə)n/
 
 > _noun_  
