@@ -1,8 +1,5 @@
 package com.minelittlepony.mson.impl.invoke;
 
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.MappingResolver;
-
 import com.minelittlepony.mson.api.mixin.Lambdas;
 
 import java.lang.invoke.CallSite;
@@ -97,13 +94,8 @@ final class LambdasImpl implements Lambdas {
     @Override
     public <Owner, Type> BiConsumer<Owner, ? extends Type> lookupSetter(Class<Owner> owner, Class<Type> fieldType, String fieldName) {
         try {
-            MappingResolver resolver = FabricLoader.getInstance().getMappingResolver();
-
             Class<?> actualFieldType = remapClass(fieldType);
-            fieldName =  resolver.mapFieldName("named",
-                    resolver.unmapClassName("named", owner.getCanonicalName()),
-                    fieldName,
-                    resolver.unmapClassName("named", actualFieldType.getCanonicalName()));
+            fieldName = ObfUtil.unmapFieldName(owner, actualFieldType, fieldName);
 
             MethodHandle setter = MethodHandles.LOOKUP.findSetter(owner, fieldName, actualFieldType);
 

@@ -71,8 +71,11 @@ public final class BoxBuilder {
 
     public CoordinateFixture fixture = CoordinateFixture.unfixed();
 
+    public BoxBuilder(ModelPart part) {
+        this.part = (MsonPart)part;
+    }
     public BoxBuilder(ModelContext context) {
-        part = (MsonPart)context.getContext();
+        this((ModelPart)context.getContext());
 
         stretchX = context.getScale();
         stretchY = context.getScale();
