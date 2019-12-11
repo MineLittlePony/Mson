@@ -58,7 +58,7 @@ final class LambdasImpl implements Lambdas {
             MethodHandle constr = MethodHandles.LOOKUP.findConstructor(owner, constrType);
 
             CallSite site = LambdaMetafactory.metafactory(
-                    MethodHandles.LOOKUP.in(ifaceClass),
+                    MethodHandles.LOOKUP.in(owner),
                     idefMethod.getName(),
                     MethodType.methodType(ifaceClass),
                     implType,
