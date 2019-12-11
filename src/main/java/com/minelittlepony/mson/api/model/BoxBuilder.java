@@ -54,7 +54,7 @@ public final class BoxBuilder {
             throw new RuntimeException("VERT_FACTORY", e);
         }
         try {
-            POLY_SETTER = (BiConsumer<Cuboid, Object>)(Object)lambdas.lookupSetter(Cuboid.class, Rect[].class, "sides");
+            POLY_SETTER = (BiConsumer<Cuboid, Object>)(Object)lambdas.lookupSetter(Cuboid.class, Rect[].class, "field_3649"); // sides
         } catch (Error | Exception e) {
             throw new RuntimeException("POLY_SETTER", e);
         }

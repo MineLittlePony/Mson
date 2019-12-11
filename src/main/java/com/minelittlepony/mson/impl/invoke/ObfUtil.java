@@ -8,7 +8,7 @@ class ObfUtil {
     public static String unmapFieldName(Class<?> ownerType, Class<?> fieldType, String fieldName) {
         MappingResolver resolver = FabricLoader.getInstance().getMappingResolver();
 
-        return resolver.mapFieldName("named",
+        return resolver.mapFieldName("intermediary",
                 unmapClass(ownerType),
                 fieldName,
                 unmapClass(fieldType).replace(".", "/")
@@ -19,6 +19,6 @@ class ObfUtil {
         MappingResolver resolver = FabricLoader.getInstance().getMappingResolver();
 
         String canon = MethodHandles.getRawClass(type).getName();
-        return type.getName().replace(canon, resolver.unmapClassName("named", canon));
+        return type.getName().replace(canon, resolver.unmapClassName("intermediary", canon));
     }
 }
