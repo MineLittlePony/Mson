@@ -43,9 +43,21 @@ public final class BoxBuilder {
 
         Lambdas lambdas = MethodHandles.lambdas().remap(Vert.class, Vert).remap(Rect.class, Rect);
 
-        RECT_FACTORY = lambdas.lookupFactory(Rect.Factory.class, Rect, Rect.ConstrDefinition.class);
-        VERT_FACTORY = lambdas.lookupFactory(Vert.Factory.class, Vert);
-        POLY_SETTER = (BiConsumer<Cuboid, Object>)(Object)lambdas.lookupSetter(Cuboid.class, Rect[].class, "sides");
+        try {
+            RECT_FACTORY = lambdas.lookupFactory(Rect.Factory.class, Rect, Rect.ConstrDefinition.class);
+        } catch (Error | Exception e) {
+            throw new RuntimeException("RECT_FACTORY", e);
+        }
+        try {
+            VERT_FACTORY = lambdas.lookupFactory(Vert.Factory.class, Vert);
+        } catch (Error | Exception e) {
+            throw new RuntimeException("VERT_FACTORY", e);
+        }
+        try {
+            POLY_SETTER = (BiConsumer<Cuboid, Object>)(Object)lambdas.lookupSetter(Cuboid.class, Rect[].class, "sides");
+        } catch (Error | Exception e) {
+            throw new RuntimeException("POLY_SETTER", e);
+        }
     }
 
     public final MsonPart part;
