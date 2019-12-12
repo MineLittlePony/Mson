@@ -32,6 +32,7 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -279,10 +280,22 @@ class ModelFoundry {
             @SuppressWarnings("unchecked")
             @Override
             public <T> T computeIfAbsent(String name, ContentSupplier<T> supplier) {
+                Objects.requireNonNull(supplier);
+
                 if (Strings.isNullOrEmpty(name)) {
                     return supplier.apply(name);
                 }
-                return (T)objectCache.computeIfAbsent(name, supplier);
+
+                // Default implementation from java.util.Map
+                // is safe and won't throw concurrent modifications on recurse.
+                T value;
+                if ((value = (T)objectCache.get(name)) == null) {
+                    if ((value = supplier.apply(name)) != null) {
+                        objectCache.put(name, value);
+                    }
+                }
+
+                return value;
             }
 
             @Override
