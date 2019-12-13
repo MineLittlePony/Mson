@@ -105,23 +105,29 @@ public interface QuadsBuilder {
 
             boolean mirror = ctx.mirrorX || ctx.mirrorY || ctx.mirrorZ;
 
+            Direction lighting = face.getLighting();
+
+            if (mirror && face.getAxis() != Axis.Y) {
+                lighting = lighting.getOpposite();
+            }
+
             if (face == Face.EAST) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dz, ctx.dy, Direction.EAST, mirror, edn, eds, eus, eun);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dz, ctx.dy, lighting, mirror, edn, eds, eus, eun);
             }
             if (face == Face.WEST) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dz, ctx.dy, Direction.WEST, mirror, wds, wdn, wun, wus);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dz, ctx.dy, lighting, mirror, wds, wdn, wun, wus);
             }
             if (face == Face.UP) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dz, Direction.DOWN, mirror, eus, wus, wun, eun);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dz, lighting, mirror, eus, wus, wun, eun);
             }
             if (face == Face.DOWN) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dz, Direction.UP, mirror, edn, wdn, wds, eds);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dz, lighting, mirror, edn, wdn, wds, eds);
             }
             if (face == Face.SOUTH) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dy, Direction.SOUTH, mirror, wdn, edn, eun, wun);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dy, lighting, mirror, wdn, edn, eun, wun);
             }
             if (face == Face.NORTH) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dy, Direction.NORTH, mirror, eds, wds, wus, eus);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dy, lighting, mirror, eds, wds, wus, eus);
             }
 
             return quads;

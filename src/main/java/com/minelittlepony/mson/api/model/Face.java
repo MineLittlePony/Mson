@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.api.model;
 
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 import com.google.common.base.Strings;
@@ -13,16 +14,17 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public enum Face {
-    NONE (Axis.Y, -1),
-    UP   (Axis.Y, -1),
-    DOWN (Axis.Y,  1),
-    WEST (Axis.X, -1),
-    EAST (Axis.X,  1),
-    NORTH(Axis.Z, -1),
-    SOUTH(Axis.Z,  1);
+    NONE (Axis.Y, Direction.UP,   -1),
+    UP   (Axis.Y, Direction.DOWN, -1),
+    DOWN (Axis.Y, Direction.UP,    1),
+    WEST (Axis.X, Direction.WEST, -1),
+    EAST (Axis.X, Direction.EAST,  1),
+    NORTH(Axis.Z, Direction.NORTH,-1),
+    SOUTH(Axis.Z, Direction.SOUTH, 1);
 
-    private final int direction;
+    private final int sigma;
     private final Axis axis;
+    private final Direction lighting;
 
     public static final Set<Face> VALUES = ImmutableSet.copyOf(values());
     private static final Map<String, Face> REGISTRY = new HashMap<>();
@@ -31,9 +33,14 @@ public enum Face {
         VALUES.forEach(f -> REGISTRY.put(f.name(), f));
     }
 
-    Face(Axis axis, int direction) {
-        this.direction = direction;
+    Face(Axis axis, Direction lighting, int sigma) {
         this.axis = axis;
+        this.lighting = lighting;
+        this.sigma = sigma;
+    }
+
+    public Direction getLighting() {
+        return lighting;
     }
 
     public float[] transformPosition(float[] position, ModelContext context) {
@@ -42,7 +49,7 @@ public enum Face {
         System.arraycopy(position, 0, result, 0, position.length);
 
         if (axis == Axis.Y) {
-            result[2] += direction * (context.getScale() * 2);
+            result[2] += sigma * (context.getScale() * 2);
         }
 
         return result;
