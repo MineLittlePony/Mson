@@ -124,9 +124,10 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             this.constr = constr;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public T createModel() {
-            return createModel(constr);
+        public <V extends T> V createModel() {
+            return (V)createModel(constr);
         }
 
         @Override

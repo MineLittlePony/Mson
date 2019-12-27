@@ -17,7 +17,7 @@ public interface ModelKey<T extends MsonModel> {
     /**
      * Creates an instance of the underlying type.
      */
-    T createModel();
+    <V extends T> V createModel();
 
     <V extends T> V createModel(Supplier<V> supplier);
 }

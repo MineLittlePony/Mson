@@ -62,9 +62,10 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
         return factory.apply(context);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public T createModel() {
-        return createModel((ModelContext)null);
+    public <V extends T> V createModel() {
+        return (V)createModel((ModelContext)null);
     }
 
     @Override
