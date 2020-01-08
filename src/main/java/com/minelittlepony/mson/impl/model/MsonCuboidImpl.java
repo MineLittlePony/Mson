@@ -5,9 +5,14 @@ import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
 
+import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
 import com.minelittlepony.mson.api.model.MsonPart;
 
+import java.util.Random;
+
 class MsonCuboidImpl extends ModelPart implements MsonPart {
+
+    private static final Cuboid EMPTY_CUBE = new Cuboid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true, 0, 0);
 
     private float modelOffsetX;
     private float modelOffsetY;
@@ -75,5 +80,14 @@ class MsonCuboidImpl extends ModelPart implements MsonPart {
     @Override
     public boolean getMirrorZ() {
         return mirrorZ;
+    }
+
+    // Fixes MC-169239
+    @Override
+    public ModelPart.Cuboid getRandomCuboid(Random random) {
+        if (((ContentAccessor)this).cubes().isEmpty()) {
+            return EMPTY_CUBE;
+        }
+        return super.getRandomCuboid(random);
     }
 }
