@@ -39,7 +39,7 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
             }
             modelRenderers.put(skinType, renderer);
         } catch (Exception e) {
-            MsonImpl.LOGGER.error("Error whilst updating player renderer " + skinType + ": " + e.getMessage());
+            MsonImpl.LOGGER.error("Error whilst updating player renderer " + skinType + ": " + e.getMessage(), e);
         }
     }
 
@@ -48,7 +48,7 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
         try {
             renderers.put(type, constructor.apply((EntityRenderDispatcher)(Object)this));
         } catch (Exception e) {
-            MsonImpl.LOGGER.error("Error whilst updating entity renderer " + EntityType.getId(type) + ": " + e.getMessage());
+            MsonImpl.LOGGER.error("Error whilst updating entity renderer " + EntityType.getId(type) + ": " + e.getMessage(), e);
         }
     }
 }
