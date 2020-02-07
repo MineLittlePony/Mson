@@ -21,7 +21,6 @@ import com.minelittlepony.mson.impl.FixtureImpl;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
-import com.minelittlepony.mson.util.Maps;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
