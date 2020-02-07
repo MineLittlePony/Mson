@@ -21,6 +21,7 @@ import com.minelittlepony.mson.impl.FixtureImpl;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
+import com.minelittlepony.mson.util.Maps;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -92,8 +93,7 @@ public class JsonPlanar extends JsonCuboid {
         }
 
         protected void consumeVertex(Vec3d vert) {
-            int count = axisLockingMesh.computeIfAbsent(vert, v -> 0);
-            axisLockingMesh.put(vert, count + 1);
+            axisLockingMesh.put(vert, axisLockingMesh.computeIfAbsent(vert, v -> 0) + 1);
         }
 
         class JsonFace implements JsonComponent<Cuboid> {

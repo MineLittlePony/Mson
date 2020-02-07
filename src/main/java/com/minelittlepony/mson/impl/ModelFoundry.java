@@ -25,6 +25,7 @@ import com.minelittlepony.mson.impl.model.JsonLink;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
+import com.minelittlepony.mson.util.Maps;
 import com.minelittlepony.mson.util.ThrowableUtils;
 
 import java.io.InputStreamReader;
@@ -286,16 +287,7 @@ class ModelFoundry {
                     return supplier.apply(name);
                 }
 
-                // Default implementation from java.util.Map
-                // is safe and won't throw concurrent modifications on recurse.
-                T value;
-                if ((value = (T)objectCache.get(name)) == null) {
-                    if ((value = supplier.apply(name)) != null) {
-                        objectCache.put(name, value);
-                    }
-                }
-
-                return value;
+                return (T)Maps.computeIfAbsent(objectCache, name, supplier);
             }
 
             @Override

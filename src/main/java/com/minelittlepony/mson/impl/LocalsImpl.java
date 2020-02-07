@@ -11,6 +11,7 @@ import com.minelittlepony.mson.api.json.Variables;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.util.Incomplete;
+import com.minelittlepony.mson.util.Maps;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +52,7 @@ public final class LocalsImpl implements ModelContext.Locals, JsonVariables {
 
     @Override
     public CompletableFuture<Float> getValue(String name) {
-        return precalculatedValues.computeIfAbsent(name, this::lookupValue);
+        return Maps.computeIfAbsent(precalculatedValues, name, this::lookupValue);
     }
 
     private CompletableFuture<Float> lookupValue(String name) {
