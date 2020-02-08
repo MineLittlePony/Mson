@@ -66,11 +66,11 @@ public interface QuadsBuilder {
             float zMax = ctx.z + ctx.dz;
 
             xMax = ctx.fixture.stretchCoordinate(Axis.X, xMax, yMax, zMax, ctx.stretchX);
-            yMax = ctx.fixture.stretchCoordinate(Axis.Y, xMax, yMax, zMax, ctx.stretchY);
+            yMax = ctx.fixture.stretchCoordinate(Axis.Y, xMax, yMax, zMax, face.applyFixtures(ctx.stretchY));
             zMax = ctx.fixture.stretchCoordinate(Axis.Z, xMax, yMax, zMax, ctx.stretchZ);
 
             float xMin = ctx.fixture.stretchCoordinate(Axis.X, ctx.x, ctx.y, ctx.z, -ctx.stretchX);
-            float yMin = ctx.fixture.stretchCoordinate(Axis.Y, ctx.x, ctx.y, ctx.z, -ctx.stretchY);
+            float yMin = ctx.fixture.stretchCoordinate(Axis.Y, ctx.x, ctx.y, ctx.z, face.applyFixtures(-ctx.stretchY));
             float zMin = ctx.fixture.stretchCoordinate(Axis.Z, ctx.x, ctx.y, ctx.z, -ctx.stretchZ);
 
             if (ctx.mirrorX) {

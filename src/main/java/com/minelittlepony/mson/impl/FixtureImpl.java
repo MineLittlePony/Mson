@@ -13,7 +13,7 @@ public class FixtureImpl implements CoordinateFixture {
 
     @Override
     public float stretchCoordinate(Axis axis, float x, float y, float z, float stretch) {
-        return getValue(axis, x, y, z) + stretch;
+        return getValue(axis, x, y, z) + (isFixed(axis, x, y, z) ? -stretch : stretch);
     }
 
     private float getValue(Axis axis, float x, float y, float z) {

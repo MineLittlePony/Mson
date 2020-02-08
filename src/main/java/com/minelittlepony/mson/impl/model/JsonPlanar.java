@@ -36,8 +36,11 @@ public class JsonPlanar extends JsonCuboid {
 
     private final Map<Face, JsonFaceSet> faces = new EnumMap<>(Face.class);
 
+    private final float[] stretch = new float[3];
+
     public JsonPlanar(JsonContext context, JsonObject json) {
         super(context, json);
+        JsonUtil.getFloats(json, "stretch", stretch);
 
         Face.VALUES.forEach(face -> {
             JsonUtil.accept(json, face.name().toLowerCase())
@@ -62,7 +65,7 @@ public class JsonPlanar extends JsonCuboid {
 
         private final List<JsonFace> elements = new ArrayList<>();
 
-        private final Map<Vec3d, Integer> axisLockingMesh = new HashMap<>();
+        private final Map<Axis, List<Vec3d>> lockedVectors = new HashMap<>();
 
         public JsonFaceSet(JsonContext context, JsonArray json, Face face) {
             this.face = face;
@@ -74,6 +77,32 @@ public class JsonPlanar extends JsonCuboid {
             } else {
                 elements.add(new JsonFace(context, json));
             }
+
+            for (Axis axis : Axis.values()) {
+                if (axis != face.getAxis()) {
+                    for (JsonFace i : elements) {
+                        face.getVertices(i.position, i.size, axis, 0.5F).forEach(vertex -> {
+
+                            List<Vec3d> locked = getLockedVectors(axis);
+
+                            if (locked.contains(vertex.normal)) {
+                                return;
+                            }
+
+                            for (JsonFace f : elements) {
+                                if (f != i && face.isInside(f.position, f.size, vertex.stretched)) {
+                                    locked.add(vertex.normal);
+                                    break;
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        List<Vec3d> getLockedVectors(Axis axis) {
+            return lockedVectors.computeIfAbsent(axis, a -> new ArrayList<>());
         }
 
         void export(ModelContext subContext, List<Cuboid> cubes) {
@@ -88,17 +117,13 @@ public class JsonPlanar extends JsonCuboid {
 
         @Override
         protected boolean isFixed(Axis axis, float x, float y, float z) {
-            return axisLockingMesh.getOrDefault(new Vec3d(x, y, z), 0) > 1;
-        }
-
-        protected void consumeVertex(Vec3d vert) {
-            axisLockingMesh.put(vert, axisLockingMesh.computeIfAbsent(vert, v -> 0) + 1);
+            return getLockedVectors(axis).contains(new Vec3d(x, y, z));
         }
 
         class JsonFace implements JsonComponent<Cuboid> {
 
-            private final float[] position = new float[3];
-            private final int[] size = new int[2];
+            final float[] position = new float[3];
+            final int[] size = new int[2];
 
             private final Incomplete<Optional<Texture>> texture;
 
@@ -108,8 +133,6 @@ public class JsonPlanar extends JsonCuboid {
                 position[2] =  json.get(2).getAsFloat();
                 size[0] = (int)json.get(3).getAsFloat();
                 size[1] = (int)json.get(4).getAsFloat();
-
-                face.getVertices(position, size).forEach(JsonFaceSet.this::consumeVertex);
 
                 if (json.size() > 6) {
                     texture = createTexture(
@@ -137,9 +160,10 @@ public class JsonPlanar extends JsonCuboid {
             @Override
             public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
                 return new BoxBuilder(context)
+                    .stretch(stretch)
                     .fix(JsonFaceSet.this)
                     .tex(texture.complete(context))
-                    .pos(face.transformPosition(position, context))
+                    .pos(position)
                     .size(face.getAxis(), size)
                     .build(QuadsBuilder.plane(face));
             }

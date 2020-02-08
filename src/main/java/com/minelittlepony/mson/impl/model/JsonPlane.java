@@ -45,7 +45,7 @@ public class JsonPlane implements JsonComponent<Cuboid> {
         return new BoxBuilder(context)
             .tex(Optional.of(texture.complete(context)))
             .mirror(face.getAxis(), mirror)
-            .pos(face.transformPosition(position.complete(context), context))
+            .pos(position.complete(context))
             .size(face.getAxis(), size.complete(context))
             .stretch(stretch)
             .build(QuadsBuilder.plane(face));

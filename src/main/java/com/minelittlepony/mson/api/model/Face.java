@@ -5,24 +5,22 @@ import net.minecraft.util.math.Vec3d;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.minelittlepony.mson.api.ModelContext;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
 public enum Face {
-    NONE (Axis.Y, Direction.UP,   -1),
-    UP   (Axis.Y, Direction.DOWN, -1),
-    DOWN (Axis.Y, Direction.UP,    1),
-    WEST (Axis.X, Direction.WEST, -1),
-    EAST (Axis.X, Direction.EAST,  1),
-    NORTH(Axis.Z, Direction.NORTH,-1),
-    SOUTH(Axis.Z, Direction.SOUTH, 1);
+    NONE (Axis.Y, Direction.UP),
+    UP   (Axis.Y, Direction.DOWN),
+    DOWN (Axis.Y, Direction.UP),
+    WEST (Axis.X, Direction.WEST),
+    EAST (Axis.X, Direction.EAST),
+    NORTH(Axis.Z, Direction.NORTH),
+    SOUTH(Axis.Z, Direction.SOUTH);
 
-    private final int sigma;
     private final Axis axis;
     private final Direction lighting;
 
@@ -33,51 +31,64 @@ public enum Face {
         VALUES.forEach(f -> REGISTRY.put(f.name(), f));
     }
 
-    Face(Axis axis, Direction lighting, int sigma) {
+    Face(Axis axis, Direction lighting) {
         this.axis = axis;
         this.lighting = lighting;
-        this.sigma = sigma;
     }
 
     public Direction getLighting() {
         return lighting;
     }
 
-    public float[] transformPosition(float[] position, ModelContext context) {
-
-        float[] result = new float[position.length];
-        System.arraycopy(position, 0, result, 0, position.length);
-
-        if (axis == Axis.Y) {
-            result[2] += sigma * (context.getScale() * 2);
-        }
-
-        return result;
+    public float applyFixtures(float stretch) {
+        return (getAxis() == Axis.Y ? -1 : 1) * stretch;
     }
 
     public Axis getAxis() {
         return axis;
     }
 
-    public Stream<Vec3d> getVertices(float[] position, int[] dimensions) {
+    public boolean isInside(float[] position, int[] dimensions, Vec3d vertex) {
         float x = position[0];
         float y = position[1];
         float z = position[2];
 
-        int dx = getAxis().getWidth().getInt(dimensions);
-        int dy = getAxis().getHeight().getInt(dimensions);
-        int dz = getAxis().getDeptch().getInt(dimensions);
+        float dx = getAxis().getWidth().getInt(dimensions);
+        float dy = getAxis().getHeight().getInt(dimensions);
+        float dz = getAxis().getDeptch().getInt(dimensions);
 
-        return Lists.newArrayList(
-                new Vec3d(x,      y,      z),
-                new Vec3d(x,      y,      z + dz),
-                new Vec3d(x,      y + dy, z),
-                new Vec3d(x,      y + dy, z + dz),
-                new Vec3d(x + dx, y,      z),
-                new Vec3d(x + dx, y,      z + dz),
-                new Vec3d(x + dx, y + dy, z),
-                new Vec3d(x + dx, y + dy, z + dz)
-        ).stream().distinct();
+        return isBetween(vertex.x, x, x + dx)
+            && isBetween(vertex.y, y, y + dy)
+            && isBetween(vertex.z, z, z + dz);
+    }
+
+    private static boolean isBetween(double value, double min, double max) {
+        return value >= min && value <= max;
+    }
+
+    public Stream<Corner> getVertices(float[] position, int[] dimensions, Axis axis, float stretch) {
+
+        Vec3d min = new Vec3d(position[0], position[1], position[2]);
+        Vec3d max = new Vec3d(
+                getAxis().getWidth().getInt(dimensions),
+                getAxis().getHeight().getInt(dimensions),
+                getAxis().getDeptch().getInt(dimensions)
+        );
+
+
+        Vec3d str = stretch == 0 ? Vec3d.ZERO : new Vec3d(
+                (axis == Axis.X ? stretch : 0),
+                (axis == Axis.Y ? stretch : 0),
+                (axis == Axis.Z ? stretch : 0)
+        );
+        Vec3d stretchedMin = stretch == 0 ? min : min.subtract(str);
+        Vec3d stretchedMax = stretch == 0 ? max : max.add(str.multiply(2));
+
+        return Arrays.stream(Corner.CORNERS).map(corner -> {
+            Vec3d cornerVec = min.add(max.multiply(corner));
+            Vec3d stretched = stretch == 0 ? cornerVec : stretchedMin.add(stretchedMax.multiply(corner));
+            return new Corner(cornerVec, stretched);
+        }).distinct();
     }
 
     public static Face of(String s) {
