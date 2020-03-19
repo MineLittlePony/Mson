@@ -35,6 +35,7 @@ public class Corner {
        return normal.hashCode();
     }
 
+    @Override
     public String toString() {
        return normal.toString();
     }
