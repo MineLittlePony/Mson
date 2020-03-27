@@ -9,10 +9,15 @@ import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 
+import com.google.common.collect.Lists;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.mixin.Extends;
 import com.minelittlepony.mson.api.mixin.MixedMsonModel;
+import com.minelittlepony.mson.api.model.MsonPart;
+
+import java.util.List;
+import java.util.Random;
 
 @Extends(MsonBiped.class)
 public class MsonPlayer<T extends LivingEntity>
@@ -21,6 +26,8 @@ public class MsonPlayer<T extends LivingEntity>
 
     protected ModelPart cape;
     protected ModelPart deadmsEars;
+
+    private List<ModelPart> parts;
 
     public MsonPlayer() {
         this(false);
@@ -56,6 +63,22 @@ public class MsonPlayer<T extends LivingEntity>
     @Override
     public void renderCape(MatrixStack renderMatrix, VertexConsumer vertexBuffer, int i, int j) {
         cape.render(renderMatrix, vertexBuffer, i, j);
+    }
+
+    @Override
+    public ModelPart getRandomPart(Random random) {
+        if (parts.isEmpty()) {
+            return MsonPart.EMPTY_PART;
+        }
+        return parts.get(random.nextInt(parts.size()));
+    }
+
+    @Override
+    public void accept(ModelPart modelPart) {
+       if (parts == null) {
+          parts = Lists.newArrayList();
+       }
+       parts.add(modelPart);
     }
 
     @Override

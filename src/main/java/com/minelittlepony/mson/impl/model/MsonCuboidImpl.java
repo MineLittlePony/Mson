@@ -11,9 +11,6 @@ import com.minelittlepony.mson.api.model.MsonPart;
 import java.util.Random;
 
 class MsonCuboidImpl extends ModelPart implements MsonPart {
-
-    private static final Cuboid EMPTY_CUBE = new Cuboid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true, 0, 0);
-
     private float modelOffsetX;
     private float modelOffsetY;
     private float modelOffsetZ;

@@ -1,8 +1,19 @@
 package com.minelittlepony.mson.api.model;
 
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.ModelPart.Cuboid;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.util.math.MatrixStack;
 
 public interface MsonPart {
+
+    static ModelPart EMPTY_PART = new ModelPart(new Model(null) {
+        @Override
+        public void render(MatrixStack matrices, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
+        }
+    });
+    static Cuboid EMPTY_CUBE = new Cuboid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true, 0, 0);
 
     /**
      * Sets the cuboid's texture parameters.
