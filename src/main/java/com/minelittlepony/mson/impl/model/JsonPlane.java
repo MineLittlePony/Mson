@@ -21,7 +21,7 @@ public class JsonPlane implements JsonComponent<Cuboid> {
     public static final Identifier ID = new Identifier("mson", "plane");
 
     private final Incomplete<float[]> position;
-    private final Incomplete<int[]> size;
+    private final Incomplete<float[]> size;
 
     private final Incomplete<Texture> texture;
 
@@ -33,7 +33,7 @@ public class JsonPlane implements JsonComponent<Cuboid> {
 
     public JsonPlane(JsonContext context, JsonObject json) {
         position = context.getVarLookup().getFloats(json, "position", 3);
-        size = context.getVarLookup().getInts(json, "size", 3);
+        size = context.getVarLookup().getFloats(json, "size", 3);
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
         JsonUtil.getBooleans(json, "mirror", mirror);
         JsonUtil.getFloats(json, "stretch", stretch);

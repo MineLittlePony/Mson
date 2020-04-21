@@ -123,7 +123,7 @@ public class JsonPlanar extends JsonCuboid {
         class JsonFace implements JsonComponent<Cuboid> {
 
             final float[] position = new float[3];
-            final int[] size = new int[2];
+            final float[] size = new float[2];
 
             private final Incomplete<Optional<Texture>> texture;
 
@@ -131,8 +131,8 @@ public class JsonPlanar extends JsonCuboid {
                 position[0] =  json.get(0).getAsFloat();
                 position[1] =  json.get(1).getAsFloat();
                 position[2] =  json.get(2).getAsFloat();
-                size[0] = (int)json.get(3).getAsFloat();
-                size[1] = (int)json.get(4).getAsFloat();
+                size[0] =      json.get(3).getAsFloat();
+                size[1] =      json.get(4).getAsFloat();
 
                 if (json.size() > 6) {
                     texture = createTexture(

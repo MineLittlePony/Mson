@@ -66,9 +66,9 @@ public final class BoxBuilder {
     public float y;
     public float z;
 
-    public int dx;
-    public int dy;
-    public int dz;
+    public float dx;
+    public float dy;
+    public float dz;
 
     public int u;
     public int v;
@@ -121,18 +121,18 @@ public final class BoxBuilder {
         return this;
     }
 
-    public BoxBuilder size(int... size) {
+    public BoxBuilder size(float... size) {
         dx = size[0];
         dy = size[1];
         dz = size[2];
         return this;
     }
 
-    public BoxBuilder size(Axis axis, int...dimension) {
+    public BoxBuilder size(Axis axis, float...dimension) {
         return size(
-                axis.getWidth().getInt(dimension),
-                axis.getHeight().getInt(dimension),
-                axis.getDeptch().getInt(dimension)
+                axis.getWidth().getFloat(dimension),
+                axis.getHeight().getFloat(dimension),
+                axis.getDeptch().getFloat(dimension)
         );
     }
 

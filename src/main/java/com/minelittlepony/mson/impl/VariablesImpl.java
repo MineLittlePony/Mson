@@ -39,23 +39,8 @@ final class VariablesImpl implements Variables {
     }
 
     @Override
-    public Incomplete<int[]> getInts(JsonObject json, String member, int len) {
-        return toInts(getIncompletes(json, member, len));
-    }
-
-    @Override
     public Incomplete<float[]> getFloats(JsonObject json, String member, int len) {
         return toFloats(getIncompletes(json, member, len));
-    }
-
-    private Incomplete<int[]> toInts(Incomplete<Float>[] input) {
-        return locals -> {
-            int[] result = new int[input.length];
-            for (int i = 0; i < input.length; i++) {
-                result[i] = input[i].complete(locals).intValue();
-            }
-            return result;
-        };
     }
 
     private Incomplete<float[]> toFloats(Incomplete<Float>[] input) {

@@ -16,12 +16,6 @@ public interface Variables {
     Incomplete<Float> getFloat(JsonPrimitive json);
 
     /**
-     * Reads a json member into an incomplete holding a unresolved integer array.
-     * Variables in the array are resolved against the model context when requested.
-     */
-    Incomplete<int[]> getInts(JsonObject json, String member, int len);
-
-    /**
      * Reads a json member into an incomplete holding a unresolved float array.
      * Variables in the array are resolved against the model context when requested.
      */

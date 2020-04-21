@@ -48,14 +48,14 @@ public enum Face {
         return axis;
     }
 
-    public boolean isInside(float[] position, int[] dimensions, Vec3d vertex) {
+    public boolean isInside(float[] position, float[] dimensions, Vec3d vertex) {
         float x = position[0];
         float y = position[1];
         float z = position[2];
 
-        float dx = getAxis().getWidth().getInt(dimensions);
-        float dy = getAxis().getHeight().getInt(dimensions);
-        float dz = getAxis().getDeptch().getInt(dimensions);
+        float dx = getAxis().getWidth().getFloat(dimensions);
+        float dy = getAxis().getHeight().getFloat(dimensions);
+        float dz = getAxis().getDeptch().getFloat(dimensions);
 
         return isBetween(vertex.x, x, x + dx)
             && isBetween(vertex.y, y, y + dy)
@@ -66,13 +66,13 @@ public enum Face {
         return value >= min && value <= max;
     }
 
-    public Stream<Corner> getVertices(float[] position, int[] dimensions, Axis axis, float stretch) {
+    public Stream<Corner> getVertices(float[] position, float[] dimensions, Axis axis, float stretch) {
 
         Vec3d min = new Vec3d(position[0], position[1], position[2]);
         Vec3d max = new Vec3d(
-                getAxis().getWidth().getInt(dimensions),
-                getAxis().getHeight().getInt(dimensions),
-                getAxis().getDeptch().getInt(dimensions)
+                getAxis().getWidth().getFloat(dimensions),
+                getAxis().getHeight().getFloat(dimensions),
+                getAxis().getDeptch().getFloat(dimensions)
         );
 
 
@@ -129,7 +129,7 @@ public enum Face {
                 this.index = index;
             }
 
-            public int getInt(int[] dimensions) {
+            public float getFloat(float[] dimensions) {
                 if (index < 0) {
                     return 0;
                 }

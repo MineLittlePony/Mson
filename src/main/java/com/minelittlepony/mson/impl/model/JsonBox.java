@@ -23,7 +23,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
 
     protected final Incomplete<float[]> from;
 
-    protected final Incomplete<int[]> size;
+    protected final Incomplete<float[]> size;
 
     protected final float[] stretch = new float[3];
 
@@ -33,7 +33,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
 
     public JsonBox(JsonContext context, JsonObject json) {
         from = context.getVarLookup().getFloats(json, "from", 3);
-        size = context.getVarLookup().getInts(json, "size", 3);
+        size = context.getVarLookup().getFloats(json, "size", 3);
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::create);
         JsonUtil.getFloats(json, "stretch", stretch);
         mirror = JsonUtil.getTriState("mirror", json);

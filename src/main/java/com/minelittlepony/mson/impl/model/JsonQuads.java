@@ -81,7 +81,7 @@ public class JsonQuads implements JsonComponent<Cuboid>, QuadsBuilder {
         Rect build(BoxBuilder builder) {
             return builder.quad(x, y, w, h, Direction.UP, verts.stream()
                     .map(v -> v.build(builder))
-                    .toArray(i -> new Vert[i])
+                    .toArray(Vert[]::new)
             );
         }
     }
