@@ -52,7 +52,7 @@ public class JsonUtil {
 
     public static void getAsFloats(JsonArray arr, float[] output) {
         for (int i = 0; i < output.length && i < arr.size(); i++) {
-            output[i] = arr.get(i).getAsInt();
+            output[i] = arr.get(i).getAsFloat();
         }
     }
 
