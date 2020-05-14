@@ -31,7 +31,7 @@ public class JsonPlane implements JsonComponent<Cuboid> {
 
     private final Face face;
 
-    public JsonPlane(JsonContext context, JsonObject json) {
+    public JsonPlane(JsonContext context, String name, JsonObject json) {
         position = context.getVarLookup().getFloats(json, "position", 3);
         size = context.getVarLookup().getFloats(json, "size", 3);
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));

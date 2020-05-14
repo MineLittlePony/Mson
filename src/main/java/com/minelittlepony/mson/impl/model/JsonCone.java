@@ -19,8 +19,8 @@ public class JsonCone extends JsonBox {
 
     private final float taper;
 
-    public JsonCone(JsonContext context, JsonObject json) {
-        super(context, json);
+    public JsonCone(JsonContext context, String name, JsonObject json) {
+        super(context, name, json);
         taper = JsonUtil.require(json, "taper").getAsFloat();
     }
 

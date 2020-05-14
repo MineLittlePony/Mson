@@ -31,7 +31,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
 
     protected final Optional<Texture> texture;
 
-    public JsonBox(JsonContext context, JsonObject json) {
+    public JsonBox(JsonContext context, String name, JsonObject json) {
         from = context.getVarLookup().getFloats(json, "from", 3);
         size = context.getVarLookup().getFloats(json, "size", 3);
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::create);

@@ -60,6 +60,6 @@ public interface JsonComponent<T> {
         /**
          * Accepts the json context and json to parse and return a new component instance.
          */
-        JsonComponent<? extends T> loadJson(JsonContext context, JsonObject json);
+        JsonComponent<? extends T> loadJson(JsonContext context, String name, JsonObject json);
     }
 }

@@ -39,12 +39,12 @@ public class JsonSlot<T extends MsonModel> implements JsonComponent<T> {
     @Nullable
     private String name;
 
-    public JsonSlot(JsonContext context, JsonObject json) {
+    public JsonSlot(JsonContext context, String name, JsonObject json) {
         implementation = ReflectedModelKey.fromJson(json);
         content = context.resolve(json.get("content"));
-        name = JsonUtil.require(json, "name").getAsString();
+        this.name = name.isEmpty() ? JsonUtil.require(json, "name").getAsString() : name;
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::create);
-        context.addNamedComponent(name, this);
+        context.addNamedComponent(this.name, this);
 
         locals = JsonUtil.accept(json, "locals")
                 .map(JsonElement::getAsJsonObject)

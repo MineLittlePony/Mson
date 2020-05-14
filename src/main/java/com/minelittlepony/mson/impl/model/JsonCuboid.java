@@ -44,7 +44,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
 
     private final String name;
 
-    public JsonCuboid(JsonContext context, JsonObject json) {
+    public JsonCuboid(JsonContext context, String name, JsonObject json) {
         center = context.getVarLookup().getFloats(json, "center", 3);
         offset = context.getVarLookup().getFloats(json, "offset", 3);
         rotation = context.getVarLookup().getFloats(json, "rotate", 3);
@@ -52,7 +52,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
 
         visible = JsonUtils.getBooleanOr("visible", json, true);
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
-        name = JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("");
+        this.name = name.isEmpty() ? JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("") : name;
 
         JsonUtil.accept(json, "children").map(JsonElement::getAsJsonArray).ifPresent(el -> {
             el.forEach(element -> {
@@ -65,7 +65,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
             });
         });
 
-        context.addNamedComponent(name, this);
+        context.addNamedComponent(this.name, this);
     }
 
     @Override

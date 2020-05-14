@@ -133,7 +133,7 @@ class ModelFoundry {
                     .filter(this::isElement)
                     .collect(Collectors.toMap(
                             Map.Entry::getKey,
-                            entry -> loadComponent(entry.getValue(), JsonCuboid.ID).orElseGet(null)
+                            entry -> loadComponent(entry.getKey(), entry.getValue(), JsonCuboid.ID).orElseGet(null)
             )));;
         }
 
@@ -162,18 +162,23 @@ class ModelFoundry {
             }
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public <T> Optional<JsonComponent<T>> loadComponent(JsonElement json, Identifier defaultAs) {
+            return loadComponent("", json, defaultAs);
+        }
+
+        @SuppressWarnings("unchecked")
+        private <T> Optional<JsonComponent<T>> loadComponent(String name, JsonElement json, Identifier defaultAs) {
             if (json.isJsonObject()) {
                 JsonObject o = json.getAsJsonObject();
+                final String fname = Strings.nullToEmpty(name).trim();
 
                 return Optional
                         .ofNullable(mson.componentTypes.get(JsonUtil.accept(o, "type")
                                 .map(JsonElement::getAsString)
                                 .map(Identifier::new)
                                 .orElse(defaultAs)))
-                        .map(c -> (JsonComponent<T>)c.loadJson(this, o));
+                        .map(c -> (JsonComponent<T>)c.loadJson(this, fname, o));
             }
             if (json.isJsonPrimitive()) {
                 JsonPrimitive prim = json.getAsJsonPrimitive();

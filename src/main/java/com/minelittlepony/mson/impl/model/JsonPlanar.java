@@ -38,8 +38,8 @@ public class JsonPlanar extends JsonCuboid {
 
     private final float[] stretch = new float[3];
 
-    public JsonPlanar(JsonContext context, JsonObject json) {
-        super(context, json);
+    public JsonPlanar(JsonContext context, String name, JsonObject json) {
+        super(context, name, json);
         JsonUtil.getFloats(json, "stretch", stretch);
 
         Face.VALUES.forEach(face -> {

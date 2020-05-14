@@ -30,7 +30,7 @@ public class JsonQuads implements JsonComponent<Cuboid>, QuadsBuilder {
     private final int texU;
     private final int texV;
 
-    public JsonQuads(JsonContext context, JsonObject json) {
+    public JsonQuads(JsonContext context, String name, JsonObject json) {
         texU = JsonUtil.require(json, "u").getAsInt();
         texV = JsonUtil.require(json, "v").getAsInt();
 
