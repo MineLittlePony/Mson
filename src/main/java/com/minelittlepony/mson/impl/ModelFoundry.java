@@ -73,7 +73,7 @@ class ModelFoundry {
 
                     try (Resource res = manager.getResource(file);
                          Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
-                        return new StoredModelData(GSON.fromJson(reader, JsonObject.class));
+                        return new StoredModelData(id, GSON.fromJson(reader, JsonObject.class));
                     } catch (Exception e) {
                         MsonImpl.LOGGER.error("Could not load model json for {}", file, ThrowableUtils.getRootCause(e));
                     } finally {
@@ -104,7 +104,10 @@ class ModelFoundry {
 
         private float scale = -1;
 
-        StoredModelData(JsonObject json) {
+        private final Identifier id;
+
+        StoredModelData(Identifier id, JsonObject json) {
+            this.id = id;
             parent = JsonUtil.accept(json, "parent")
                 .map(JsonElement::getAsString)
                 .map(Identifier::new)
@@ -145,6 +148,11 @@ class ModelFoundry {
                     return entry.getValue().isJsonObject()
                        || (entry.getValue().isJsonPrimitive() && entry.getValue().getAsJsonPrimitive().isString());
             }
+        }
+
+        @Override
+        public Identifier getId() {
+            return id;
         }
 
         @Override
@@ -197,7 +205,9 @@ class ModelFoundry {
                 return loadJsonModel(new Identifier(json.getAsString()));
             }
 
-            return CompletableFuture.completedFuture(new StoredModelData(json.getAsJsonObject()));
+            Identifier autoGen = new Identifier(getId().getNamespace(), getId().getPath() + "_dynamic");
+
+            return CompletableFuture.completedFuture(new StoredModelData(autoGen, json.getAsJsonObject()));
         }
 
         @Override

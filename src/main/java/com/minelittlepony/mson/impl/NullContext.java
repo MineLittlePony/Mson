@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 final class NullContext implements JsonContext, ModelContext {
 
     static NullContext INSTANCE = new NullContext();
-    static Identifier ID = new Identifier("null");
+    static Identifier ID = new Identifier("mson", "null");
     static Locals EMPTY_LOCALS = new LocalsImpl(ID, INSTANCE);
 
     private NullContext() {}
@@ -28,6 +28,11 @@ final class NullContext implements JsonContext, ModelContext {
     @Override
     public <T extends MsonModel> T getModel() {
         throw new EmptyContextException("getModel");
+    }
+
+    @Override
+    public Identifier getId() {
+        return ID;
     }
 
     @Override

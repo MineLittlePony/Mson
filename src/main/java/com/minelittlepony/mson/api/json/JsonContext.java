@@ -17,6 +17,11 @@ import java.util.concurrent.CompletableFuture;
 public interface JsonContext extends JsonVariables {
 
     /**
+     * The ID this model was registered as.
+     */
+    Identifier getId();
+
+    /**
      * Registers a component with a name to the enclosing scope.
      */
     <T> void addNamedComponent(String name, JsonComponent<T> component);

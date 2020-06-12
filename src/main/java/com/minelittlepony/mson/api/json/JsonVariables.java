@@ -20,5 +20,4 @@ public interface JsonVariables {
      * Gets a local variable from this context.
      */
     CompletableFuture<Incomplete<Float>> getLocalVariable(String name);
-
 }

@@ -112,6 +112,5 @@ public class JsonSlot<T extends MsonModel> implements JsonComponent<T> {
             }
             return parent.getLocalVariable(name);
         }
-
     }
 }
