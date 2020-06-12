@@ -18,6 +18,7 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.json.Variables;
+import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
@@ -173,7 +174,7 @@ class ModelFoundry {
                 }
             }
 
-            throw new UnsupportedOperationException("Json was not a js object and could not be resolved to  js link");
+            throw new UnsupportedOperationException("Json was not a js object and could not be resolved to a js link");
         }
 
         @Override
@@ -275,6 +276,9 @@ class ModelFoundry {
                     }
                 } else {
                     inherited.findByName(context, name, output);
+                }
+                if (((ContentAccessor)output).cubes().isEmpty()) {
+                    MsonImpl.LOGGER.warn("Exported model part '" + name + "' had no cubes!");
                 }
             }
 
