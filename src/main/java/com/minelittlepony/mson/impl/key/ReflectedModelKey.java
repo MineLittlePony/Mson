@@ -2,10 +2,13 @@ package com.minelittlepony.mson.impl.key;
 
 import net.minecraft.util.Identifier;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.MsonModel;
+import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.mixin.Lambdas;
 import com.minelittlepony.mson.impl.invoke.MethodHandles;
 
@@ -73,6 +76,11 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
         return null;
     }
 
+    @Override
+    public JsonContext getModelData() {
+        throw new NotImplementedException("getModelData");
+    }
+
     @FunctionalInterface
     public interface Construct {
         MsonModel get();
@@ -82,5 +90,4 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
     public interface Factory {
         MsonModel apply(ModelContext context);
     }
-
 }

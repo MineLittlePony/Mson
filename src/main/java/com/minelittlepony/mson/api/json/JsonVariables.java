@@ -3,6 +3,7 @@ package com.minelittlepony.mson.api.json;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.util.Incomplete;
 
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public interface JsonVariables {
@@ -20,4 +21,9 @@ public interface JsonVariables {
      * Gets a local variable from this context.
      */
     CompletableFuture<Incomplete<Float>> getLocalVariable(String name);
+
+    /**
+     * Gets a set of all named variables.
+     */
+    CompletableFuture<Set<String>> getVariableNames();
 }

@@ -7,6 +7,7 @@ import com.minelittlepony.mson.api.model.Texture;
 
 import javax.annotation.Nullable;
 
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -62,6 +63,12 @@ public interface ModelContext {
         return findByName(this, name);
     }
 
+    /**
+     * Gets the named element and returns an instance of the requested type.
+     *
+     * @throws ClassCastException if the requested named element does not use the requested implementation.
+     * @throws InvalidInputException if the named element does not exist.
+     */
     <T> T findByName(ModelContext context, String name);
 
     /**
@@ -72,6 +79,10 @@ public interface ModelContext {
         findByName(this, name, output);
     }
 
+    /**
+     * Gets the named element and loads it into the provided cuboid.
+     * @throws InvalidInputException if the named element does not exist.
+     */
     void findByName(ModelContext context, String name, ModelPart output);
 
     /**
@@ -120,8 +131,19 @@ public interface ModelContext {
          */
         Identifier getModelId();
 
+        /**
+         * Gets the composed texture visible to the current scope.
+         */
         CompletableFuture<Texture> getTexture();
 
+        /**
+         * Queries for a specific named variable.
+         */
         CompletableFuture<Float> getValue(String name);
+
+        /**
+         * Gets a set containing the names of all the variables available in this scope.
+         */
+        CompletableFuture<Set<String>> getKeys();
     }
 }

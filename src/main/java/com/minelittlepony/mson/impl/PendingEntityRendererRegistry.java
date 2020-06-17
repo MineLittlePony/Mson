@@ -12,6 +12,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 
 import com.minelittlepony.mson.api.EntityRendererRegistry;
+
 import javax.annotation.Nullable;
 
 import java.util.HashMap;

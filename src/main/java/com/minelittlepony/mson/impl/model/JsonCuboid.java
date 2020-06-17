@@ -20,6 +20,7 @@ import com.mojang.realmsclient.util.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -141,6 +142,11 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
         @Override
         public CompletableFuture<Float> getValue(String name) {
             return parent.getValue(name);
+        }
+
+        @Override
+        public CompletableFuture<Set<String>> getKeys() {
+            return parent.getKeys();
         }
     }
 }

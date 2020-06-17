@@ -14,7 +14,9 @@ import com.minelittlepony.mson.impl.exception.EmptyContextException;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 import com.minelittlepony.mson.util.Incomplete;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 final class NullContext implements JsonContext, ModelContext {
@@ -68,6 +70,16 @@ final class NullContext implements JsonContext, ModelContext {
     @Override
     public ModelContext resolve(Object child, Locals locals) {
         return this;
+    }
+
+    @Override
+    public CompletableFuture<Set<String>> getComponentNames() {
+        return CompletableFuture.completedFuture(new HashSet<>());
+    }
+
+    @Override
+    public CompletableFuture<Set<String>> getVariableNames() {
+        return CompletableFuture.completedFuture(new HashSet<>());
     }
 
     @Override

@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -156,6 +157,14 @@ class ModelFoundry {
         }
 
         @Override
+        public CompletableFuture<Set<String>> getComponentNames() {
+            return parent.thenComposeAsync(p -> p.getComponentNames()).thenApply(output -> {
+                output.addAll(elements.keySet());
+                return output;
+            });
+        }
+
+        @Override
         public <T> void addNamedComponent(String name, JsonComponent<T> component) {
             if (!Strings.isNullOrEmpty(name)) {
                 elements.put(name, component);
@@ -201,6 +210,14 @@ class ModelFoundry {
                 return CompletableFuture.completedFuture(locals.get(name));
             }
             return parent.thenComposeAsync(p -> p.getLocalVariable(name));
+        }
+
+        @Override
+        public CompletableFuture<Set<String>> getVariableNames() {
+            return parent.thenComposeAsync(p -> p.getVariableNames()).thenApply(output -> {
+                output.addAll(locals.keySet());
+                return output;
+            });
         }
 
         @Override
@@ -322,5 +339,6 @@ class ModelFoundry {
                 return this;
             }
         }
+
     }
 }

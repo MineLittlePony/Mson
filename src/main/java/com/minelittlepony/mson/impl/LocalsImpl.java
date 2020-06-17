@@ -15,6 +15,7 @@ import com.minelittlepony.mson.util.Maps;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -63,6 +64,16 @@ public final class LocalsImpl implements ModelContext.Locals, JsonVariables {
                 throw new FutureAwaitException(e);
             }
         });
+    }
+
+    @Override
+    public CompletableFuture<Set<String>> getKeys() {
+        return getVariableNames();
+    }
+
+    @Override
+    public CompletableFuture<Set<String>> getVariableNames() {
+        return context.getVariableNames();
     }
 
     @Override
@@ -125,6 +136,11 @@ public final class LocalsImpl implements ModelContext.Locals, JsonVariables {
                 throw new RuntimeException("Cyclical reference. " + toString());
             }
             return parent.getValue(name);
+        }
+
+        @Override
+        public CompletableFuture<Set<String>> getKeys() {
+            return parent.getKeys();
         }
 
         @Override

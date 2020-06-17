@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -111,6 +112,14 @@ public class JsonSlot<T extends MsonModel> implements JsonComponent<T> {
                 return CompletableFuture.completedFuture(locals.get(name));
             }
             return parent.getLocalVariable(name);
+        }
+
+        @Override
+        public CompletableFuture<Set<String>> getVariableNames() {
+            return parent.getVariableNames().thenApplyAsync(output -> {
+               output.addAll(locals.keySet());
+               return output;
+            });
         }
     }
 }
