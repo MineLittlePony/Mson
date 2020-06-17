@@ -1,10 +1,6 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.client.model.Model;
-import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.EndermanEntity;
@@ -15,10 +11,6 @@ import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.Mson;
-import com.minelittlepony.mson.api.model.BoxBuilder;
-import com.minelittlepony.mson.api.model.Face;
-import com.minelittlepony.mson.api.model.QuadsBuilder;
-import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.api.model.biped.MsonCreeper;
 import com.minelittlepony.mson.api.model.biped.MsonEnderman;
 import com.minelittlepony.mson.api.model.biped.MsonPlayer;
@@ -29,15 +21,6 @@ import com.minelittlepony.mson.api.model.quadruped.MsonSheep;
 public final class Test {
 
     public static void init() {
-        MsonImpl.LOGGER.info("Loading box builder class");
-        new BoxBuilder(new ModelPart(new Model(null) {
-            @Override
-            public void render(MatrixStack matrices, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
-            }
-        })).size(Axis.X, 20, 20, 20)
-            .build(QuadsBuilder.plane(Face.UP));
-        MsonImpl.LOGGER.info("Loaded box builder class");
-
         /*MsonImpl.DEBUG = true;
         ModelKey<MsonPlayer<AbstractClientPlayerEntity>> STEVE = Mson.getInstance().registerModel(new Identifier("mson", "steve"), MsonPlayer::new);
         ModelKey<MsonPlayer<AbstractClientPlayerEntity>> ALEX = Mson.getInstance().registerModel(new Identifier("mson", "alex"), MsonPlayer::new);

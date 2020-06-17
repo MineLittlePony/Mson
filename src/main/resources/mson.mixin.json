@@ -7,6 +7,7 @@
     "client": [
         "MixinEntityRenderDispatcher",
         "MixinBlockEntityRenderDispatcher",
+        "MixinCuboid",
         "MixinModel",
         "MixinModelPart",
         "MixinQuad",

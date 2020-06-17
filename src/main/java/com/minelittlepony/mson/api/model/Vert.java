@@ -1,8 +1,11 @@
 package com.minelittlepony.mson.api.model;
 
+import net.minecraft.client.util.math.Vector3f;
+
 public interface Vert {
-    @FunctionalInterface
-    interface Factory {
-        Vert create(float x, float y, float z, float u, float v);
-    }
+    Vector3f getPos();
+
+    float getU();
+
+    float getV();
 }

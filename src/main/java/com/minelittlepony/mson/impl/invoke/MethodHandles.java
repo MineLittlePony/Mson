@@ -3,13 +3,18 @@ package com.minelittlepony.mson.impl.invoke;
 import com.minelittlepony.mson.api.mixin.Lambdas;
 import com.minelittlepony.mson.impl.MsonImpl;
 
+import java.lang.invoke.CallSite;
+import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public final class MethodHandles {
 
@@ -57,46 +62,75 @@ public final class MethodHandles {
         return new LambdasImpl();
     }
 
-    public static Class<?> createArrayClass(Class<?> componentType) {
-        return Array.newInstance(componentType, 0).getClass();
-    }
+    private static final class LambdasImpl implements Lambdas {
 
-    public static Class<?> getRawClass(Class<?> arrayClass) {
-        if (arrayClass.isArray()) {
-            return getRawClass(arrayClass.getComponentType());
+        private final Map<Class<?>, Class<?>> classRemappings = new HashMap<>();
+
+        @Override
+        public LambdasImpl remap(Class<?> from, Class<?> to) {
+            classRemappings.put(from, to);
+            return this;
         }
-        return arrayClass;
-    }
 
-    public static Class<?> changeArrayType(Class<?> arrayClass, Class<?> componentType) {
-        if (arrayClass.isArray()) {
-            return createArrayClass(changeArrayType(arrayClass.getComponentType(), componentType));
+        private Class<?>[] remapClasses(Class<?>...classes) {
+            if (classRemappings.isEmpty()) {
+                return classes;
+            }
+            return Arrays.stream(classes).map(this::remapClass).toArray(i -> new Class<?>[i]);
         }
-        return componentType;
-    }
 
-    public static <I, K> Function<I[], K[]> createArrayCast(Class<K> outputType) {
-        return input -> {
-            @SuppressWarnings("unchecked")
-            K[] output = (K[])Array.newInstance(outputType, input.length);
+        private static Class<?> getRawClass(Class<?> arrayClass) {
+            if (arrayClass.isArray()) {
+                return getRawClass(arrayClass.getComponentType());
+            }
+            return arrayClass;
+        }
 
-            System.arraycopy(input, 0, output, 0, input.length);
+        private Class<?> remapClass(Class<?> clazz) {
 
-            return output;
-        };
-    }
+            Class<?> componentType = getRawClass(clazz);
 
-    /**
-     * Finds the class object for a specific inner class implementing a specific interface.
-     *
-     * This is intended to work together with a mixin that adds an interface to the targetted class.
-     */
-    public static Class<?> findHiddenInnerClass(Class<?> outerClass, Class<?> expectsToImplement) {
-        for (Class<?> c : outerClass.getDeclaredClasses()) {
-            if (expectsToImplement.isAssignableFrom(c)) {
-                return c;
+            Class<?> mappedComponentType = classRemappings.getOrDefault(componentType, componentType);
+
+            if (mappedComponentType == componentType) {
+                return clazz;
+            }
+
+            return changeArrayType(clazz, mappedComponentType);
+        }
+
+        private Class<?> changeArrayType(Class<?> arrayClass, Class<?> componentType) {
+            if (arrayClass.isArray()) {
+                return createArrayClass(changeArrayType(arrayClass.getComponentType(), componentType));
+            }
+            return componentType;
+        }
+
+        private Class<?> createArrayClass(Class<?> componentType) {
+            return Array.newInstance(componentType, 0).getClass();
+        }
+
+        @Override
+        public <T> T lookupGenericFactory(Class<T> ifaceClass, Class<?> owner, Class<?> definitionClass) {
+            try {
+                Method ifaceMethod = definitionClass.getMethods()[0];
+                MethodType constrType = MethodType.methodType(void.class, remapClasses(ifaceMethod.getParameterTypes()));
+                MethodType callType = constrType.changeReturnType(owner);
+
+                MethodHandle constr = MethodHandles.LOOKUP.findConstructor(owner, constrType);
+
+                CallSite site = LambdaMetafactory.metafactory(
+                        MethodHandles.LOOKUP.in(owner),
+                        ifaceMethod.getName(),
+                        MethodType.methodType(ifaceClass),
+                        callType.erase(),
+                        constr,
+                        callType);
+
+                return (T)site.dynamicInvoker().invoke();
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
             }
         }
-        throw new RuntimeException("Inner class was missing");
     }
 }

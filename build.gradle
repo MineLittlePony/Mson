@@ -1,6 +1,6 @@
 plugins {
     id 'java-library'
-    id 'fabric-loom' version '0.2.7-SNAPSHOT'
+    id 'fabric-loom' version '0.4-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -36,6 +36,7 @@ archivesBaseName = project.name
 
 minecraft {
     refmapName = 'mson.mixin.refmap.json'
+    accessWidener 'src/main/resources/mson.aw'
 }
 
 dependencies {

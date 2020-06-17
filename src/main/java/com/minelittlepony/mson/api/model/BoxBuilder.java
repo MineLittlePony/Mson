@@ -7,14 +7,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.mixin.Lambdas;
 import com.minelittlepony.mson.api.model.Face.Axis;
-import com.minelittlepony.mson.impl.invoke.MethodHandles;
 import com.minelittlepony.mson.util.TriState;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
@@ -23,43 +20,7 @@ import java.util.function.Function;
  * Holds all the parameters so we don't have to shove them into a Box sub-class.
  *
  */
-@SuppressWarnings("unchecked")
 public final class BoxBuilder {
-
-    private static final Function<Rect[], ?> RECT_ARR_CAST;
-    private static final Function<Vert[], ?> VERT_ARR_CAST;
-
-    private static final Rect.Factory RECT_FACTORY;
-    private static final Vert.Factory VERT_FACTORY;
-
-    private static final BiConsumer<Cuboid, Object> POLY_SETTER;
-
-    static {
-        final Class<?> Rect = MethodHandles.findHiddenInnerClass(ModelPart.class, Rect.class);
-        final Class<?> Vert = MethodHandles.findHiddenInnerClass(ModelPart.class, Vert.class);
-
-        RECT_ARR_CAST = MethodHandles.createArrayCast(Rect);
-        VERT_ARR_CAST = MethodHandles.createArrayCast(Vert);
-
-        Lambdas lambdas = MethodHandles.lambdas().remap(Vert.class, Vert).remap(Rect.class, Rect);
-
-        try {
-            RECT_FACTORY = lambdas.lookupFactory(Rect.Factory.class, Rect, Rect.ConstrDefinition.class);
-        } catch (Error | Exception e) {
-            throw new RuntimeException("RECT_FACTORY", e);
-        }
-        try {
-            VERT_FACTORY = lambdas.lookupFactory(Vert.Factory.class, Vert);
-        } catch (Error | Exception e) {
-            throw new RuntimeException("VERT_FACTORY", e);
-        }
-        try {
-            POLY_SETTER = (BiConsumer<Cuboid, Object>)(Object)lambdas.lookupSetter(Cuboid.class, Rect[].class, "field_3649"); // sides
-        } catch (Error | Exception e) {
-            throw new RuntimeException("POLY_SETTER", e);
-        }
-    }
-
     public final MsonPart part;
 
     public float x;
@@ -169,7 +130,7 @@ public final class BoxBuilder {
      * Creates a new vertex mapping the given (x, y, z) coordinates to a texture offset.
      */
     public Vert vert(float x, float y, float z, int u, int v) {
-        return VERT_FACTORY.create(x, y, z, u, v);
+        return (Vert)new ModelPart.Vertex(x, y, z, u, v);
     }
 
     /**
@@ -192,8 +153,12 @@ public final class BoxBuilder {
             Direction direction,
             boolean mirror,
             Vert ...vertices) {
-        return RECT_FACTORY.create(
-                VERT_ARR_CAST.apply(vertices),
+
+        ModelPart.Vertex[] verts = new ModelPart.Vertex[vertices.length];
+        System.arraycopy(vertices, 0, verts, 0, vertices.length);
+
+        return (Rect)new ModelPart.Quad(
+                verts,
                 u,         v,
                 u + w, v + h,
                 part.getTexture().getWidth(), part.getTexture().getHeight(),
@@ -213,7 +178,7 @@ public final class BoxBuilder {
 
     public Cuboid build(QuadsBuilder builder) {
         Cuboid box = build();
-        POLY_SETTER.accept(box, RECT_ARR_CAST.apply(builder.build(this)));
+        ((Cube)box).setSides(builder.build(this));
         return box;
     }
 
