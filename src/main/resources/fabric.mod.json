@@ -11,6 +11,7 @@
   },
   "license": "MIT",
   "icon": "newmod_logo.png",
+  "accessWidener": "mson.aw",
   "environment": "client",
   "entrypoints": {
     "client": [
