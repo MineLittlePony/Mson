@@ -33,11 +33,11 @@ public final class Test {
         ModelKey<MsonSheep<SheepEntity>> SHEEP_WOOL = Mson.getInstance().registerModel(new Identifier("mson_test", "sheep_wool"), MsonSheep::new);
         ModelKey<MsonEnderman<EndermanEntity>> ENDERMAN = Mson.getInstance().registerModel(new Identifier("mson_test", "enderman"), MsonEnderman::new);
 
-        //ModelKey<MsonPlayer<AbstractClientPlayerEntity>> RAYMAN = Mson.getInstance().registerModel(new Identifier("mson_test", "rayman"), MsonPlayer::new);
-        ModelKey<MsonPlayer<AbstractClientPlayerEntity>> PLANE = Mson.getInstance().registerModel(new Identifier("mson_test", "plane"), MsonPlayer::new);
+        ModelKey<MsonPlayer<AbstractClientPlayerEntity>> RAYMAN = Mson.getInstance().registerModel(new Identifier("mson_test", "rayman"), MsonPlayer::new);
+        //ModelKey<MsonPlayer<AbstractClientPlayerEntity>> PLANE = Mson.getInstance().registerModel(new Identifier("mson_test", "plane"), MsonPlayer::new);
 
-        Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("default", r -> new MsonPlayer.Renderer(r, PLANE));
-        Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("slim", r -> new MsonPlayer.Renderer(r, PLANE));
+        Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("default", r -> new MsonPlayer.Renderer(r, RAYMAN));
+        Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("slim", r -> new MsonPlayer.Renderer(r, RAYMAN));
         Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(EntityType.CREEPER, r -> new MsonCreeper.Renderer(r, CREEPER));
         Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(EntityType.PIG, r -> new MsonPig.Renderer(r, PIG));
         Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(EntityType.COW, r -> new MsonCow.Renderer(r, COW));
