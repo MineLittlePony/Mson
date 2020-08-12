@@ -9,7 +9,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Preconditions;
-import com.minelittlepony.mson.api.EntityRendererRegistry;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.json.JsonComponent;
@@ -44,7 +43,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     public static final Logger LOGGER = LogManager.getLogger("Mson");
 
-    public static Mson instance() {
+    public static MsonImpl instance() {
         return INSTANCE;
     }
 
@@ -156,7 +155,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     }
 
     @Override
-    public EntityRendererRegistry getEntityRendererRegistry() {
+    public PendingEntityRendererRegistry getEntityRendererRegistry() {
         return renderers;
     }
 }

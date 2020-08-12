@@ -2,7 +2,6 @@ package com.minelittlepony.mson.impl;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
@@ -10,7 +9,9 @@ import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.util.Identifier;
 
+import com.google.common.base.Preconditions;
 import com.minelittlepony.mson.api.EntityRendererRegistry;
 
 import javax.annotation.Nullable;
@@ -19,23 +20,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-final class PendingEntityRendererRegistry implements EntityRendererRegistry {
+public final class PendingEntityRendererRegistry implements EntityRendererRegistry {
 
-    private final RendererList<
+    public final RendererList<
                     String,
                     EntityRenderDispatcher,
                     PlayerEntityRenderer
-                > player = new RendererList<>(EntityRendererRegistry::registerPlayerRenderer);
-    private final RendererList<
+                > player = new RendererList<>(new Identifier("mson", "renderers/player"), EntityRendererRegistry::registerPlayerRenderer);
+    public final RendererList<
                     EntityType<?>,
                     EntityRenderDispatcher,
                     EntityRenderer<?>
-                > entity = new RendererList<>(EntityRendererRegistry::registerEntityRenderer);
-    private final RendererList<
+                > entity = new RendererList<>(new Identifier("mson", "renderers/entity"), EntityRendererRegistry::registerEntityRenderer);
+    public final RendererList<
                     BlockEntityType<?>,
                     BlockEntityRenderDispatcher,
                     BlockEntityRenderer<?>
-                > block = new RendererList<>(EntityRendererRegistry::registerBlockRenderer);
+                > block = new RendererList<>(new Identifier("mson", "renderers/block"), EntityRendererRegistry::registerBlockRenderer);
 
     @Override
     public <T extends PlayerEntityRenderer> void registerPlayerRenderer(String skinType, Function<EntityRenderDispatcher, T> constructor) {
@@ -53,23 +54,25 @@ final class PendingEntityRendererRegistry implements EntityRendererRegistry {
     }
 
     void initialize() {
-        EntityRendererRegistry runtimeEntityRegistry = (EntityRendererRegistry)MinecraftClient.getInstance().getEntityRenderManager();
-        EntityRendererRegistry runtimeBlockEntityRegistry = (EntityRendererRegistry)BlockEntityRenderDispatcher.INSTANCE;
-
-        player.publish(runtimeEntityRegistry);
-        entity.publish(runtimeEntityRegistry);
-        block.publish(runtimeBlockEntityRegistry);
+        player.reload();
+        entity.reload();
+        block.reload();
     }
 
-    class RendererList<Type, Dispatcher, Renderer> {
+    public class RendererList<Type, Dispatcher, Renderer> {
         private final HashMap<? extends Type, ? extends Function<Dispatcher, Renderer>> entries = new HashMap<>();
 
         private final RegisterAction<Type, Dispatcher, Renderer> runtimeAdd;
 
+        private boolean waiting;
+
         @Nullable
         private EntityRendererRegistry runtimeRegistry;
 
-        public RendererList(RegisterAction<Type, Dispatcher, Renderer> runtimeAdd) {
+        private final Identifier registryId;
+
+        public RendererList(Identifier registryId, RegisterAction<Type, Dispatcher, Renderer> runtimeAdd) {
+            this.registryId = registryId;
             this.runtimeAdd = runtimeAdd;
         }
 
@@ -81,12 +84,24 @@ final class PendingEntityRendererRegistry implements EntityRendererRegistry {
             }
         }
 
-        void publish(EntityRendererRegistry runtimeRegistry) {
-            if (runtimeRegistry instanceof PendingEntityRendererRegistry) {
-                throw new IllegalStateException("Uh oh");
+        void reload() {
+            boolean delayed = waiting;
+            waiting = false;
+            if (runtimeRegistry != null) {
+                MsonImpl.LOGGER.info(delayed ? "Running delayed initialization for registry '{}'" : "Initializing registry '{}'", registryId);
+                entries.forEach((k, v) -> runtimeAdd.call(runtimeRegistry, k, v));
+            } else {
+                MsonImpl.LOGGER.info("Registry '{}' queued for delayed initialization", registryId);
+                waiting = true;
             }
+        }
+
+        public void publish(EntityRendererRegistry runtimeRegistry) {
+            Preconditions.checkArgument(!(runtimeRegistry instanceof PendingEntityRendererRegistry), "Uh oh");
             this.runtimeRegistry = runtimeRegistry;
-            entries.forEach((k, v) -> runtimeAdd.call(runtimeRegistry, k, v));
+            if (waiting) {
+                reload();
+            }
         }
     }
 

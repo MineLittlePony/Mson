@@ -8,6 +8,9 @@ import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.minelittlepony.mson.api.EntityRendererRegistry;
 import com.minelittlepony.mson.impl.MsonImpl;
@@ -21,6 +24,11 @@ abstract class MixinBlockEntityRenderDispatcher implements EntityRendererRegistr
     @Shadow @Final
     private Map<BlockEntityType<?>, BlockEntityRenderer<?>> renderers;
 
+    @Inject(method = "<init>()V", at = @At("RETURN"))
+    private void onInit(CallbackInfo info) {
+        MsonImpl.instance().getEntityRendererRegistry().block.publish(this);
+    }
+
     @Override
     public <P extends BlockEntity, R extends BlockEntityRenderer<?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRenderDispatcher, R> constructor) {
         try {
@@ -29,4 +37,5 @@ abstract class MixinBlockEntityRenderDispatcher implements EntityRendererRegistr
             MsonImpl.LOGGER.error("Error whilst updating entity renderer " + BlockEntityType.getId(type) + ": " + e.getMessage());
         }
     }
+
 }
