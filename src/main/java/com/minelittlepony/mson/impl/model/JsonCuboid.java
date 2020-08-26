@@ -2,6 +2,7 @@ package com.minelittlepony.mson.impl.model;
 
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPart.Cuboid;
+import net.minecraft.client.realms.util.JsonUtils;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
@@ -15,7 +16,6 @@ import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
-import com.mojang.realmsclient.util.JsonUtils;
 
 import java.util.ArrayList;
 import java.util.List;

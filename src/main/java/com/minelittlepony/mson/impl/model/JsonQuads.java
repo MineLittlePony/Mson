@@ -1,6 +1,7 @@
 package com.minelittlepony.mson.impl.model;
 
 import net.minecraft.client.model.ModelPart.Cuboid;
+import net.minecraft.client.realms.util.JsonUtils;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 
@@ -16,7 +17,6 @@ import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Rect;
 import com.minelittlepony.mson.api.model.Vert;
 import com.minelittlepony.mson.util.JsonUtil;
-import com.mojang.realmsclient.util.JsonUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;

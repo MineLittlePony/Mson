@@ -7,7 +7,7 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
-import com.mojang.realmsclient.util.JsonUtils;
+import net.minecraft.client.realms.util.JsonUtils;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;

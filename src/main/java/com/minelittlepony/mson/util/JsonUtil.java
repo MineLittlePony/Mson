@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.mojang.realmsclient.util.JsonUtils;
+import net.minecraft.client.realms.util.JsonUtils;
 
 import java.util.Arrays;
 import java.util.Optional;
