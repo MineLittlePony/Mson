@@ -79,7 +79,7 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
         @SuppressWarnings("unchecked")
         public <T extends Type, R extends Renderer> void register(T type, Function<Dispatcher, R> constructor) {
             ((Map<T, Function<Dispatcher, R>>)(Object)entries).put(type, constructor);
-            if (runtimeRegistry != null) {
+            if (runtimeRegistry != null && !waiting) {
                 ((RegisterAction<T, Dispatcher, R>)runtimeAdd).call(runtimeRegistry, type, constructor);
             }
         }
