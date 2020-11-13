@@ -35,22 +35,22 @@
     }
   };
 
+  function Texture(body, parent) {
+    body = body || {};
+    parent = parent || {};
+    if (body.map) {
+      return {
+        u: body[0] || parent.u || 0,
+        v: body[1] || parent.v || 0,
+        w: body[2] || parent.w || 0,
+        h: body[3] || parent.h || 0
+      };
+    }
+    return objUtils.copy(objUtils.copy({}, parent), body);
+  }
+
   function createLoader() {
     const files = {};
-
-    function Texture(body, parent) {
-      body = body || {};
-      parent = parent || {};
-      if (body.map) {
-        return {
-          u: body[0] || parent.u || 0,
-          v: body[1] || parent.v || 0,
-          w: body[2] || parent.w || 0,
-          h: body[3] || parent.h || 0
-        };
-      }
-      return objUtils.copy(objUtils.copy({}, parent), body);
-    }
 
     function File(body) {
       const parameters = body.substring ? JSON.parse(body) : body;
@@ -59,7 +59,7 @@
         const locals = model.locals;
         const incoming = {};
         const elementNames = Object.keys(parameters).filter(key => reservedKeys.indexOf(key) == -1);
-        const elements = objUtils.map(objUtils.subset(parameters, elementNames), element -> {
+        const elements = objUtils.map(objUtils.subset(parameters, elementNames), element => {
           return loader.getElement(element, 'mson:compound', model, {
             get(input) {
               return Incomplete.of(input)(locals);
@@ -70,7 +70,7 @@
             obj(input) {
               return objUtils.map(input, val => val.length ? Incomplete.of(val)(locals) : val);
             }
-          }, (name, subElement) -> {
+          }, (name, subElement) => {
             incoming[name] = subElement;
           });
         });
@@ -159,7 +159,7 @@
     }
 
     return newModel;
-  }, parent -> {
+  }, parent => {
     this.model.render();
   });
 

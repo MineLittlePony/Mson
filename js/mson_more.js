@@ -19,7 +19,7 @@
       texture: locals.obj(loader.getTexture(body.texture, model.texture)),
       mirror: locals.array(fixedLength(body.mirror, 3, false)),
       stretch: locals.array(fixedLength(body.stretch, 3)),
-      face = body.face
+      face: body.face
     };
   }, parent => {
     // TODO: rendering

@@ -1,10 +1,10 @@
 /*export*/ const Incomplete = (_ => {
   const funcs = {
-    '+': (one, two) -> one + two
-    '-': (one, two) -> one - two,
-    '*': (one, two) -> one * two,
-    '/': (one, two) -> one / two,
-    '%': (one, two) -> one % two,
+    '+': (one, two) => one + two,
+    '-': (one, two) => one - two,
+    '*': (one, two) => one * two,
+    '/': (one, two) => one / two,
+    '%': (one, two) => one % two,
     '^': Math.pow
   };
 
@@ -37,7 +37,7 @@
     }
     if (tokens.substring) {
       tokens = tokens.substring(1);
-      return singleEntrant(locals -> context[tokens](locals));
+      return singleEntrant(locals => locals[tokens](locals));
     }
 
     if (typeof tokens === 'number') {
@@ -48,8 +48,8 @@
   }
 
   function array(arr) {
-    arr = of(arr);
-    return locals -> arr.map(a => a(locals));
+    arr = arr.map(of);
+    return locals => arr.map(a => a(locals));
   }
 
   return {
