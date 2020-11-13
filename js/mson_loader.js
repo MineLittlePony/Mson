@@ -1,6 +1,16 @@
 // import { Incomplete } from './incomplete';
 /**
  * The core of Mson's model loading functionality.
+ *
+ * Usage:
+ *
+ * const loader = Mson.createLoader();
+ * loader.addFile("skeleton", "<json data>");
+ * loader.addFile("pony", "<json data>");
+ *
+ * const skeletonModel = loader.getModel("skeleton");
+ *
+ * skeletonModel.render();
  */
 /*export*/ const Mson = (_ => {
   const reservedKeys = 'parent;locals;texture;scale'.split(';');
