@@ -104,6 +104,10 @@
         files[fileName] = File(fileBody);
       },
       getElement(body, defaultId, model, locals, defineName) {
+        if (body.substring) {
+          return Link(body, model, locals);
+        }
+
         const type = body.type || defaultId;
         if (!elementTypes[type]) {
           return null;
@@ -119,6 +123,24 @@
         return files[filename](this);
       }
     };
+  }
+
+  function Link(id, model, locals) {
+    if (id.indexOf('#') != 0) {
+      throw new Error('link name should begin with a `#`.');
+    }
+    id = id.substring(1);
+    let rendering;
+    return {
+      render(parent) {
+        if (rendering) {
+          throw new Error('Cyclic reference in link');
+        }
+        rendering = true;
+        model.elements[id].render(parent);
+        rendering = false;
+      }
+    }
   }
 
   function addElementType(key, parse, render) {
