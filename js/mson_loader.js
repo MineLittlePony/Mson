@@ -152,13 +152,13 @@
     content.locals = objUtils.copy(Mson.objUtils.copy({}, model.locals), body.content);
     content.texture = Texture(body.content.texture);
 
-    const newModel = File(content)(loader);
+    const newModel = { model: File(content)(loader) };
 
     if (body.name) {
       defineName(body.name, newModel);
     }
 
-    return { model: newModel };
+    return newModel;
   }, parent -> {
     this.model.render();
   });
