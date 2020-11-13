@@ -21,7 +21,7 @@
       stretch: locals.array(fixedLength(body.stretch, 3)),
       face: body.face
     };
-  }, parent => {
+  }, (parent, context) => {
     // TODO: rendering
   });
   Mson.addElementType('mson:planar', (loader, body, locals, model) => {
@@ -50,7 +50,7 @@
       stretch: locals.array(fixedLength(body.stretch, 3)),
       faces
     };
-  }, parent => {
+  }, (parent, context) => {
     const stretch = this.stretch(locals);
 
     this.faces.forEach(set => {
@@ -68,7 +68,7 @@
       mirror: body.mirror,
       taper: body.taper
     };
-  }, parent => {
+  }, (parent, context) => {
     // TODO: rendering
   });
   Mson.addElementType('mson:quads', (loader, body, locals, model) => {
@@ -95,7 +95,7 @@
       u: body.u || 0,
       v: body.v || 0
     };
-  }, parent => {
+  }, (parent, context) => {
 
     this.quads.forEach(quad => {
       quad.forEach(vertex => {

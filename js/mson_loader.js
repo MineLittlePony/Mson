@@ -10,7 +10,9 @@
  *
  * const skeletonModel = loader.getModel("skeleton");
  *
- * skeletonModel.render();
+ * skeletonModel.render({
+ *  // TODO: rendering stuff.
+ * });
  */
 /*export*/ const Mson = (_ => {
   const reservedKeys = 'parent;locals;texture;scale'.split(';');
@@ -90,8 +92,8 @@
         parent.elements = objUtils.copy(parent.elements, loadElements(loader, parent));
         parent.texture = Texture(parameters.texture, parent.texture);
 
-        parent.render = function() {
-          this.elements.forEach(element => element.render(this));
+        parent.render = function(context) {
+          this.elements.forEach(element => element.render(this, context));
         };
 
         return parent;
@@ -132,12 +134,12 @@
     id = id.substring(1);
     let rendering;
     return {
-      render(parent) {
+      render(parent, context) {
         if (rendering) {
           throw new Error('Cyclic reference in link');
         }
         rendering = true;
-        model.elements[id].render(parent);
+        model.elements[id].render(parent, context);
         rendering = false;
       }
     }
@@ -159,8 +161,8 @@
     }
 
     return newModel;
-  }, parent => {
-    this.model.render();
+  }, (parent, context) => {
+    this.model.render(context);
   });
 
   return {

@@ -23,7 +23,7 @@
       stretch: fixedLength(body.stretch, 3),
       mirror: body.mirror
     };
-  }, parent => {
+  }, (parent, context) => {
     // TODO: rendering
   });
   Mson.addElementType('mson:compound', (loader, body, locals, model, defineName) => {
@@ -45,14 +45,14 @@
       defineName(body.name, element);
     }
     return element;
-  }, parent => {
+  }, (parent, context) => {
     if (!this.visible) {
       return;
     }
 
     // TODO: rendering
 
-    this.children.forEach(child => child.render(locals, this));
-    this.cubes.forEach(cube => cube.render(locals, this));
+    this.children.forEach(child => child.render(this, context));
+    this.cubes.forEach(cube => cube.render(this, context));
   });
 })();
