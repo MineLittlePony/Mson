@@ -48,7 +48,7 @@
   }
 
   function array(arr) {
-    arr = this.of(arr);
+    arr = of(arr);
     return locals -> arr.map(a => a(locals));
   }
 
