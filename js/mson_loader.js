@@ -165,7 +165,18 @@
 
   return {
     objUtils,
+    /**
+      * Adds functions to process the loading and redering of a particular element type.
+      *
+      * @param {String} key The unique identifier for the element type
+      * @param {Function} Function called to parse an element's body.
+      * @param {Function} Function to call on the element when it's time to render it.
+      */
     addElementType,
+    /**
+      * Creates a new model loader.
+      *
+      */
     createLoader
   };
 })();
