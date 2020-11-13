@@ -149,8 +149,8 @@
 
   addElementType('mson:slot', (loader, body, locals, model, defineName) => {
     const content = objUtils.copy({}, body.content);
-    content.locals = objUtils.copy(Mson.objUtils.copy({}, model.locals), body.content);
-    content.texture = Texture(body.content.texture);
+    content.locals = objUtils.copy(Mson.objUtils.copy({}, model.locals), content.locals || {});
+    content.texture = Texture(content.texture);
 
     const newModel = { model: File(content)(loader) };
 
