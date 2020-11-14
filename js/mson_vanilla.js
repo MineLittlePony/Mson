@@ -19,7 +19,7 @@
     return {
       from: locals.array(fixedLength(body.from, 3)),
       size: locals.array(fixedLength(body.size, 3)),
-      texture: locals.obj(loader.getTexture(body.texture, model.texture)),
+      texture: loader.getTexture(body.texture || [], model.texture),
       stretch: fixedLength(body.stretch, 3),
       mirror: body.mirror
     };

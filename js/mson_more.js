@@ -1,4 +1,5 @@
 // import { Mson } from './mson_loader';
+// import { objUtils } from './obj_utils';
 //=====================================================//
 //                 Mson specific
 (_ => {
@@ -17,8 +18,8 @@
       position: locals.array(fixedLength(body.position, 3)),
       size: locals.array(fixedLength(body.size, 3)),
       texture: locals.obj(loader.getTexture(body.texture, model.texture)),
-      mirror: locals.array(fixedLength(body.mirror, 3, false)),
-      stretch: locals.array(fixedLength(body.stretch, 3)),
+      mirror: fixedLength(body.mirror, 3, false),
+      stretch: fixedLength(body.stretch, 3),
       face: body.face
     };
   }, (parent, context) => {
@@ -31,19 +32,22 @@
     directions.forEach(face => {
       if (body[face] && body[face].length) {
         let set = body[face][0].length ? body[face] : [ body[face] ];
-        faces.push(set.map(i => new Face(i)));
+        faces.push({
+          face,
+          planes: set.map(createPlane)
+        });
       }
     });
 
-    function Face(element) {
-      this.position = [ element[0], element[1], element[2] ];
-      this.size = [ element[3], element[4] ];
-      if (element.length > 6) {
-        this.texture = loader.getTexture(element.length > 6 ? [
+    function createPlane(element) {
+      return {
+        position: [ element[0], element[1], element[2] ],
+        size: [ element[3], element[4] ],
+        texture: loader.getTexture(element.length > 6 ? [
           locals.get(element[5]),
           locals.get(element[6])
-        ] : [], model.texture);
-      }
+        ] : [], model.texture)
+      };
     }
 
     return {
@@ -54,7 +58,7 @@
     const stretch = this.stretch(locals);
 
     this.faces.forEach(set => {
-      set.forEach(plane => {
+      set.planes.forEach(plane => {
         // TODO: rendering
       });
     });
@@ -63,7 +67,7 @@
     return {
       from: locals.array(fixedLength(body.from, 3)),
       size: locals.array(fixedLength(body.size, 3)),
-      texture: locals.obj(loader.getTexture(body.texture, model.texture)),
+      texture: loader.getTexture(body.texture || [], model.texture),
       stretch: fixedLength(body.stretch, 3),
       mirror: body.mirror,
       taper: body.taper
@@ -72,12 +76,12 @@
     // TODO: rendering
   });
   Mson.addElementType('mson:quads', (loader, body, locals, model) => {
-    const vertices = body.vertices.map(vert => Vertex(vert));
+    const vertices = body.vertices.map(createVertex);
     const quads = body.quads.map(quad => {
       return quad.vertices.map(index => vertices[index]);
     });
 
-    function Vertex(body) {
+    function createVertex(body) {
       if (body.length) {
         return {
           x: body[0] || 0,
@@ -87,7 +91,7 @@
           v: body[4] || 0
         };
       }
-      return Mson.objUtils.copy(Vertex([]), body);
+      return objUtils.copy(createVertex([]), body);
     }
 
     return {

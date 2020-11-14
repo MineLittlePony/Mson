@@ -1,4 +1,5 @@
 // import { Incomplete } from './incomplete';
+// import { objUtils } from './obj_utils';
 /**
  * The core of Mson's model loading functionality.
  *
@@ -16,45 +17,31 @@
  */
 /*export*/ const Mson = (_ => {
   const reservedKeys = 'parent;locals;texture;scale'.split(';');
-  const defaultTexture = Texture([0, 0, 64, 32]);
+  const defaultTexture = createTexture([0, 0, 64, 32]);
 
   const elementTypes = {};
 
-  const objUtils = {
-    map(obj, valueMapper) {
-      const result = {};
-      Object.keys(obj).forEach(key => result[key] = valueMapper(obj[key]));
-      return result;
-    },
-    copy(to, from) {
-      Object.keys(from).forEach(key => to[key] = from[key]);
-      return to;
-    },
-    subset(obj, keys) {
-      const result = {};
-      keys.forEach(key => result[key] = obj[key]);
-      return result;
-    }
-  };
-
-  function Texture(body, parent) {
+  function createTexture(body, parent) {
     body = body || {};
     parent = parent || {};
-    if (body.map) {
+    if (body.length) {
       return {
-        u: body[0] || parent.u || 0,
-        v: body[1] || parent.v || 0,
-        w: body[2] || parent.w || 0,
-        h: body[3] || parent.h || 0
+        u: objUtils.first(body[0], parent.u, 0),
+        v: objUtils.first(body[1], parent.v, 0),
+        w: objUtils.first(body[2], parent.w, 0),
+        h: objUtils.first(body[3], parent.h, 0)
       };
     }
-    return objUtils.copy(objUtils.copy({}, parent), body);
+    return objUtils.copy(objUtils.clone(parent), body);
   }
 
+  /**
+   * Creates a new model loader.
+   */
   function createLoader() {
     const files = {};
 
-    function File(body) {
+    function createFile(body) {
       const parameters = body.substring ? JSON.parse(body) : body;
 
       function loadElements(loader, model) {
@@ -90,7 +77,7 @@
 
         parent.locals = objUtils.copy(parent.locals, parameters.locals ? objUtils.map(parameters.locals, Incomplete.of) : {});
         parent.elements = objUtils.copy(parent.elements, loadElements(loader, parent));
-        parent.texture = Texture(parameters.texture, parent.texture);
+        parent.texture = createTexture(parameters.texture, parent.texture);
 
         parent.render = function(context) {
           this.elements.forEach(element => element.render(this, context));
@@ -101,13 +88,13 @@
     }
 
     return {
-      getTexture: Texture,
+      getTexture: createTexture,
       addFile(fileName, fileBody) {
-        files[fileName] = File(fileBody);
+        files[fileName] = createFile(fileBody);
       },
       getElement(body, defaultId, model, locals, defineName) {
         if (body.substring) {
-          return Link(body, model, locals);
+          return createLink(body, model, locals);
         }
 
         const type = body.type || defaultId;
@@ -127,7 +114,7 @@
     };
   }
 
-  function Link(id, model, locals) {
+  function createLink(id, model, locals) {
     if (id.indexOf('#') != 0) {
       throw new Error('link name should begin with a `#`.');
     }
@@ -145,16 +132,23 @@
     }
   }
 
+  /**
+   * Adds functions to process the loading and redering of a particular element type.
+   *
+   * @param {String} key The unique identifier for the element type
+   * @param {Function} parse Function called to parse an element's body.
+   * @param {Function} render Function to call on the element when it's time to render it.
+   */
   function addElementType(key, parse, render) {
     elementTypes[key] = { parse, render };
   }
 
   addElementType('mson:slot', (loader, body, locals, model, defineName) => {
-    const content = objUtils.copy({}, body.content);
-    content.locals = objUtils.copy(Mson.objUtils.copy({}, model.locals), content.locals || {});
-    content.texture = Texture(content.texture);
+    const content = objUtils.clone(body.content);
+    content.locals = objUtils.copy(Mson.objUtils.clone(model.locals), content.locals || {});
+    content.texture = createTexture(content.texture);
 
-    const newModel = { model: File(content)(loader) };
+    const newModel = { model: createFile(content)(loader) };
 
     if (body.name) {
       defineName(body.name, newModel);
@@ -166,19 +160,7 @@
   });
 
   return {
-    objUtils,
-    /**
-      * Adds functions to process the loading and redering of a particular element type.
-      *
-      * @param {String} key The unique identifier for the element type
-      * @param {Function} Function called to parse an element's body.
-      * @param {Function} Function to call on the element when it's time to render it.
-      */
     addElementType,
-    /**
-      * Creates a new model loader.
-      *
-      */
     createLoader
   };
 })();

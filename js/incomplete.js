@@ -21,6 +21,12 @@
     }
   }
 
+  /**
+   * Converts an unresolved variable name or equation into a function that will return the resolved value when called.
+   *
+   * @param {any} tokens Tokens to parse into an incomplete
+   * @return {Function} A function that when called will return the completed value.
+   */
   function of(tokens) {
     if (tokens.map) {
       if (tokens.length != 3) {
@@ -46,24 +52,15 @@
 
     throw new Error('Unsupported local type. A local must be either a value (number) string (#variable) or an array');
   }
-
+  /**
+   * Converts an array of unresolved variable names, or equations into a function that will return the resolved values array when called.
+   * @param {Array} arr Array of tokens
+   * @return {Function} A function that when called will return the completed array.
+   */
   function array(arr) {
     arr = arr.map(of);
     return locals => arr.map(a => a(locals));
   }
 
-  return {
-    /**
-      * Converts an unresolved variable name or equation into a function that will return the resolved value when called.
-      * @param {any} tokens Tokens to parse into an incomplete
-      * @return {Function} A function that when called will return the completed value.
-      */
-    of,
-    /**
-      * Converts an array of unresolved variable names, or equations into a function that will return the resolved values array when called.
-      * @param {Array} arr Array of tokens
-      * @return {Function} A function that when called will return the completed array.
-      */
-    array
-  };
+  return { of, array };
 })();
