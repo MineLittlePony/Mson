@@ -4,8 +4,8 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
+import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -24,12 +24,12 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
 
     public final RendererList<
                     String,
-                    EntityRenderDispatcher,
+                    EntityRendererFactory.Context,
                     PlayerEntityRenderer
                 > player = new RendererList<>(new Identifier("mson", "renderers/player"), EntityRendererRegistry::registerPlayerRenderer);
     public final RendererList<
                     EntityType<?>,
-                    EntityRenderDispatcher,
+                    EntityRendererFactory.Context,
                     EntityRenderer<?>
                 > entity = new RendererList<>(new Identifier("mson", "renderers/entity"), EntityRendererRegistry::registerEntityRenderer);
     public final RendererList<
@@ -39,12 +39,12 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
                 > block = new RendererList<>(new Identifier("mson", "renderers/block"), EntityRendererRegistry::registerBlockRenderer);
 
     @Override
-    public <T extends PlayerEntityRenderer> void registerPlayerRenderer(String skinType, Function<EntityRenderDispatcher, T> constructor) {
+    public <T extends PlayerEntityRenderer> void registerPlayerRenderer(String skinType, Function<EntityRendererFactory.Context, T> constructor) {
         player.register(skinType, constructor);
     }
 
     @Override
-    public <T extends Entity, R extends EntityRenderer<?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRenderDispatcher, R> constructor) {
+    public <T extends Entity, R extends EntityRenderer<?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRendererFactory.Context, R> constructor) {
         entity.register(type, constructor);
     }
 

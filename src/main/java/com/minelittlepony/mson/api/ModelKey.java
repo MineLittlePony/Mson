@@ -1,15 +1,14 @@
 package com.minelittlepony.mson.api;
 
+import net.minecraft.client.model.Model;
 import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.json.JsonContext;
 
-import java.util.function.Supplier;
-
 /**
  * Handle for a registered entity model.
  */
-public interface ModelKey<T extends MsonModel> {
+public interface ModelKey<T extends Model> {
 
     /**
      * Gets the unique id used to register this model key.
@@ -28,7 +27,7 @@ public interface ModelKey<T extends MsonModel> {
      *
      * @throws IllegalStateException if called before resource loading (aka client startup) has completed.
      */
-    <V extends T> V createModel(Supplier<V> supplier);
+    <V extends T> V createModel(MsonModel.Factory<V> supplier);
 
     /**
      * Retrieves or loads the json context used to constructing models.

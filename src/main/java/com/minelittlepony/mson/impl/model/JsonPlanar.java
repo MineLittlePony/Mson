@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.impl.model;
 
-import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
@@ -12,9 +11,9 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.BoxBuilder;
-import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.api.model.Face;
+import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.FixtureImpl;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 public class JsonPlanar extends JsonCuboid {
     public static final Identifier ID = new Identifier("mson", "planar");
@@ -50,13 +48,14 @@ public class JsonPlanar extends JsonCuboid {
     }
 
     @Override
-    public void export(ModelContext context, ModelPart cuboid) throws InterruptedException, ExecutionException {
-        super.export(context , cuboid);
-
-        ModelContext subContext = context.resolve(cuboid);
+    protected PartBuilder export(ModelContext context, PartBuilder builder) throws InterruptedException, ExecutionException {
+        super.export(context, builder);
+        ModelContext subContext = context.resolve(builder);
         faces.values().forEach(face -> {
-            face.export(subContext, ((ContentAccessor)cuboid).cubes());
+            face.export(subContext);
         });
+
+        return builder;
     }
 
     class JsonFaceSet extends FixtureImpl {
@@ -105,14 +104,14 @@ public class JsonPlanar extends JsonCuboid {
             return lockedVectors.computeIfAbsent(axis, a -> new ArrayList<>());
         }
 
-        void export(ModelContext subContext, List<Cuboid> cubes) {
-            cubes.addAll(elements.stream().map(face -> {
+        void export(ModelContext subContext) {
+            elements.stream().forEach(face -> {
                 try {
-                    return face.export(subContext);
+                    face.export(subContext);
                 } catch (InterruptedException | ExecutionException e) {
                     throw new FutureAwaitException(e);
                 }
-            }).collect(Collectors.toList()));
+            });
         }
 
         @Override

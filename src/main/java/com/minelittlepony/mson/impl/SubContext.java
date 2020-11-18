@@ -4,6 +4,9 @@ import net.minecraft.client.model.ModelPart;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.MsonModel;
 
+import javax.annotation.Nullable;
+
+import java.util.Map;
 import java.util.Objects;
 
 class SubContext implements ModelContext {
@@ -20,11 +23,13 @@ class SubContext implements ModelContext {
         this.context = Objects.requireNonNull(context, "Sub-context element is required");
     }
 
+    @Nullable
     @Override
     public <T extends MsonModel> T getModel() {
         return parent.getModel();
     }
 
+    @Nullable
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getContext() {
@@ -32,10 +37,16 @@ class SubContext implements ModelContext {
     }
 
     @Override
+    public void getTree(ModelContext context, Map<String, ModelPart> tree) {
+        parent.getTree(context, tree);
+    }
+
+    @Override
     public <T> T findByName(ModelContext context, String name) {
         return parent.findByName(context, name);
     }
 
+    @Deprecated
     @Override
     public void findByName(ModelContext context, String name, ModelPart output) {
         parent.findByName(context, name, output);

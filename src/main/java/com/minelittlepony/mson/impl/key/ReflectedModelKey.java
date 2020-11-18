@@ -1,5 +1,7 @@
 package com.minelittlepony.mson.impl.key;
 
+import net.minecraft.client.model.Model;
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -17,12 +19,12 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelKeyImpl<T> {
+public final class ReflectedModelKey<T extends Model> extends AbstractModelKeyImpl<T> {
 
     private static final Map<String, ReflectedModelKey<?>> keyCache = new HashMap<>();
 
     @SuppressWarnings("unchecked")
-    public static <T extends MsonModel> ReflectedModelKey<T> fromJson(JsonObject json) {
+    public static <T extends Model> ReflectedModelKey<T> fromJson(JsonObject json) {
         if (!json.has("implementation")) {
             throw new JsonParseException("Slot requires an implementation");
         }
@@ -72,7 +74,7 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
     }
 
     @Override
-    public <V extends T> V createModel(Supplier<V> supplier) {
+    public <V extends T> V createModel(MsonModel.Factory<V> supplier) {
         return null;
     }
 
@@ -83,7 +85,7 @@ public final class ReflectedModelKey<T extends MsonModel> extends AbstractModelK
 
     @FunctionalInterface
     public interface Construct {
-        MsonModel get();
+        Model get(ModelPart tree);
     }
 
     @FunctionalInterface

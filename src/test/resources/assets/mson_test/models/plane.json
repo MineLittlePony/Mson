@@ -3,7 +3,7 @@
 	"head": {
 		"visible": false
 	},
-	"torso": {
+	"body": {
 		"cubes": [
 			{
 				"type": "mson:plane",

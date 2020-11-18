@@ -14,12 +14,10 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 public final class MethodHandles {
 
     static final Lookup LOOKUP = findTrustedLookup();
-    static final BiFunction<MethodHandle, Object, MethodHandle> BIND_TO = findBindTo();
 
     private static Lookup findTrustedLookup() {
         try {
@@ -30,32 +28,6 @@ public final class MethodHandles {
             MsonImpl.LOGGER.error("Could not obtain elevated lookup privileges. All lookups will be performed as a filthy casual.", e);
             return java.lang.invoke.MethodHandles.lookup();
         }
-    }
-
-    private static BiFunction<MethodHandle, Object, MethodHandle> findBindTo() {
-        try {
-            Class<?> BoundMethodHandle = Class.forName("java.lang.invoke.BoundMethodHandle");
-
-            MethodHandle bindAgumentL = LOOKUP.findSpecial(
-                    MethodHandle.class,
-                    "bindArgumentL",
-                    MethodType.methodType(BoundMethodHandle, int.class, Object.class),
-                    MethodHandle.class
-            );
-
-            return (handle, object) -> {
-                try {
-                    MethodHandle bound = bindAgumentL.bindTo(handle);
-                    return (MethodHandle)bound.invoke(0, object);
-                } catch (Throwable e) {
-                    MsonImpl.LOGGER.error("bindTo operation failed. This should not happen.", e);
-                    return handle;
-                }
-            };
-        } catch (Exception e) {
-            MsonImpl.LOGGER.error("Could not obtain elevated bindTo privileges. All binds will follow casting restrictions..", e);
-        }
-        return MethodHandle::bindTo;
     }
 
     public static Lambdas lambdas() {

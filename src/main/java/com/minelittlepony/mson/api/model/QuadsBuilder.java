@@ -24,7 +24,7 @@ public interface QuadsBuilder {
             float yMin = ctx.y - ctx.stretchY;
             float zMin = ctx.z - ctx.stretchZ;
 
-            if (ctx.mirrorX) {
+            if (ctx.mirror[0]) {
                 float v = xMax;
                 xMax = xMin;
                 xMin = v;
@@ -73,19 +73,19 @@ public interface QuadsBuilder {
             float yMin = ctx.fixture.stretchCoordinate(Axis.Y, ctx.x, ctx.y, ctx.z, face.applyFixtures(-ctx.stretchY));
             float zMin = ctx.fixture.stretchCoordinate(Axis.Z, ctx.x, ctx.y, ctx.z, -ctx.stretchZ);
 
-            if (ctx.mirrorX) {
+            if (ctx.mirror[0]) {
                 float v = xMax;
                 xMax = xMin;
                 xMin = v;
             }
 
-            if (ctx.mirrorY) {
+            if (ctx.mirror[1]) {
                 float v = yMax;
                 yMax = yMin;
                 yMin = v;
             }
 
-            if (ctx.mirrorZ) {
+            if (ctx.mirror[2]) {
                 float v = zMax;
                 zMax = zMin;
                 zMin = v;
@@ -103,7 +103,7 @@ public interface QuadsBuilder {
 
             Rect[] quads = new Rect[1];
 
-            boolean mirror = ctx.mirrorX || ctx.mirrorY || ctx.mirrorZ;
+            boolean mirror = ctx.mirror[0] || ctx.mirror[1] || ctx.mirror[2];
 
             Direction lighting = face.getLighting();
 

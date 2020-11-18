@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.impl;
 
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
@@ -15,6 +16,7 @@ import com.minelittlepony.mson.impl.model.JsonTexture;
 import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -53,10 +55,15 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
+    public void getTree(ModelContext context, Map<String, ModelPart> tree) {
+    }
+
+    @Override
     public <T> T findByName(ModelContext context, String name) {
         throw new IllegalArgumentException(String.format("Key not found `%s`", name));
     }
 
+    @Deprecated
     @Override
     public void findByName(ModelContext context, String name, ModelPart output) {
         throw new IllegalArgumentException(String.format("Key not found `%s`", name));
@@ -92,7 +99,7 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public ModelContext createContext(MsonModel model, Locals locals) {
+    public ModelContext createContext(Model model, Locals locals) {
         return this;
     }
 

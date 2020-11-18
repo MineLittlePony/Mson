@@ -10,8 +10,7 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
-import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
-import com.minelittlepony.mson.api.model.MsonPart;
+import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.util.Incomplete;
@@ -19,11 +18,9 @@ import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 public class JsonCuboid implements JsonComponent<ModelPart> {
     public static final Identifier ID = new Identifier("mson", "compound");
@@ -72,49 +69,32 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     @Override
     public ModelPart export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            ModelPart cuboid = new MsonCuboidImpl(context.getModel());
-
-            export(context, cuboid);
-
-            return cuboid;
+            return export(context, new PartBuilder(context)).build();
         });
+    }
+
+    protected PartBuilder export(ModelContext context, PartBuilder builder) throws InterruptedException, ExecutionException {
+        float[] rotation = this.rotation.complete(context);
+        builder
+                .hidden(!visible)
+                .pivot(this.center.complete(context))
+                .offset(this.offset.complete(context))
+                .mirror(mirror)
+                .rotate(
+                    rotation[0] * RADS_DEGS_FACTOR,
+                    rotation[1] * RADS_DEGS_FACTOR,
+                    rotation[2] * RADS_DEGS_FACTOR)
+                .tex(texture.complete(context));
+
+        final ModelContext subContext = context.resolve(builder, new Locals(context.getLocals()));
+        children.forEach(c -> c.tryExport(subContext, ModelPart.class));
+        cubes.forEach(c -> c.tryExport(subContext, Cuboid.class));
+        return builder;
     }
 
     @Override
     public void export(ModelContext context, ModelPart cuboid) throws InterruptedException, ExecutionException {
 
-        float[] center = this.center.complete(context);
-        float[] offset = this.offset.complete(context);
-        float[] rotation = this.rotation.complete(context);
-
-        ((MsonPart)cuboid).setHidden(!visible);
-        ((MsonPart)cuboid).around(center[0], center[1], center[2]);
-        ((MsonPart)cuboid).offset(offset[0], offset[1], offset[2]);
-        ((MsonPart)cuboid).rotate(
-                rotation[0] * RADS_DEGS_FACTOR,
-                rotation[1] * RADS_DEGS_FACTOR,
-                rotation[2] * RADS_DEGS_FACTOR
-        );
-        ((MsonPart)cuboid).mirror(mirror[0], mirror[1], mirror[2]);
-        ((MsonPart)cuboid).tex(texture.complete(context));
-        ((ContentAccessor)cuboid).cubes().clear();
-        ((ContentAccessor)cuboid).children().clear();
-
-        final ModelContext subContext = context.resolve(cuboid, new Locals(context.getLocals()));
-        ((ContentAccessor)cuboid).children().addAll(children
-                .stream()
-                .map(c -> c.tryExport(subContext, ModelPart.class))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList())
-        );
-        ((ContentAccessor)cuboid).cubes().addAll(cubes
-                .stream()
-                .map(c -> c.tryExport(subContext, Cuboid.class))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList())
-        );
     }
 
     class Locals implements ModelContext.Locals {

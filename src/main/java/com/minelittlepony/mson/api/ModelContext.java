@@ -7,6 +7,7 @@ import com.minelittlepony.mson.api.model.Texture;
 
 import javax.annotation.Nullable;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -22,6 +23,7 @@ public interface ModelContext {
     /**
      * Gets the currently-active model instance.
      */
+    @Nullable
     <T extends MsonModel> T getModel();
 
     /**
@@ -32,6 +34,7 @@ public interface ModelContext {
      *
      * @throws ClassCastException if the context doesn't match the requested type.
      */
+    @Nullable
     <T> T getContext() throws ClassCastException;
 
     /**
@@ -52,6 +55,12 @@ public interface ModelContext {
      * Will always return a new instance if the name is empty or null.
      */
     <T> T computeIfAbsent(@Nullable String name, ContentSupplier<T> supplier);
+
+    default void getTree(Map<String, ModelPart> tree) {
+        getTree(this, tree);
+    }
+
+    void getTree(ModelContext context, Map<String, ModelPart> tree);
 
     /**
      * Gets the named element and returns an instance of the requested type.
@@ -75,6 +84,7 @@ public interface ModelContext {
      * Gets the named element and loads it into the provided cuboid.
      * @throws InvalidInputException if the named element does not exist.
      */
+    @Deprecated
     default void findByName(String name, ModelPart output) {
         findByName(this, name, output);
     }
@@ -83,6 +93,7 @@ public interface ModelContext {
      * Gets the named element and loads it into the provided cuboid.
      * @throws InvalidInputException if the named element does not exist.
      */
+    @Deprecated
     void findByName(ModelContext context, String name, ModelPart output);
 
     /**
