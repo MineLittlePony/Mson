@@ -1,13 +1,13 @@
 {
 	"parent": "mson:biped",
-	"helmet": {
+	"hat": {
 		"texture": { "u": 0, "v": 16 },
 		"center": [0, -14, 0],
 		"cubes": [
 			{ "from": [-4, -8, -4], "size": [ 8, 8, 8], "stretch": -0.5 }
 		]
 	},
-	"torso": {
+	"body": {
 		"texture": { "u": 32, "v": 16 },
 		"center": [0, -14, 0],
 		"cubes": [

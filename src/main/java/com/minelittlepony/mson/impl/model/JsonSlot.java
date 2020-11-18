@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.impl.model;
 
+import net.minecraft.client.model.Model;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
@@ -25,7 +26,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class JsonSlot<T extends MsonModel> implements JsonComponent<T> {
+public class JsonSlot<T extends Model> implements JsonComponent<T> {
 
     public static final Identifier ID = new Identifier("mson", "slot");
 
@@ -80,7 +81,9 @@ public class JsonSlot<T extends MsonModel> implements JsonComponent<T> {
                     .resolve(context.getContext());
 
             T inst = implementation.createModel(subContext);
-            inst.init(subContext);
+            if (inst instanceof MsonModel) {
+                ((MsonModel)inst).init(subContext);
+            }
 
             return inst;
         });

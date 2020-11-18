@@ -46,6 +46,7 @@ public interface JsonComponent<T> {
      *
      * @throws UnsupportedOperationException if this component would not have produced a cuboid.
      */
+    @Deprecated
     default void export(ModelContext context, ModelPart output) throws InterruptedException, ExecutionException {
         throw new UnsupportedOperationException("I am not a cuboid");
     }

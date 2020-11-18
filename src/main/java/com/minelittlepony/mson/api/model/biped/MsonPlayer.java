@@ -2,95 +2,44 @@ package com.minelittlepony.mson.api.model.biped;
 
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
+import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 
-import com.google.common.collect.Lists;
-import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
-import com.minelittlepony.mson.api.mixin.Extends;
-import com.minelittlepony.mson.api.mixin.MixedMsonModel;
+import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.model.MsonPart;
 
-import java.util.List;
 import java.util.Random;
 
-@Extends(MsonBiped.class)
 public class MsonPlayer<T extends LivingEntity>
     extends PlayerEntityModel<T>
-    implements MixedMsonModel {
+    implements MsonModel {
 
     protected ModelPart cape;
     protected ModelPart deadmsEars;
 
-    private List<ModelPart> parts;
+    private boolean empty;
 
-    public MsonPlayer() {
-        this(false);
-    }
-
-    public MsonPlayer(boolean isAlex) {
-        super(0, isAlex);
-    }
-
-    @Override
-    public void init(ModelContext context) {
-        MixedMsonModel.super.init(context);
-
-        context.findByName("left_sleeve", leftSleeve);
-        context.findByName("right_sleeve", rightSleeve);
-
-        context.findByName("left_pant_leg", leftPantLeg);
-        context.findByName("right_pant_leg", rightPantLeg);
-
-        context.findByName("jacket", jacket);
-        cape = context.findByName("cape");
-        deadmsEars = context.findByName("deadms_ears");
-    }
-
-    @Override
-    public void renderEars(MatrixStack renderMatrix, VertexConsumer vertexBuffer, int i, int j) {
-        deadmsEars.copyPositionAndRotation(head);
-        deadmsEars.pivotX = 0;
-        deadmsEars.pivotY = 0;
-        deadmsEars.render(renderMatrix, vertexBuffer, i, j);
-    }
-
-    @Override
-    public void renderCape(MatrixStack renderMatrix, VertexConsumer vertexBuffer, int i, int j) {
-        cape.render(renderMatrix, vertexBuffer, i, j);
+    public MsonPlayer(ModelPart tree) {
+        super(tree, false);
+        cape = tree.getChild("cloak");
+        deadmsEars = tree.getChild("ear");
+        empty = tree.traverse().filter(p -> !p.isEmpty()).count() == 0;
     }
 
     @Override
     public ModelPart getRandomPart(Random random) {
-        if (parts.isEmpty()) {
+        if (empty) {
             return MsonPart.EMPTY_PART;
         }
-        return parts.get(random.nextInt(parts.size()));
-    }
-
-    @Override
-    public void accept(ModelPart modelPart) {
-       if (parts == null) {
-          parts = Lists.newArrayList();
-       }
-       parts.add(modelPart);
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        cape.visible = visible;
-        deadmsEars.visible = visible;
+        return super.getRandomPart(random);
     }
 
     public static class Renderer extends PlayerEntityRenderer {
-        public Renderer(EntityRenderDispatcher dispatcher, ModelKey<MsonPlayer<AbstractClientPlayerEntity>> key) {
-            super(dispatcher);
+        public Renderer(EntityRendererFactory.Context context, ModelKey<MsonPlayer<AbstractClientPlayerEntity>> key) {
+            super(context, false);
             this.model = key.createModel();
         }
     }

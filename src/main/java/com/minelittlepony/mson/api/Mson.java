@@ -1,11 +1,10 @@
 package com.minelittlepony.mson.api;
 
+import net.minecraft.client.model.Model;
 import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.impl.MsonImpl;
-
-import java.util.function.Supplier;
 
 /**
  * The main Mson class.
@@ -30,7 +29,7 @@ public interface Mson {
      * @param implementation The class to instantiate.
      * @return A key to create instances of the registered model type.
      */
-    <T extends MsonModel> ModelKey<T> registerModel(Identifier id, Supplier<T> constructor);
+    <T extends Model> ModelKey<T> registerModel(Identifier id, MsonModel.Factory<T> constructor);
 
     /**
      * Registers a custom component to load model json.

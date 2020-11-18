@@ -1,6 +1,8 @@
 package com.minelittlepony.mson.impl;
 
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.minecraft.client.model.Model;
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
@@ -9,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Preconditions;
+import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.json.JsonComponent;
@@ -25,13 +28,13 @@ import com.minelittlepony.mson.impl.model.JsonSlot;
 
 import javax.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.function.Supplier;
 
 public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
@@ -89,7 +92,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends MsonModel> ModelKey<T> registerModel(Identifier id, Supplier<T> constructor) {
+    public <T extends Model> ModelKey<T> registerModel(Identifier id, MsonModel.Factory<T> constructor) {
         Objects.requireNonNull(id, "Id must not be null");
         Objects.requireNonNull(constructor, "Implementation class must not be null");
         checkNamespace(id.getNamespace());
@@ -114,11 +117,11 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         Preconditions.checkArgument(!"dynamic".equalsIgnoreCase(namespace), "`dynamic` is a reserved namespace.");
     }
 
-    class Key<T extends MsonModel> extends AbstractModelKeyImpl<T> {
+    class Key<T extends Model> extends AbstractModelKeyImpl<T> {
 
-        private final Supplier<T> constr;
+        private final MsonModel.Factory<T> constr;
 
-        public Key(Identifier id, Supplier<T> constr) {
+        public Key(Identifier id, MsonModel.Factory<T> constr) {
             this.id = id;
             this.constr = constr;
         }
@@ -130,14 +133,21 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         }
 
         @Override
-        public <V extends T> V createModel(Supplier<V> supplier) {
+        public <V extends T> V createModel(MsonModel.Factory<V> factory) {
             if (foundry == null) {
                 throw new IllegalStateException("You're too early. Wait for Mson to load first.");
             }
 
             JsonContext context = getModelData();
-            V t = supplier.get();
-            t.init(context.createContext(t, new LocalsImpl(getId(), context)));
+            ModelContext.Locals locals = new LocalsImpl(getId(), context);
+
+            Map<String, ModelPart> tree = new HashMap<>();
+            context.createContext(null, locals).getTree(tree);
+
+            V t = factory.create(new ModelPart(new ArrayList<>(), tree));
+            if (t instanceof MsonModel) {
+                ((MsonModel)t).init(context.createContext(t, locals));
+            }
             return t;
         }
 

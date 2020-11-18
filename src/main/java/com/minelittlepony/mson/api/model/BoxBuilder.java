@@ -10,7 +10,6 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.util.TriState;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -21,7 +20,8 @@ import java.util.function.Function;
  *
  */
 public final class BoxBuilder {
-    public final MsonPart part;
+
+    public final PartBuilder parent;
 
     public float x;
     public float y;
@@ -38,28 +38,24 @@ public final class BoxBuilder {
     public float stretchY;
     public float stretchZ;
 
-    public boolean mirrorX;
-    public boolean mirrorY;
-    public boolean mirrorZ;
+    public boolean[] mirror = new boolean[3];
 
     public CoordinateFixture fixture = CoordinateFixture.unfixed();
 
-    public BoxBuilder(ModelPart part) {
-        this.part = (MsonPart)part;
+    public BoxBuilder(PartBuilder parent) {
+        this.parent = parent;
     }
     public BoxBuilder(ModelContext context) {
-        this((ModelPart)context.getContext());
+        this((PartBuilder)context.getContext());
 
         stretchX = context.getScale();
         stretchY = context.getScale();
         stretchZ = context.getScale();
 
-        u = part.getTexture().getU();
-        v = part.getTexture().getV();
+        u = parent.texture.getU();
+        v = parent.texture.getV();
 
-        mirrorX = part.getMirrorX();
-        mirrorY = part.getMirrorY();
-        mirrorZ = part.getMirrorZ();
+        System.arraycopy(parent.mirror, 0, mirror, 0, 3);
     }
 
     public BoxBuilder fix(CoordinateFixture fixture) {
@@ -68,9 +64,9 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder pos(float... pos) {
-        x = pos[0] + part.getModelOffsetX();
-        y = pos[1] + part.getModelOffsetY();
-        z = pos[2] + part.getModelOffsetZ();
+        x = pos[0] + parent.offset[0];
+        y = pos[1] + parent.offset[1];
+        z = pos[2] + parent.offset[2];
         return this;
     }
 
@@ -105,22 +101,22 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder mirror(Axis axis, boolean... mirror) {
-        mirrorX = axis.getWidth().getBoolean(mirror);
-        mirrorY = axis.getHeight().getBoolean(mirror);
-        mirrorZ = axis.getDeptch().getBoolean(mirror);
+        this.mirror[0] = axis.getWidth().getBoolean(mirror);
+        this.mirror[1] = axis.getHeight().getBoolean(mirror);
+        this.mirror[2] = axis.getDeptch().getBoolean(mirror);
         return this;
     }
 
     public BoxBuilder mirror(Axis axis, TriState mirror) {
         if (mirror.isKnown()) {
             if (axis == Axis.X) {
-                mirrorX = mirror.toBoolean();
+                this.mirror[0] = mirror.toBoolean();
             }
             if (axis == Axis.Y) {
-                mirrorY = mirror.toBoolean();
+                this.mirror[1] = mirror.toBoolean();
             }
             if (axis == Axis.Z) {
-                mirrorZ = mirror.toBoolean();
+                this.mirror[2] = mirror.toBoolean();
             }
         }
         return this;
@@ -141,7 +137,7 @@ public final class BoxBuilder {
             float w, float h,
             Direction direction,
             Vert ...vertices) {
-        return quad(u, v, w, h, direction, part.getMirrorX(), vertices);
+        return quad(u, v, w, h, direction, mirror[0], vertices);
     }
 
     /**
@@ -161,31 +157,27 @@ public final class BoxBuilder {
                 verts,
                 u,         v,
                 u + w, v + h,
-                part.getTexture().getWidth(), part.getTexture().getHeight(),
+                parent.texture.getWidth(), parent.texture.getHeight(),
                 mirror,
                 direction);
     }
 
     public Cuboid build() {
-        return new Cuboid(
+        Cuboid result = new Cuboid(
                 u, v,
-                part.getModelOffsetX() + x, part.getModelOffsetY() + y, part.getModelOffsetZ() + z,
+                parent.offset[0] + x, parent.offset[1] + y, parent.offset[2] + z,
                 dx, dy, dz,
                 stretchX, stretchY, stretchZ,
-                part.getMirrorX(),
-                part.getTexture().getWidth(), part.getTexture().getHeight());
+                mirror[0],
+                parent.texture.getWidth(), parent.texture.getHeight());
+        parent.cubes.add(result);
+        return result;
     }
 
     public Cuboid build(QuadsBuilder builder) {
         Cuboid box = build();
         ((Cube)box).setSides(builder.build(this));
         return box;
-    }
-
-    public interface ContentAccessor {
-        List<Cuboid> cubes();
-
-        List<ModelPart> children();
     }
 
     public interface RenderLayerSetter {

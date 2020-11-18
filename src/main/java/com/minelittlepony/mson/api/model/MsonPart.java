@@ -1,43 +1,35 @@
 package com.minelittlepony.mson.api.model;
 
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPart.Cuboid;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public interface MsonPart {
 
-    static ModelPart EMPTY_PART = new ModelPart(new Model(null) {
-        @Override
-        public void render(MatrixStack matrices, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
-        }
-    });
-    static Cuboid EMPTY_CUBE = new Cuboid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true, 0, 0);
-
-    /**
-     * Sets the cuboid's texture parameters.
-     */
-    default MsonPart tex(Texture tex) {
-        ((ModelPart)this).setTextureOffset(tex.getU(), tex.getV());
-        ((ModelPart)this).setTextureSize(tex.getWidth(), tex.getHeight());
-        return this;
-    }
+    public static ModelPart EMPTY_PART = new ModelPart(new ArrayList<>(), new HashMap<String, ModelPart>());
+    public static Cuboid EMPTY_CUBE = new Cuboid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true, 0, 0);
 
     /**
      * Sets this renderer's rotation angles.
      */
     default MsonPart rotate(float pitch, float yaw, float roll) {
-        ((ModelPart)this).pitch = pitch;
-        ((ModelPart)this).yaw = yaw;
-        ((ModelPart)this).roll = roll;
+        ((ModelPart)(Object)this).pitch = pitch;
+        ((ModelPart)(Object)this).yaw = yaw;
+        ((ModelPart)(Object)this).roll = roll;
         return this;
+    }
+
+    default MsonPart rotate(float[] rotation) {
+        return rotate(rotation[0], rotation[1], rotation[2]);
     }
 
     /**
      * Sets whether this part is hidden or not.
      */
     default MsonPart setHidden(boolean hidden) {
+        ((ModelPart)(Object)this).visible = !hidden;
         return this;
     }
 
@@ -45,8 +37,12 @@ public interface MsonPart {
      * Sets the rotation point.
      */
     default MsonPart around(float x, float y, float z) {
-        ((ModelPart)this).setPivot(x, y, z);
+        ((ModelPart)(Object)this).setPivot(x, y, z);
         return this;
+    }
+
+    default MsonPart around(float[] pivot) {
+        return around(pivot[0], pivot[1], pivot[2]);
     }
 
     /**
@@ -64,56 +60,12 @@ public interface MsonPart {
     }
 
     /**
-     * Sets an offset to be used on all shapes and children created through this renderer.
-     */
-    default MsonPart offset(float x, float y, float z) {
-        return this;
-    }
-
-    /**
      * Adjusts the rotation center of the given renderer by the given amounts in each direction.
      */
     default MsonPart shift(float x, float y, float z) {
-        ((ModelPart)this).pivotX += x;
-        ((ModelPart)this).pivotY += y;
-        ((ModelPart)this).pivotZ += z;
+        ((ModelPart)(Object)this).pivotX += x;
+        ((ModelPart)(Object)this).pivotY += y;
+        ((ModelPart)(Object)this).pivotZ += z;
         return this;
-    }
-
-    /**
-     * Sets whether certain dimensions are mirrored.
-     */
-    default MsonPart mirror(boolean x, boolean y, boolean z) {
-        ((ModelPart)this).mirror = x;
-
-        return this;
-    }
-
-    default Texture getTexture() {
-        return (Texture)this;
-    }
-
-    default float getModelOffsetX() {
-        return 0;
-    }
-
-    default float getModelOffsetY() {
-        return 0;
-    }
-
-    default float getModelOffsetZ() {
-        return 0;
-    }
-
-    default boolean getMirrorX() {
-        return ((ModelPart)this).mirror;
-    }
-
-    default boolean getMirrorY() {
-        return false;
-    }
-
-    default boolean getMirrorZ() {
-        return false;
     }
 }

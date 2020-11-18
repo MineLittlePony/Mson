@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.impl;
 
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -18,7 +19,6 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.json.Variables;
-import com.minelittlepony.mson.api.model.BoxBuilder.ContentAccessor;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
@@ -233,7 +233,7 @@ class ModelFoundry {
         }
 
         @Override
-        public ModelContext createContext(MsonModel model, ModelContext.Locals locals) {
+        public ModelContext createContext(Model model, ModelContext.Locals locals) {
             return new RootContext(model, scale, parent.getNow(NullContext.INSTANCE).createContext(model, locals), locals);
         }
 
@@ -244,7 +244,7 @@ class ModelFoundry {
 
         class RootContext implements ModelContext {
 
-            private final MsonModel model;
+            private final Model model;
 
             private final Map<String, Object> objectCache = new HashMap<>();
 
@@ -253,7 +253,7 @@ class ModelFoundry {
 
             private final float scale;
 
-            RootContext(MsonModel model, float scale, ModelContext inherited, Locals locals) {
+            RootContext(Model model, float scale, ModelContext inherited, Locals locals) {
                 this.model = model;
                 this.scale = scale;
                 this.inherited = inherited;
@@ -285,6 +285,18 @@ class ModelFoundry {
                 return inherited.getScale();
             }
 
+            @Override
+            public void getTree(ModelContext context, Map<String, ModelPart> tree) {
+                elements.entrySet().forEach(entry -> {
+                    if (!tree.containsKey(entry.getKey())) {
+                        entry.getValue().tryExport(context, ModelPart.class).ifPresent(part -> {
+                            tree.put(entry.getKey(), part);
+                        });
+                    }
+                });
+                inherited.getTree(this, tree);
+            }
+
             @SuppressWarnings("unchecked")
             @Override
             public <T> T findByName(ModelContext context, String name) {
@@ -298,6 +310,7 @@ class ModelFoundry {
                 return inherited.findByName(context, name);
             }
 
+            @Deprecated
             @Override
             public void findByName(ModelContext context, String name, ModelPart output) {
                 if (elements.containsKey(name)) {
@@ -309,7 +322,7 @@ class ModelFoundry {
                 } else {
                     inherited.findByName(context, name, output);
                 }
-                if (((ContentAccessor)output).cubes().isEmpty()) {
+                if (output.isEmpty()) {
                     MsonImpl.LOGGER.warn("Exported model part '" + name + "' had no cubes!");
                 }
             }
