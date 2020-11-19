@@ -33,6 +33,10 @@ public interface JsonComponent<T> {
         return Optional.empty();
     }
 
+    default JsonComponent<T> setName(String name) {
+        return this;
+    }
+
     /**
      * Creates an instance of this component's object type within the supplied model loading context.
      */

@@ -5,6 +5,7 @@ import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.client.realms.util.JsonUtils;
 import net.minecraft.util.Identifier;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
@@ -17,10 +18,14 @@ import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class JsonCuboid implements JsonComponent<ModelPart> {
     public static final Identifier ID = new Identifier("mson", "compound");
@@ -35,12 +40,13 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     private final boolean[] mirror = new boolean[3];
     private final boolean visible;
 
-    private final List<JsonComponent<?>> children = new ArrayList<>();
+    private final Map<String, JsonComponent<?>> children = new TreeMap<>();
     private final List<JsonComponent<?>> cubes = new ArrayList<>();
 
     private final Incomplete<Texture> texture;
 
     private final String name;
+    private String boneId = "";
 
     public JsonCuboid(JsonContext context, String name, JsonObject json) {
         center = context.getVarLookup().getFloats(json, "center", 3);
@@ -50,12 +56,10 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
 
         visible = JsonUtils.getBooleanOr("visible", json, true);
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
-        this.name = name.isEmpty() ? JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("") : name;
+        boneId = this.name = name.isEmpty() ? JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("") : name;
 
-        JsonUtil.accept(json, "children").map(JsonElement::getAsJsonArray).ifPresent(el -> {
-            el.forEach(element -> {
-                context.loadComponent(element, ID).ifPresent(children::add);
-            });
+        JsonUtil.accept(json, "children").map(this::loadChildrenMap).ifPresent(el -> {
+            children.putAll(el.stream().collect(Collectors.toMap(Map.Entry::getKey, i -> context.loadComponent(i.getValue(), ID).map(c -> c.setName(i.getKey())).orElse(null))));
         });
         JsonUtil.accept(json, "cubes").map(JsonElement::getAsJsonArray).ifPresent(el -> {
             el.forEach(element -> {
@@ -64,6 +68,24 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
         });
 
         context.addNamedComponent(this.name, this);
+    }
+
+    private Set<Map.Entry<String, JsonElement>> loadChildrenMap(JsonElement json) {
+        if (json.isJsonObject()) {
+            return json.getAsJsonObject().entrySet();
+        }
+        Map<String, JsonElement> map = new HashMap<>();
+        JsonArray arr = json.getAsJsonArray();
+        for (int i = 0; i < arr.size(); i++) {
+            map.put("unnamed_member_" + i, arr.get(i));
+        }
+        return map.entrySet();
+    }
+
+    @Override
+    public JsonComponent<ModelPart> setName(String name) {
+        this.boneId = name;
+        return this;
     }
 
     @Override
@@ -76,6 +98,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     protected PartBuilder export(ModelContext context, PartBuilder builder) throws InterruptedException, ExecutionException {
         float[] rotation = this.rotation.complete(context);
         builder
+                .name(boneId)
                 .hidden(!visible)
                 .pivot(this.center.complete(context))
                 .offset(this.offset.complete(context))
@@ -87,7 +110,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
                 .tex(texture.complete(context));
 
         final ModelContext subContext = context.resolve(builder, new Locals(context.getLocals()));
-        children.forEach(c -> c.tryExport(subContext, ModelPart.class));
+        children.entrySet().forEach(c -> c.getValue().tryExport(subContext, ModelPart.class));
         cubes.forEach(c -> c.tryExport(subContext, Cuboid.class));
         return builder;
     }
