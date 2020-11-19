@@ -1,4 +1,5 @@
 // import { Mson } from './mson_loader';
+// import { objUtils } from './obj_utils';
 //=====================================================//
 //                 The base types
 (_ => {
@@ -34,9 +35,7 @@
       mirror: fixedLength(body.mirror, 3, false),
       visible: body.visible === true,
       texture: locals.obj(loader.getTexture(body.texture, model.texture)),
-      children: body.children ? body.children
-          .map(child => loader.getElement(child, 'mson:compound', model, defineName))
-          .filter(present) : [],
+      children: loadChildren(body.children),
       cubes: body.cubes ? body.cubes
           .map(cube => loader.getElement(child, 'mson:box', model, defineName))
           .filter(present) : []
@@ -44,6 +43,13 @@
     if (body.name) {
       defineName(body.name, element);
     }
+    function loadChildren(children) {
+      return children ? objUtils.map(children,
+        value => loader.getElement(value, 'mson:compound', model, defineName),
+        Array.isArray(children) ? (key => `unnamed_member_${key}`) : (key => key)
+      ) : {};
+    }
+
     return element;
   }, (parent, context) => {
     if (!this.visible) {
@@ -52,7 +58,7 @@
 
     // TODO: rendering
 
-    this.children.forEach(child => child.render(this, context));
+    Object.values(this.children).forEach(child => child.render(this, context));
     this.cubes.forEach(cube => cube.render(this, context));
   });
 })();

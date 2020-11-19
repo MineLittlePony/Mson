@@ -5,9 +5,10 @@
    * @param {object} obj An object with values to remap
    * @param {Function} valueMapper A mapping function to convert each value found in the supplied dictionary.
    */
-  map(obj, valueMapper) {
+  map(obj, valueMapper, keyMapper) {
+    keyMapper = keyMapper || (a => a);
     const result = {};
-    Object.keys(obj).forEach(key => result[key] = valueMapper(obj[key]));
+    Object.keys(obj).forEach(key => result[keyMapper(key)] = valueMapper(obj[key]));
     return result;
   },
   /**
