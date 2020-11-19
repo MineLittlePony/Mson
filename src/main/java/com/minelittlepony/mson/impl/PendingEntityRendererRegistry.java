@@ -2,8 +2,8 @@ package com.minelittlepony.mson.impl;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
@@ -34,7 +34,7 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
                 > entity = new RendererList<>(new Identifier("mson", "renderers/entity"), EntityRendererRegistry::registerEntityRenderer);
     public final RendererList<
                     BlockEntityType<?>,
-                    BlockEntityRenderDispatcher,
+                    BlockEntityRendererFactory.Context,
                     BlockEntityRenderer<?>
                 > block = new RendererList<>(new Identifier("mson", "renderers/block"), EntityRendererRegistry::registerBlockRenderer);
 
@@ -49,7 +49,7 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
     }
 
     @Override
-    public <P extends BlockEntity, R extends BlockEntityRenderer<?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRenderDispatcher, R> constructor) {
+    public <P extends BlockEntity, R extends BlockEntityRenderer<?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererFactory.Context, R> constructor) {
         block.register(type, constructor);
     }
 
