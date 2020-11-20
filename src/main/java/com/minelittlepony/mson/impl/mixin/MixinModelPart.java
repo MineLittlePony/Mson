@@ -10,11 +10,18 @@ import com.minelittlepony.mson.api.model.MsonPart;
 import com.minelittlepony.mson.api.model.Rect;
 import com.minelittlepony.mson.api.model.Vert;
 
+import java.util.List;
+import java.util.Map;
+
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.util.math.Vector3f;
 
 @Mixin(ModelPart.class)
 abstract class MixinModelPart implements MsonPart {
+    @Accessor("cuboid")
+    public abstract List<ModelPart.Cuboid> getCubes();
+    @Accessor("children")
+    public abstract Map<String, ModelPart> getChildren();
 }
 
 @Mixin(ModelPart.Cuboid.class)
