@@ -5,11 +5,21 @@ import net.minecraft.client.model.ModelPart.Cuboid;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public interface MsonPart {
 
     public static ModelPart EMPTY_PART = new ModelPart(new ArrayList<>(), new HashMap<String, ModelPart>());
     public static Cuboid EMPTY_CUBE = new Cuboid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true, 0, 0);
+
+    public static MsonPart of(ModelPart part) {
+        return (MsonPart)(Object)part;
+    }
+
+    List<ModelPart.Cuboid> getCubes();
+
+    Map<String, ModelPart> getChildren();
 
     /**
      * Sets this renderer's rotation angles.
