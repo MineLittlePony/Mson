@@ -18,8 +18,10 @@ import net.minecraft.client.util.math.Vector3f;
 
 @Mixin(ModelPart.class)
 abstract class MixinModelPart implements MsonPart {
-    @Accessor("cuboid")
+    @Override
+    @Accessor("cuboids")
     public abstract List<ModelPart.Cuboid> getCubes();
+    @Override
     @Accessor("children")
     public abstract Map<String, ModelPart> getChildren();
 }
