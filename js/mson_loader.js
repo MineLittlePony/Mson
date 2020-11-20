@@ -67,24 +67,43 @@
         return objUtils.copy(elements, incoming);
       }
 
-      return function(loader) {
-        const parent = parameters.parent ? loader.getModel(this.parent) : {
-          locals: {},
-          elements: {},
-          texture: defaultTexture,
-          scale: 0
-        };
+      return {
+        getSkeleton(loader) {
+          const skeleton = parameters.parent ? getFile(parameters.parent).getSkeleton(loader) : {
+            locals: {},
+            elements: {},
+            texture: defaultTexture,
+            scale: 0
+          };
 
-        parent.locals = objUtils.copy(parent.locals, parameters.locals ? objUtils.map(parameters.locals, Incomplete.of) : {});
-        parent.elements = objUtils.copy(parent.elements, loadElements(loader, parent));
-        parent.texture = createTexture(parameters.texture, parent.texture);
+          skeleton.locals = objUtils.copy(skeleton.locals, parameters.locals ? objUtils.map(parameters.locals, Incomplete.of) : {});
+          skeleton.texture = createTexture(parameters.texture, skeleton.texture);
 
-        parent.render = function(context) {
-          this.elements.forEach(element => element.render(this, context));
-        };
+          return skeleton;
+        },
+        getElements(loader, skeleton) {
+          if (parameters.parent) {
+            getFile(parameters.parent).getElements(loader, skeleton);
+          }
+          skeleton.elements = objUtils.copy(skeleton.elements || {}, loadElements(loader, skeleton));
+          return skeleton;
+        },
+        getModel(loader) {
+          const parent = this.getElements(loader, this.getSkeleton(loader));
+          parent.render = function(context) {
+            Object.values(this.elements).forEach(element => element.render(this, context));
+          };
 
-        return parent;
+          return parent;
+        }
       };
+    }
+
+    function getFile(fileName) {
+      if (!files[fileName]) {
+        throw new Error(`Missing file '${fileName}'`)
+      }
+      return files[filename]
     }
 
     return {
@@ -106,10 +125,7 @@
         return element;
       },
       getModel(fileName) {
-        if (!files[fileName]) {
-          throw new Error(`Missing file '${fileName}'`)
-        }
-        return files[filename](this);
+        return getFile(fileName).getModel(this);
       }
     };
   }
@@ -148,7 +164,7 @@
     content.locals = objUtils.copy(Mson.objUtils.clone(model.locals), content.locals || {});
     content.texture = createTexture(content.texture);
 
-    const newModel = { model: createFile(content)(loader) };
+    const newModel = { model: createFile(content).getModel(loader) };
 
     if (body.name) {
       defineName(body.name, newModel);
