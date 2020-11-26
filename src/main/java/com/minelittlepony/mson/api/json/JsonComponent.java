@@ -18,6 +18,14 @@ public interface JsonComponent<T> {
      * Tries to export this component to the chosen type.
      * Returns an optional containing the result for a successful conversion.
      */
+    default <K> Optional<K> tryExportTreeNodes(ModelContext context, Class<K> type) {
+        return tryExport(context, type);
+    }
+
+    /**
+     * Tries to export this component to the chosen type.
+     * Returns an optional containing the result for a successful conversion.
+     */
     @SuppressWarnings("unchecked")
     default <K> Optional<K> tryExport(ModelContext context, Class<K> type) {
         Object s;

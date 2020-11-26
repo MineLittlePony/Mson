@@ -110,7 +110,9 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
                 .tex(texture.complete(context));
 
         final ModelContext subContext = context.resolve(builder, new Locals(context.getLocals()));
-        children.entrySet().forEach(c -> c.getValue().tryExport(subContext, ModelPart.class));
+        children.entrySet().forEach(c -> {
+            c.getValue().tryExport(subContext, ModelPart.class);
+        });
         cubes.forEach(c -> c.tryExport(subContext, Cuboid.class));
         return builder;
     }

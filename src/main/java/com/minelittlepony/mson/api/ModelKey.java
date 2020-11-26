@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.api;
 
-import net.minecraft.client.model.Model;
 import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.json.JsonContext;
@@ -8,7 +7,7 @@ import com.minelittlepony.mson.api.json.JsonContext;
 /**
  * Handle for a registered entity model.
  */
-public interface ModelKey<T extends Model> {
+public interface ModelKey<T> {
 
     /**
      * Gets the unique id used to register this model key.

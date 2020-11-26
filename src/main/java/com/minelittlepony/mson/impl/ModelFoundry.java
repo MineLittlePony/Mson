@@ -14,7 +14,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.ModelKey;
-import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
@@ -93,7 +92,7 @@ class ModelFoundry {
         return load.get(key.getId()).get();
     }
 
-    class StoredModelData implements JsonContext {
+    public class StoredModelData implements JsonContext {
 
         private final Map<String, JsonComponent<?>> elements = new HashMap<>();
 
@@ -242,9 +241,9 @@ class ModelFoundry {
             return VariablesImpl.INSTANCE;
         }
 
-        class RootContext implements ModelContext {
+        public class RootContext implements ModelContext {
 
-            private final Model model;
+            private Model model;
 
             private final Map<String, Object> objectCache = new HashMap<>();
 
@@ -262,8 +261,12 @@ class ModelFoundry {
 
             @SuppressWarnings("unchecked")
             @Override
-            public <T extends MsonModel> T getModel() {
+            public <T extends Model> T getModel() {
                 return (T)model;
+            }
+
+            public void setModel(Model model) {
+                this.model = model;
             }
 
             @SuppressWarnings("unchecked")
@@ -289,12 +292,12 @@ class ModelFoundry {
             public void getTree(ModelContext context, Map<String, ModelPart> tree) {
                 elements.entrySet().forEach(entry -> {
                     if (!tree.containsKey(entry.getKey())) {
-                        entry.getValue().tryExport(context, ModelPart.class).ifPresent(part -> {
+                        entry.getValue().tryExportTreeNodes(context, ModelPart.class).ifPresent(part -> {
                             tree.put(entry.getKey(), part);
                         });
                     }
                 });
-                inherited.getTree(this, tree);
+                inherited.getTree(context, tree);
             }
 
             @SuppressWarnings("unchecked")

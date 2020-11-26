@@ -1,11 +1,10 @@
 package com.minelittlepony.mson.impl.key;
 
-import net.minecraft.client.model.Model;
 import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.ModelKey;
 
-public abstract class AbstractModelKeyImpl<T extends Model> implements ModelKey<T> {
+public abstract class AbstractModelKeyImpl<T> implements ModelKey<T> {
 
     protected Identifier id;
 

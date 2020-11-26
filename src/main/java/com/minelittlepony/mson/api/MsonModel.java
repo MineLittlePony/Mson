@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.api;
 
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 
 /**
@@ -14,7 +13,7 @@ public interface MsonModel {
      */
     default void init(ModelContext context) {}
 
-    public interface Factory<T extends Model> {
+    public interface Factory<T> {
         T create(ModelPart tree);
     }
 }
