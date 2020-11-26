@@ -35,6 +35,11 @@ public class PartBuilder {
         this.context = context;
     }
 
+    public PartBuilder addChild(String name, ModelPart child) {
+        children.put(name, child);
+        return this;
+    }
+
     public PartBuilder name(String name) {
         this.name = Strings.nullToEmpty(name);
         return this;
@@ -86,8 +91,8 @@ public class PartBuilder {
             .around(pivot)
             .setHidden(hidden);
 
-        if (context.getModel() instanceof PartBuilder) {
-            PartBuilder parent = (PartBuilder)context.getModel();
+        if (context.getContext() instanceof PartBuilder) {
+            PartBuilder parent = (PartBuilder)context.getContext();
 
             if (this.name.isEmpty()) {
                 this.name = parent.name + ".part" + parent.children.size();

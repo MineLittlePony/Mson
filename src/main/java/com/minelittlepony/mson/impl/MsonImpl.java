@@ -17,6 +17,7 @@ import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.Mson;
+import com.minelittlepony.mson.impl.ModelFoundry.StoredModelData.RootContext;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.JsonBox;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
@@ -142,11 +143,13 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             ModelContext.Locals locals = new LocalsImpl(getId(), context);
 
             Map<String, ModelPart> tree = new HashMap<>();
-            context.createContext(null, locals).getTree(tree);
+            RootContext ctx = (RootContext)context.createContext(null, locals);
+            ctx.getTree(tree);
 
             V t = factory.create(new ModelPart(new ArrayList<>(), tree));
             if (t instanceof MsonModel) {
-                ((MsonModel)t).init(context.createContext(t, locals));
+                ctx.setModel(t);
+                ((MsonModel)t).init(ctx);
             }
             return t;
         }

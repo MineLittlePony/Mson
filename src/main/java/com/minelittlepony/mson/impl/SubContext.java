@@ -1,8 +1,8 @@
 package com.minelittlepony.mson.impl;
 
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.MsonModel;
 
 import javax.annotation.Nullable;
 
@@ -25,7 +25,7 @@ class SubContext implements ModelContext {
 
     @Nullable
     @Override
-    public <T extends MsonModel> T getModel() {
+    public <T extends Model> T getModel() {
         return parent.getModel();
     }
 

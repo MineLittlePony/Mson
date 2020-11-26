@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.impl.model;
 
-import net.minecraft.client.model.Model;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
@@ -26,7 +25,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class JsonSlot<T extends Model> implements JsonComponent<T> {
+public class JsonSlot<T> implements JsonComponent<T> {
 
     public static final Identifier ID = new Identifier("mson", "slot");
 
@@ -40,6 +39,14 @@ public class JsonSlot<T extends Model> implements JsonComponent<T> {
 
     @Nullable
     private String name;
+
+    @Override
+    public <K> Optional<K> tryExportTreeNodes(ModelContext context, Class<K> type) {
+        if (!implementation.isCompatible(type)) {
+            return Optional.empty();
+        }
+        return tryExport(context, type);
+    }
 
     public JsonSlot(JsonContext context, String name, JsonObject json) {
         implementation = ReflectedModelKey.fromJson(json);
@@ -77,12 +84,11 @@ public class JsonSlot<T extends Model> implements JsonComponent<T> {
                     //               |       /
                     //               |-slot\/
                     //              self
-                    .createContext(context.getModel(), new LocalsImpl(implementation.getId(), new Vars(jsContext)))
-                    .resolve(context.getContext());
+                    .createContext(context.getModel(), new LocalsImpl(implementation.getId(), new Vars(jsContext)));
 
             T inst = implementation.createModel(subContext);
             if (inst instanceof MsonModel) {
-                ((MsonModel)inst).init(subContext);
+                ((MsonModel)inst).init(subContext.resolve(context.getContext()));
             }
 
             return inst;

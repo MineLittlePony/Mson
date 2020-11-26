@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.impl.key;
 
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
@@ -11,20 +10,19 @@ import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.json.JsonContext;
-import com.minelittlepony.mson.api.mixin.Lambdas;
-import com.minelittlepony.mson.impl.invoke.MethodHandles;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class ReflectedModelKey<T extends Model> extends AbstractModelKeyImpl<T> {
+public final class ReflectedModelKey<T> extends AbstractModelKeyImpl<T> {
 
     private static final Map<String, ReflectedModelKey<?>> keyCache = new HashMap<>();
 
     @SuppressWarnings("unchecked")
-    public static <T extends Model> ReflectedModelKey<T> fromJson(JsonObject json) {
+    public static <T> ReflectedModelKey<T> fromJson(JsonObject json) {
         if (!json.has("implementation")) {
             throw new JsonParseException("Slot requires an implementation");
         }
@@ -35,28 +33,40 @@ public final class ReflectedModelKey<T extends Model> extends AbstractModelKeyIm
     }
 
     private final Function<ModelContext, T> factory;
+    private Class<T> type;
 
     private ReflectedModelKey(String className) {
         id = new Identifier("dynamic", className.replaceAll("[\\.\\$]", "/").toLowerCase());
         factory = lookupFactory(className);
     }
 
+    public boolean isCompatible(Class<?> toType) {
+        return type != null && toType != null && toType.isAssignableFrom(type);
+    }
+
     @SuppressWarnings("unchecked")
     private Function<ModelContext, T> lookupFactory(String className) {
         try {
-            Class<T> implementation = (Class<T>)Class.forName(className, false, ReflectedModelKey.class.getClassLoader());
+            type = (Class<T>)Class.forName(className, false, ReflectedModelKey.class.getClassLoader());
 
-            if (!MsonModel.class.isAssignableFrom(implementation)) {
+            if (!MsonModel.class.isAssignableFrom(type)) {
                 throw new JsonParseException("Slot implementation does not implement MsonModel");
             }
 
-            Lambdas lambdas = MethodHandles.lambdas().remap(MsonModel.class, implementation);
-
             try {
-                final Supplier<T> supplier = lambdas.lookupGenericFactory(Supplier.class, implementation, Construct.class);
-                return ctx -> supplier.get();
+                final Function<ModelPart, T> function = MethodHandles.lookupConstructor(Function.class, type, ModelPart.class);
+                return ctx -> {
+                    Map<String, ModelPart> tree = new HashMap<>();
+                    ctx.getTree(tree);
+                    return function.apply(new ModelPart(new ArrayList<>(), tree));
+                };
             } catch (Error | Exception e) {
-                return lambdas.lookupGenericFactory(Function.class, implementation, Factory.class);
+                try {
+                    return MethodHandles.lookupConstructor(Function.class, type, ModelContext.class);
+                } catch (Error | Exception ee) {
+                    final Supplier<T> supplier = MethodHandles.lookupConstructor(Supplier.class, type);
+                    return ctx -> supplier.get();
+                }
             }
         } catch (Exception e) {
             throw new JsonParseException("Exception getting handle for implementation " + className, e);
@@ -81,15 +91,5 @@ public final class ReflectedModelKey<T extends Model> extends AbstractModelKeyIm
     @Override
     public JsonContext getModelData() {
         throw new NotImplementedException("getModelData");
-    }
-
-    @FunctionalInterface
-    public interface Construct {
-        Model get(ModelPart tree);
-    }
-
-    @FunctionalInterface
-    public interface Factory {
-        MsonModel apply(ModelContext context);
     }
 }
