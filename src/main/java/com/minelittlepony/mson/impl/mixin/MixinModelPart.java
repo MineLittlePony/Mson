@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.util.math.Vector3f;
+import net.minecraft.util.math.Vec3f;
 
 @Mixin(ModelPart.class)
 abstract class MixinModelPart implements MsonPart {
@@ -53,7 +53,7 @@ abstract class MixinCuboid implements Cube {
 @Mixin(ModelPart.Quad.class)
 abstract class MixinQuad implements Rect {
     @Override
-    public Vector3f getNormal() {
+    public Vec3f getNormal() {
         return ((ModelPart.Quad)(Object)this).direction;
     }
     @Override
@@ -73,7 +73,7 @@ abstract class MixinQuad implements Rect {
 @Mixin(ModelPart.Vertex.class)
 abstract class MixinVertex implements Vert {
     @Accessor("pos") @Override
-    public abstract Vector3f getPos();
+    public abstract Vec3f getPos();
     @Accessor("u") @Override
     public abstract float getU();
     @Accessor("v") @Override
