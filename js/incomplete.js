@@ -28,6 +28,12 @@
    * @return {Function} A function that when called will return the completed value.
    */
   function of(tokens) {
+    if (typeof tokens === 'function') {
+      return tokens;
+    }
+    if (typeof tokens === 'number') {
+      return () => tokens;
+    }
     if (tokens.map) {
       if (tokens.length != 3) {
         throw new Error(`Saw a local of ${tokens.length} members. Expected 3 of (left, op, right).`);
@@ -44,10 +50,6 @@
     if (tokens.substring) {
       tokens = tokens.substring(1);
       return singleEntrant(locals => locals[tokens](locals));
-    }
-
-    if (typeof tokens === 'number') {
-      return () => tokens;
     }
 
     throw new Error('Unsupported local type. A local must be either a value (number) string (#variable) or an array');

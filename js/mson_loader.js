@@ -160,9 +160,30 @@
   }
 
   addElementType('mson:slot', (loader, body, locals, model, defineName) => {
-    const content = objUtils.clone(body.content);
-    content.locals = objUtils.copy(Mson.objUtils.clone(model.locals), content.locals || {});
-    content.texture = createTexture(content.texture);
+    // slots have their own inheritance tree distinct from the host file
+    // and variables defined on the slot itself are appended over what is inherited
+    // from its included content, creating what is effectively a virtual model file
+    // inserted into the host at the slot's position in the tree
+    // i.e
+    //              root_1
+    //               |
+    //               \/         root_2
+    //              parent      |
+    //               |         parent_2
+    //               \/         |
+    //              main_file  \/
+    //               |        imported_file
+    //               |       /
+    //               |-slot\/
+    //              self
+    let content;
+    if (typeof body.content === 'string') {
+      content = { parent: body.content };
+    } else {
+      content = objUtils.clone(body.content);
+    }
+    content.locals = objUtils.copy(objUtils.clone(body.content.locals || {}), body.locals || {});
+    content.texture = createTexture(body.texture, createTexture(body.content.texture));
 
     const newModel = { model: createFile(content).getModel(loader) };
 
