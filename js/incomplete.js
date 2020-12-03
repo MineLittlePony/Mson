@@ -24,7 +24,7 @@
   /**
    * Converts an unresolved variable name or equation into a function that will return the resolved value when called.
    *
-   * @param {any} tokens Tokens to parse into an incomplete
+   * @param {Function|number|array|string} tokens Tokens to parse into an incomplete
    * @return {Function} A function that when called will return the completed value.
    */
   function of(tokens) {
