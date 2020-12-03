@@ -70,8 +70,10 @@ public class JsonSlot<T> implements JsonComponent<T> {
         return context.computeIfAbsent(name, key -> {
             JsonContext jsContext = content.get();
             ModelContext subContext = jsContext
-                    // the contents of a slot have their own variable lookup tree distinct from this one
-                    // but locals defined within the slot element are appended over what the file defines
+                    // slots have their own inheritance tree distinct from the host file
+                    // and variables defined on the slot itself are appended over what is inherited
+                    // from its included content, creating what is effectively a virtual model file
+                    // inserted into the host at the slot's position in the tree
                     // i.e
                     //              root_1
                     //               |
