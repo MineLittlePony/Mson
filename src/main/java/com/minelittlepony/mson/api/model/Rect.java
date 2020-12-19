@@ -9,5 +9,7 @@ public interface Rect {
 
     void setVertex(int index, Vert value);
 
+    Rect setVertices(boolean reflect, Vert...vertices);
+
     int vertexCount();
 }

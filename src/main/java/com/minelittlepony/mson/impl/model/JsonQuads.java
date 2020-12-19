@@ -79,10 +79,14 @@ public class JsonQuads implements JsonComponent<Cuboid>, QuadsBuilder {
         }
 
         Rect build(BoxBuilder builder) {
-            return builder.quad(x, y, w, h, Direction.UP, verts.stream()
+            return builder.quad(x, y, w, h, Direction.UP,
+                    builder.vert(0, 0, 0, 0, 0),
+                    builder.vert(0, 0, 0, 0, 0),
+                    builder.vert(0, 0, 0, 0, 0),
+                    builder.vert(0, 0, 0, 0, 0)
+            ).setVertices(builder.mirror[0], verts.stream()
                     .map(v -> v.build(builder))
-                    .toArray(Vert[]::new)
-            );
+                    .toArray(Vert[]::new));
         }
     }
 
