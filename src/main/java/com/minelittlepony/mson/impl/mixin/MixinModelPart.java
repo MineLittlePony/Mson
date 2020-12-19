@@ -52,21 +52,40 @@ abstract class MixinCuboid implements Cube {
 
 @Mixin(ModelPart.Quad.class)
 abstract class MixinQuad implements Rect {
+    @Shadow @Final @Mutable
+    private ModelPart.Vertex[] vertices;
+
     @Override
     public Vec3f getNormal() {
         return ((ModelPart.Quad)(Object)this).direction;
     }
     @Override
     public Vert getVertex(int index) {
-        return (Vert)((ModelPart.Quad)(Object)this).vertices[index];
+        return (Vert)vertices[index];
     }
     @Override
     public void setVertex(int index, Vert value) {
-        ((ModelPart.Quad)(Object)this).vertices[index] = (ModelPart.Vertex)value;
+        vertices[index] = (ModelPart.Vertex)value;
     }
     @Override
     public int vertexCount() {
-        return ((ModelPart.Quad)(Object)this).vertices.length;
+        return vertices.length;
+    }
+    @Override
+    public Rect setVertices(boolean reflect, Vert...vertices) {
+        this.vertices = new ModelPart.Vertex[vertices.length];
+        System.arraycopy(vertices, 0, this.vertices, 0, vertices.length);
+
+        if (reflect) {
+            int length = this.vertices.length;
+
+            for(int i = 0; i < length / 2; ++i) {
+                ModelPart.Vertex vertex = this.vertices[i];
+                this.vertices[i] = this.vertices[length - 1 - i];
+                this.vertices[length - 1 - i] = vertex;
+            }
+        }
+        return this;
     }
 }
 
