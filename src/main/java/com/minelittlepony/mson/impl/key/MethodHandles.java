@@ -23,6 +23,40 @@ final class MethodHandles {
         }
     }
 
+    /*public static <T> Supplier<T> lookupConstructor(Class<T> owner) {
+        try {
+            MethodType constrType = MethodType.methodType(void.class);
+            MethodHandle constr = LOOKUP.findConstructor(owner, constrType);
+
+            return () -> {
+                try {
+                    return (T)constr.invoke();
+                } catch (Throwable e) {
+                    throw new RuntimeException(e);
+                }
+            };
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static <T, P> Function<P, T> lookupConstructor(Class<T> owner, Class<P> param) {
+        try {
+            MethodType constrType = MethodType.methodType(void.class, new Class<?>[] { param });
+            MethodHandle constr = LOOKUP.findConstructor(owner, constrType);
+
+            return p -> {
+                try {
+                    return (T)constr.invoke(p);
+                } catch (Throwable e) {
+                    throw new RuntimeException(e);
+                }
+            };
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }*/
+
     public static <T> T lookupConstructor(Class<T> ifaceClass, Class<?> owner, Class<?>... parameters) {
         try {
             MethodType constrType = MethodType.methodType(void.class, parameters);
@@ -32,19 +66,21 @@ final class MethodHandles {
 
             CallSite site = LambdaMetafactory.metafactory(
                     LOOKUP.in(owner),
-                    ifaceClass.getMethods()[0].getName(), // name of the method to implement
-                    MethodType.methodType(ifaceClass),    // signature of the method to implement
-                    callType.erase(),                     // signature of the method to call
+                    ifaceClass.getMethods()[0].getName(), // name of the call site's method
+                    MethodType.methodType(ifaceClass),    // signature of call site's method
+                    callType.erase(),                     // signature of the method to implement
                     constr,                               // the method handle to invoke
                     callType);                            // the runtime signature to enforce
+
             /*
-             * return new T() {
-             *    public Object get(*args) {
-             *      return new <Type>(*args);
-             *    }
+             * Supplier<IFace<args*, T> callSite = () -> {
+             *     return args* -> {
+             *          return new <T>(*args);
+             *     };
              * };
+             * return callSite.get();
              */
-            return (T)site.dynamicInvoker().invoke();
+            return (T)site.getTarget().invoke();
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
