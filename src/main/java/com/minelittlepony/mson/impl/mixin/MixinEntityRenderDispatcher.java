@@ -37,7 +37,7 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     @Shadow @Final
     private EntityModelLoader modelLoader;
 
-    @Inject(method = "apply(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
+    @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
     private void onRegisterRenderers(ResourceManager manager, CallbackInfo info) {
         MsonImpl.instance().getEntityRendererRegistry().player.publish(this);
         MsonImpl.instance().getEntityRendererRegistry().entity.publish(this);

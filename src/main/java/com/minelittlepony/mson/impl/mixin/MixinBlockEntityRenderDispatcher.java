@@ -32,11 +32,11 @@ abstract class MixinBlockEntityRenderDispatcher implements EntityRendererRegistr
     @Shadow @Final
     private TextRenderer textRenderer;
     @Shadow @Final
-    private EntityModelLoader field_27746;
+    private EntityModelLoader entityModelLoader;
     @Shadow @Final
     private Supplier<BlockRenderManager> field_27747;
 
-    @Inject(method = "apply(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
+    @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
     private void onInit(CallbackInfo info) {
         MsonImpl.instance().getEntityRendererRegistry().block.publish(this);
     }
@@ -44,7 +44,7 @@ abstract class MixinBlockEntityRenderDispatcher implements EntityRendererRegistr
     @Override
     public <P extends BlockEntity, R extends BlockEntityRenderer<?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererFactory.Context, R> constructor) {
         try {
-            BlockEntityRendererFactory.Context context = new BlockEntityRendererFactory.Context((BlockEntityRenderDispatcher)(Object)this, field_27747.get(), field_27746, textRenderer);
+            BlockEntityRendererFactory.Context context = new BlockEntityRendererFactory.Context((BlockEntityRenderDispatcher)(Object)this, field_27747.get(), entityModelLoader, textRenderer);
             if (renderers instanceof ImmutableMap) {
                 renderers = new HashMap<>(renderers);
             }
