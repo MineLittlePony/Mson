@@ -10,7 +10,7 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 
 final class MethodHandles {
-    static final Lookup LOOKUP = findTrustedLookup();
+    private static final Lookup LOOKUP = findTrustedLookup();
 
     private static Lookup findTrustedLookup() {
         try {
@@ -22,40 +22,6 @@ final class MethodHandles {
             return java.lang.invoke.MethodHandles.lookup();
         }
     }
-
-    /*public static <T> Supplier<T> lookupConstructor(Class<T> owner) {
-        try {
-            MethodType constrType = MethodType.methodType(void.class);
-            MethodHandle constr = LOOKUP.findConstructor(owner, constrType);
-
-            return () -> {
-                try {
-                    return (T)constr.invoke();
-                } catch (Throwable e) {
-                    throw new RuntimeException(e);
-                }
-            };
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static <T, P> Function<P, T> lookupConstructor(Class<T> owner, Class<P> param) {
-        try {
-            MethodType constrType = MethodType.methodType(void.class, new Class<?>[] { param });
-            MethodHandle constr = LOOKUP.findConstructor(owner, constrType);
-
-            return p -> {
-                try {
-                    return (T)constr.invoke(p);
-                } catch (Throwable e) {
-                    throw new RuntimeException(e);
-                }
-            };
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }*/
 
     public static <T> T lookupConstructor(Class<T> ifaceClass, Class<?> owner, Class<?>... parameters) {
         try {

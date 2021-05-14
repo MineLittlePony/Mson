@@ -31,7 +31,7 @@ abstract class RenderListImpl<T> extends ImmutableFastList<T> implements RenderL
             return ((RenderListImpl<T>)list).values();
         }
         @SuppressWarnings("serial")
-        final List<T> items = new LinkedList<T>() {
+        final List<T> items = new LinkedList<>() {
             @Override
             public boolean add(T t) {
                 return super.add(Objects.requireNonNull(t));
