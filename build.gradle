@@ -14,13 +14,13 @@ def createVersion() {
         parts.push project.release
     }
 
-    if (System.env.TRAVIS_BRANCH != null && System.env.TRAVIS_BRANCH != 'master') {
-        parts.push System.env.TRAVIS_BRANCH
+    def branch = System.env.TRAVIS_BRANCH
+
+    if (branch != null && branch != 'master' && !project.minecraft_version.startsWith(branch)) {
+        parts.push branch
     }
 
-    if (System.env.TRAVIS_BRANCH != project.minecraft_version) {
-       parts.push project.minecraft_version
-    }
+    parts.push project.minecraft_version
 
     def ver = project.version
     if (parts.size > 0) {
@@ -48,6 +48,13 @@ sourceSets {
    }
 }
 
+repositories {
+    maven {
+        name = 'modmenu'
+        url = 'https://maven.terraformersmc.com/releases'
+    }
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}"
@@ -59,9 +66,7 @@ dependencies {
     modApi fabricApi.module("fabric-events-lifecycle-v0", project.fabric_version)
     modApi fabricApi.module("fabric-resource-loader-v0", project.fabric_version)
 
-    modCompileOnly("io.github.prospector:modmenu:${project.modmenu_version}") {
-        transitive = false
-    }
+    modCompileOnly("com.terraformersmc:modmenu:${project.modmenu_version}")
 }
 
 processResources {
