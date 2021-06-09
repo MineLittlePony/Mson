@@ -54,7 +54,7 @@ public final class ReflectedModelKey<T> extends AbstractModelKeyImpl<T> {
             }
 
             try {
-                final Function<ModelPart, T> function = MethodHandles.lookupConstructor(Function.class, type, ModelPart.class);
+                final Function<ModelPart, T> function = MethodHandles.createInstanceFactory(type, ModelPart.class);
                 return ctx -> {
                     Map<String, ModelPart> tree = new HashMap<>();
                     ctx.getTree(tree);
@@ -62,9 +62,9 @@ public final class ReflectedModelKey<T> extends AbstractModelKeyImpl<T> {
                 };
             } catch (Error | Exception e) {
                 try {
-                    return MethodHandles.lookupConstructor(Function.class, type, ModelContext.class);
+                    return MethodHandles.createInstanceFactory(type, ModelContext.class);
                 } catch (Error | Exception ee) {
-                    final Supplier<T> supplier = MethodHandles.lookupConstructor(Supplier.class, type);
+                    final Supplier<T> supplier = MethodHandles.createInstanceSupplier(type);
                     return ctx -> supplier.get();
                 }
             }
