@@ -4,7 +4,7 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import com.minelittlepony.mson.api.ModelContext;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Objects;

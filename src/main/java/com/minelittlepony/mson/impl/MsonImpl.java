@@ -9,6 +9,7 @@ import net.minecraft.util.profiler.Profiler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Preconditions;
 import com.minelittlepony.mson.api.ModelContext;
@@ -26,8 +27,6 @@ import com.minelittlepony.mson.impl.model.JsonPlanar;
 import com.minelittlepony.mson.impl.model.JsonPlane;
 import com.minelittlepony.mson.impl.model.JsonQuads;
 import com.minelittlepony.mson.impl.model.JsonSlot;
-
-import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -14,7 +14,7 @@ import net.minecraft.util.Identifier;
 import com.google.common.base.Preconditions;
 import com.minelittlepony.mson.api.EntityRendererRegistry;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;

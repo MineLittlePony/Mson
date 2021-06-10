@@ -6,7 +6,7 @@ import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.model.Texture;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Set;
