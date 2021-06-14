@@ -62,12 +62,6 @@ final class NullContext implements JsonContext, ModelContext {
         throw new IllegalArgumentException(String.format("Key not found `%s`", name));
     }
 
-    @Deprecated
-    @Override
-    public void findByName(ModelContext context, String name, ModelPart output) {
-        throw new IllegalArgumentException(String.format("Key not found `%s`", name));
-    }
-
     @Override
     public ModelContext getRoot() {
         return this;

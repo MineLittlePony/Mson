@@ -82,22 +82,6 @@ public interface ModelContext {
     <T> T findByName(ModelContext context, String name);
 
     /**
-     * Gets the named element and loads it into the provided cuboid.
-     * @throws InvalidInputException if the named element does not exist.
-     */
-    @Deprecated
-    default void findByName(String name, ModelPart output) {
-        findByName(this, name, output);
-    }
-
-    /**
-     * Gets the named element and loads it into the provided cuboid.
-     * @throws InvalidInputException if the named element does not exist.
-     */
-    @Deprecated
-    void findByName(ModelContext context, String name, ModelPart output);
-
-    /**
      * Gets the root context.
      * Returns `this` when called on the root context.
      */

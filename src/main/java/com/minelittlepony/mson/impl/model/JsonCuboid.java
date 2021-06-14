@@ -115,12 +115,6 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
         return builder;
     }
 
-    @Deprecated
-    @Override
-    public void export(ModelContext context, ModelPart cuboid) throws InterruptedException, ExecutionException {
-
-    }
-
     class Locals implements ModelContext.Locals {
 
         private final ModelContext.Locals parent;

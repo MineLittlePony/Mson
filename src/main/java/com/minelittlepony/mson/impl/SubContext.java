@@ -46,12 +46,6 @@ class SubContext implements ModelContext {
         return parent.findByName(context, name);
     }
 
-    @Deprecated
-    @Override
-    public void findByName(ModelContext context, String name, ModelPart output) {
-        parent.findByName(context, name, output);
-    }
-
     @Override
     public <T> T computeIfAbsent(String name, ContentSupplier<T> supplier) {
         return parent.computeIfAbsent(name, supplier);

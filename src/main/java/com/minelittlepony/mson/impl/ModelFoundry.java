@@ -313,23 +313,6 @@ class ModelFoundry {
                 return inherited.findByName(context, name);
             }
 
-            @Deprecated
-            @Override
-            public void findByName(ModelContext context, String name, ModelPart output) {
-                if (elements.containsKey(name)) {
-                    try {
-                        elements.get(name).export(context, output);
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new FutureAwaitException(e);
-                    }
-                } else {
-                    inherited.findByName(context, name, output);
-                }
-                if (output.isEmpty()) {
-                    MsonImpl.LOGGER.warn("Exported model part '" + name + "' had no cubes!");
-                }
-            }
-
             @SuppressWarnings("unchecked")
             @Override
             public <T> T computeIfAbsent(String name, ContentSupplier<T> supplier) {
