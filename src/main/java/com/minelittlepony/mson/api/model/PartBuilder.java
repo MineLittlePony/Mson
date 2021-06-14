@@ -2,8 +2,6 @@ package com.minelittlepony.mson.api.model;
 
 import net.minecraft.client.model.ModelPart;
 
-import com.google.common.base.Strings;
-import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 
 import java.util.ArrayList;
@@ -27,21 +25,13 @@ public class PartBuilder {
 
     boolean hidden;
 
-    private String name;
-
-    private final ModelContext context;
-
-    public PartBuilder(ModelContext context) {
-        this.context = context;
-    }
-
     public PartBuilder addChild(String name, ModelPart child) {
         children.put(name, child);
         return this;
     }
 
-    public PartBuilder name(String name) {
-        this.name = Strings.nullToEmpty(name);
+    public PartBuilder addCube(ModelPart.Cuboid cube) {
+        cubes.add(cube);
         return this;
     }
 
@@ -90,15 +80,6 @@ public class PartBuilder {
             .rotate(rotation)
             .around(pivot)
             .setHidden(hidden);
-
-        if (context.getContext() instanceof PartBuilder) {
-            PartBuilder parent = (PartBuilder)context.getContext();
-
-            if (this.name.isEmpty()) {
-                this.name = parent.name + ".part" + parent.children.size();
-            }
-            parent.children.put(name, part);
-        }
 
         return part;
     }

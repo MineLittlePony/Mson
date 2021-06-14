@@ -163,15 +163,13 @@ public final class BoxBuilder {
     }
 
     public Cuboid build() {
-        Cuboid result = new Cuboid(
+        return new Cuboid(
                 u, v,
                 parent.offset[0] + x, parent.offset[1] + y, parent.offset[2] + z,
                 dx, dy, dz,
                 stretchX, stretchY, stretchZ,
                 mirror[0],
                 parent.texture.getWidth(), parent.texture.getHeight());
-        parent.cubes.add(result);
-        return result;
     }
 
     public Cuboid build(QuadsBuilder builder) {

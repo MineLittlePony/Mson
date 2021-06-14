@@ -46,7 +46,6 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     private final Incomplete<Texture> texture;
 
     private final String name;
-    private String boneId = "";
 
     public JsonCuboid(JsonContext context, String name, JsonObject json) {
         center = context.getVarLookup().getFloats(json, "center", 3);
@@ -56,10 +55,14 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
 
         visible = JsonUtils.getBooleanOr("visible", json, true);
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
-        boneId = this.name = name.isEmpty() ? JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("") : name;
+        this.name = name.isEmpty() ? JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("") : name;
 
         JsonUtil.accept(json, "children").map(this::loadChildrenMap).ifPresent(el -> {
-            children.putAll(el.stream().collect(Collectors.toMap(Map.Entry::getKey, i -> context.loadComponent(i.getValue(), ID).map(c -> c.setName(i.getKey())).orElse(null))));
+            children.putAll(el.stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            i -> context.loadComponent(i.getValue(), ID).orElse(null))
+                    ));
         });
         JsonUtil.accept(json, "cubes").map(JsonElement::getAsJsonArray).ifPresent(el -> {
             el.forEach(element -> {
@@ -83,22 +86,15 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     }
 
     @Override
-    public JsonComponent<ModelPart> setName(String name) {
-        this.boneId = name;
-        return this;
-    }
-
-    @Override
     public ModelPart export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            return export(context, new PartBuilder(context)).build();
+            return export(context, new PartBuilder()).build();
         });
     }
 
     protected PartBuilder export(ModelContext context, PartBuilder builder) throws InterruptedException, ExecutionException {
         float[] rotation = this.rotation.complete(context);
         builder
-                .name(boneId)
                 .hidden(!visible)
                 .pivot(this.center.complete(context))
                 .offset(this.offset.complete(context))
@@ -111,12 +107,15 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
 
         final ModelContext subContext = context.resolve(builder, new Locals(context.getLocals()));
         children.entrySet().forEach(c -> {
-            c.getValue().tryExport(subContext, ModelPart.class);
+            c.getValue().tryExport(subContext, ModelPart.class).ifPresent(part -> {
+               builder.addChild(c.getKey(), part);
+            });
         });
-        cubes.forEach(c -> c.tryExport(subContext, Cuboid.class));
+        cubes.forEach(c -> c.tryExport(subContext, Cuboid.class).ifPresent(builder::addCube));
         return builder;
     }
 
+    @Deprecated
     @Override
     public void export(ModelContext context, ModelPart cuboid) throws InterruptedException, ExecutionException {
 
