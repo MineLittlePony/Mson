@@ -8,10 +8,9 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
-import com.minelittlepony.mson.api.json.JsonVariables;
-import com.minelittlepony.mson.api.json.Variables;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.LocalsImpl;
+import com.minelittlepony.mson.impl.VariablesImpl;
 import com.minelittlepony.mson.impl.key.ReflectedModelKey;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -97,12 +96,12 @@ public class JsonSlot<T> implements JsonComponent<T> {
         });
     }
 
-    class Vars implements JsonVariables {
+    class Vars implements VariablesImpl {
 
-        private final JsonVariables parent;
+        private final JsonContext.Variables parent;
 
-        Vars(JsonVariables parent) {
-            this.parent = parent;
+        Vars(JsonContext parent) {
+            this.parent = parent.getVariables();
         }
 
         @Override
@@ -113,21 +112,16 @@ public class JsonSlot<T> implements JsonComponent<T> {
         }
 
         @Override
-        public Variables getVarLookup() {
-            return parent.getVarLookup();
-        }
-
-        @Override
-        public CompletableFuture<Incomplete<Float>> getLocalVariable(String name) {
+        public CompletableFuture<Incomplete<Float>> getVariable(String name) {
             if (locals.containsKey(name)) {
                 return CompletableFuture.completedFuture(locals.get(name));
             }
-            return parent.getLocalVariable(name);
+            return parent.getVariable(name);
         }
 
         @Override
-        public CompletableFuture<Set<String>> getVariableNames() {
-            return parent.getVariableNames().thenApplyAsync(output -> {
+        public CompletableFuture<Set<String>> getKeys() {
+            return parent.getKeys().thenApplyAsync(output -> {
                output.addAll(locals.keySet());
                return output;
             });

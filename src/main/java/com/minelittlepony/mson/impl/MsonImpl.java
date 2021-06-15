@@ -18,7 +18,7 @@ import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.Mson;
-import com.minelittlepony.mson.impl.ModelFoundry.StoredModelData.RootContext;
+import com.minelittlepony.mson.impl.StoredModelData.RootContext;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.JsonBox;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
@@ -37,18 +37,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
+    public static final Logger LOGGER = LogManager.getLogger("Mson");
+    public static final MsonImpl INSTANCE = new MsonImpl();
 
     private static final Identifier ID = new Identifier("mson", "models");
 
-    static final MsonImpl INSTANCE = new MsonImpl();
-
     static boolean DEBUG = false;
-
-    public static final Logger LOGGER = LogManager.getLogger("Mson");
-
-    public static MsonImpl instance() {
-        return INSTANCE;
-    }
 
     private final PendingEntityRendererRegistry renderers = new PendingEntityRendererRegistry();
 
@@ -74,7 +68,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             Profiler serverProfiler, Profiler clientProfiler,
             Executor serverExecutor, Executor clientExecutor) {
 
-        foundry = new ModelFoundry(sender, serverExecutor, serverProfiler, clientProfiler, this);
+        foundry = new ModelFoundry(sender, serverExecutor, serverProfiler, clientProfiler);
         CompletableFuture<?>[] tasks = registeredModels.values().stream()
                 .map(key -> foundry.loadJsonModel(key.getId()))
                 .toArray(i -> new CompletableFuture[i]);
@@ -88,6 +82,11 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     @Override
     public Identifier getFabricId() {
         return ID;
+    }
+
+    @Override
+    public PendingEntityRendererRegistry getEntityRendererRegistry() {
+        return renderers;
     }
 
     @SuppressWarnings("unchecked")
@@ -117,8 +116,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         Preconditions.checkArgument(!"dynamic".equalsIgnoreCase(namespace), "`dynamic` is a reserved namespace.");
     }
 
-    class Key<T extends Model> extends AbstractModelKeyImpl<T> {
-
+    private final class Key<T extends Model> extends AbstractModelKeyImpl<T> {
         private final MsonModel.Factory<T> constr;
 
         public Key(Identifier id, MsonModel.Factory<T> constr) {
@@ -134,20 +132,20 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
         @Override
         public <V extends T> V createModel(MsonModel.Factory<V> factory) {
-            if (foundry == null) {
-                throw new IllegalStateException("You're too early. Wait for Mson to load first.");
-            }
+            Preconditions.checkState(foundry != null, "You're too early. Wait for Mson to load first.");
 
             JsonContext context = getModelData();
-            ModelContext.Locals locals = new LocalsImpl(getId(), context);
+            ModelContext.Locals locals = new LocalsImpl(getId(), context.getVariables());
 
             Map<String, ModelPart> tree = new HashMap<>();
-            RootContext ctx = (RootContext)context.createContext(null, locals);
+            ModelContext ctx = context.createContext(null, locals);
             ctx.getTree(tree);
 
             V t = factory.create(new ModelPart(new ArrayList<>(), tree));
             if (t instanceof MsonModel) {
-                ctx.setModel(t);
+                if (ctx instanceof RootContext) {
+                    ((RootContext)ctx).setModel(t);
+                }
                 ((MsonModel)t).init(ctx);
             }
             return t;
@@ -155,19 +153,12 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
         @Override
         public JsonContext getModelData() {
-            if (foundry == null) {
-                throw new IllegalStateException("You're too early. Wait for Mson to load first.");
-            }
+            Preconditions.checkState(foundry != null, "You're too early. Wait for Mson to load first.");
             try {
                 return foundry.getModelData(this);
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException("Could not create model", e);
             }
         }
-    }
-
-    @Override
-    public PendingEntityRendererRegistry getEntityRendererRegistry() {
-        return renderers;
     }
 }

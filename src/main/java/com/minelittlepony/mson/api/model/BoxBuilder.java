@@ -48,9 +48,10 @@ public final class BoxBuilder {
     public BoxBuilder(ModelContext context) {
         this((PartBuilder)context.getContext());
 
-        stretchX = context.getScale();
-        stretchY = context.getScale();
-        stretchZ = context.getScale();
+        float scale = context.getScale();
+        stretchX = scale;
+        stretchY = scale;
+        stretchZ = scale;
 
         u = parent.texture.getU();
         v = parent.texture.getV();

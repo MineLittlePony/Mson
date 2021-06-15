@@ -27,20 +27,17 @@ import java.util.function.Function;
 
 @Mixin(EntityRenderDispatcher.class)
 abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
-
     @Shadow
     private Map<EntityType<?>, EntityRenderer<? extends Entity>> renderers;
-
     @Shadow
     private Map<String, PlayerEntityRenderer> modelRenderers;
-
-    @Shadow @Final
-    private EntityModelLoader modelLoader;
+    @Shadow
+    private @Final EntityModelLoader modelLoader;
 
     @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
     private void onRegisterRenderers(ResourceManager manager, CallbackInfo info) {
-        MsonImpl.instance().getEntityRendererRegistry().player.publish(this);
-        MsonImpl.instance().getEntityRendererRegistry().entity.publish(this);
+        MsonImpl.INSTANCE.getEntityRendererRegistry().player.publish(this);
+        MsonImpl.INSTANCE.getEntityRendererRegistry().entity.publish(this);
     }
 
     private EntityRendererFactory.Context createContext() {

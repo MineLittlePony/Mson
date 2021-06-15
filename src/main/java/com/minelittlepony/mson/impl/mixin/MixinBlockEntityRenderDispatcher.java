@@ -26,19 +26,18 @@ import java.util.function.Supplier;
 
 @Mixin(BlockEntityRenderDispatcher.class)
 abstract class MixinBlockEntityRenderDispatcher implements EntityRendererRegistry {
-
     @Shadow
     private Map<BlockEntityType<?>, BlockEntityRenderer<?>> renderers;
-    @Shadow @Final
-    private TextRenderer textRenderer;
-    @Shadow @Final
-    private EntityModelLoader entityModelLoader;
-    @Shadow @Final
-    private Supplier<BlockRenderManager> field_27747;
+    @Shadow
+    private @Final TextRenderer textRenderer;
+    @Shadow
+    private @Final EntityModelLoader entityModelLoader;
+    @Shadow
+    private @Final Supplier<BlockRenderManager> field_27747;
 
     @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
     private void onInit(CallbackInfo info) {
-        MsonImpl.instance().getEntityRendererRegistry().block.publish(this);
+        MsonImpl.INSTANCE.getEntityRendererRegistry().block.publish(this);
     }
 
     @Override

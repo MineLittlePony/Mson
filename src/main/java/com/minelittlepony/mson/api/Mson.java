@@ -16,7 +16,7 @@ public interface Mson {
      * Gets the global Mson instance.
      */
     static Mson getInstance() {
-        return MsonImpl.instance();
+        return MsonImpl.INSTANCE;
     }
 
     /**

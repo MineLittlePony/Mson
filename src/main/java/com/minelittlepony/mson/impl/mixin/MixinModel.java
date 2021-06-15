@@ -18,14 +18,10 @@ import java.util.function.Function;
 
 @Mixin(Model.class)
 abstract class MixinModel implements Consumer<ModelPart>, RenderLayerSetter {
-
-    @Shadow @Final @Mutable
-    protected Function<Identifier, RenderLayer> layerFactory;
-
-    @Override
-    @Accessor("layerFactory")
+    @Shadow @Mutable
+    protected @Final Function<Identifier, RenderLayer> layerFactory;
+    @Accessor("layerFactory") @Override
     public abstract Function<Identifier, RenderLayer> getRenderLayerFactory();
-
     @Override
     public void setRenderLayerFactory(Function<Identifier, RenderLayer> supplier) {
         layerFactory = supplier;

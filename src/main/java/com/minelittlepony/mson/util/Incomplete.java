@@ -13,7 +13,6 @@ import java.util.concurrent.ExecutionException;
  */
 @FunctionalInterface
 public interface Incomplete<T> {
-
     /**
      * A completed Incomplete that always returns 0.
      */

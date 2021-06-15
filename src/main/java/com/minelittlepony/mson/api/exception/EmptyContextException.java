@@ -1,4 +1,4 @@
-package com.minelittlepony.mson.impl.exception;
+package com.minelittlepony.mson.api.exception;
 
 public class EmptyContextException extends UnsupportedOperationException {
     private static final long serialVersionUID = 1971151950068660369L;

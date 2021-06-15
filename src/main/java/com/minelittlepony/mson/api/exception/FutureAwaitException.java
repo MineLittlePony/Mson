@@ -1,4 +1,4 @@
-package com.minelittlepony.mson.impl.exception;
+package com.minelittlepony.mson.api.exception;
 
 public class FutureAwaitException extends RuntimeException {
     private static final long serialVersionUID = 8800010362946687756L;

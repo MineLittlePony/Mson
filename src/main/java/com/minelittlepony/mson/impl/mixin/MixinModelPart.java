@@ -18,19 +18,16 @@ import net.minecraft.util.math.Vec3f;
 
 @Mixin(ModelPart.class)
 abstract class MixinModelPart implements MsonPart {
-    @Override
-    @Accessor("cuboids")
+    @Accessor("cuboids") @Override
     public abstract List<ModelPart.Cuboid> getCubes();
-    @Override
-    @Accessor("children")
+    @Accessor("children") @Override
     public abstract Map<String, ModelPart> getChildren();
 }
 
 @Mixin(ModelPart.Cuboid.class)
 abstract class MixinCuboid implements Cube {
-    @Shadow @Final @Mutable
-    private ModelPart.Quad[] sides;
-
+    @Shadow @Mutable
+    private @Final ModelPart.Quad[] sides;
     @Override
     public void setSides(Rect[] sides) {
         this.sides = new ModelPart.Quad[sides.length];
@@ -52,8 +49,8 @@ abstract class MixinCuboid implements Cube {
 
 @Mixin(ModelPart.Quad.class)
 abstract class MixinQuad implements Rect {
-    @Shadow @Final @Mutable
-    private ModelPart.Vertex[] vertices;
+    @Shadow @Mutable
+    private @Final ModelPart.Vertex[] vertices;
 
     @Override
     public Vec3f getNormal() {

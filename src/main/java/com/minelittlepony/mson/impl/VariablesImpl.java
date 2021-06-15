@@ -4,15 +4,22 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
-import com.minelittlepony.mson.api.json.Variables;
+import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
-final class VariablesImpl implements Variables {
+public interface VariablesImpl extends JsonContext.Variables {
+    @Override
+    default Incomplete<Float> getFloat(JsonPrimitive json) {
+        return LocalsImpl.variableReference(json);
+    }
 
-    static Variables INSTANCE = new VariablesImpl();
+    @Override
+    default Incomplete<float[]> getFloats(JsonObject json, String member, int len) {
+        return toFloats(getIncompletes(json, member, len));
+    }
 
-    private Incomplete<Float>[] getIncompletes(JsonObject json, String member, int len) {
+    private static Incomplete<Float>[] getIncompletes(JsonObject json, String member, int len) {
         @SuppressWarnings("unchecked")
         Incomplete<Float>[] output = new Incomplete[len];
 
@@ -33,17 +40,7 @@ final class VariablesImpl implements Variables {
         return output;
     }
 
-    @Override
-    public Incomplete<Float> getFloat(JsonPrimitive json) {
-        return LocalsImpl.variableReference(json);
-    }
-
-    @Override
-    public Incomplete<float[]> getFloats(JsonObject json, String member, int len) {
-        return toFloats(getIncompletes(json, member, len));
-    }
-
-    private Incomplete<float[]> toFloats(Incomplete<Float>[] input) {
+    private static Incomplete<float[]> toFloats(Incomplete<Float>[] input) {
         return locals -> {
             float[] result = new float[input.length];
             for (int i = 0; i < input.length; i++) {
@@ -52,5 +49,4 @@ final class VariablesImpl implements Variables {
             return result;
         };
     }
-
 }

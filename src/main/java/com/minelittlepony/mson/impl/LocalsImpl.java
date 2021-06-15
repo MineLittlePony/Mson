@@ -6,10 +6,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.json.JsonVariables;
-import com.minelittlepony.mson.api.json.Variables;
+import com.minelittlepony.mson.api.exception.FutureAwaitException;
+import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.Maps;
 
@@ -19,26 +18,21 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public final class LocalsImpl implements ModelContext.Locals, JsonVariables {
+public final class LocalsImpl implements ModelContext.Locals, VariablesImpl {
 
     private final Identifier id;
-    private final JsonVariables context;
+    private final JsonContext.Variables context;
 
     private final Map<String, CompletableFuture<Float>> precalculatedValues = new HashMap<>();
 
-    public LocalsImpl(Identifier id, JsonVariables context) {
+    public LocalsImpl(Identifier id, JsonContext.Variables context) {
         this.id = id;
         this.context = context;
     }
 
     @Override
-    public Variables getVarLookup() {
-        return context.getVarLookup();
-    }
-
-    @Override
-    public CompletableFuture<Incomplete<Float>> getLocalVariable(String name) {
-        return context.getLocalVariable(name);
+    public CompletableFuture<Incomplete<Float>> getVariable(String name) {
+        return context.getVariable(name);
     }
 
     @Override
@@ -57,7 +51,7 @@ public final class LocalsImpl implements ModelContext.Locals, JsonVariables {
     }
 
     private CompletableFuture<Float> lookupValue(String name) {
-        return context.getLocalVariable(name).thenApplyAsync(value -> {
+        return context.getVariable(name).thenApplyAsync(value -> {
             try {
                 return value.complete(new StackFrame(this, name));
             } catch (InterruptedException | ExecutionException e) {
@@ -68,12 +62,7 @@ public final class LocalsImpl implements ModelContext.Locals, JsonVariables {
 
     @Override
     public CompletableFuture<Set<String>> getKeys() {
-        return getVariableNames();
-    }
-
-    @Override
-    public CompletableFuture<Set<String>> getVariableNames() {
-        return context.getVariableNames();
+        return context.getKeys();
     }
 
     @Override

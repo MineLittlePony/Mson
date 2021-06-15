@@ -20,7 +20,6 @@ import java.util.function.Function;
  * This allows access to getting out named elements from the model json.
  */
 public interface ModelContext {
-
     /**
      * Gets the currently-active model instance.
      */
@@ -120,7 +119,6 @@ public interface ModelContext {
     }
 
     interface Locals {
-
         /**
          * Gets the current model's id.
          * This corresponds to the id of the key used to register that model.

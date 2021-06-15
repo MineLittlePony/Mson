@@ -1,51 +1,28 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.client.model.Model;
-import net.minecraft.client.model.ModelPart;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.ModelKey;
-import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
-import com.minelittlepony.mson.api.json.Variables;
-import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.impl.exception.FutureAwaitException;
-import com.minelittlepony.mson.impl.model.JsonCuboid;
-import com.minelittlepony.mson.impl.model.JsonLink;
-import com.minelittlepony.mson.impl.model.JsonTexture;
-import com.minelittlepony.mson.util.Incomplete;
-import com.minelittlepony.mson.util.JsonUtil;
-import com.minelittlepony.mson.util.Maps;
 import com.minelittlepony.mson.util.ThrowableUtils;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
 
 class ModelFoundry {
-
     private static final Gson GSON = new Gson();
 
-    private final MsonImpl mson;
     private final ResourceManager manager;
 
     private final Executor executor;
@@ -53,27 +30,30 @@ class ModelFoundry {
     private final Profiler serverProfiler;
     private final Profiler clientProfiler;
 
-    private final Map<Identifier, CompletableFuture<JsonContext>> load = new HashMap<>();
+    private final Map<Identifier, CompletableFuture<JsonContext>> loadedFiles = new HashMap<>();
 
-    public ModelFoundry(ResourceManager manager, Executor executor, Profiler serverProfiler, Profiler clientProfiler, MsonImpl mson) {
+    public ModelFoundry(ResourceManager manager, Executor executor, Profiler serverProfiler, Profiler clientProfiler) {
         this.manager = manager;
         this.executor = executor;
         this.serverProfiler = serverProfiler;
         this.clientProfiler = clientProfiler;
-        this.mson = mson;
+    }
+
+    public JsonContext getModelData(ModelKey<?> key) throws InterruptedException, ExecutionException {
+        return loadedFiles.get(key.getId()).get();
     }
 
     public CompletableFuture<JsonContext> loadJsonModel(Identifier id) {
-        synchronized (load) {
-            if (!load.containsKey(id)) {
-                load.put(id, CompletableFuture.supplyAsync(() -> {
+        synchronized (loadedFiles) {
+            if (!loadedFiles.containsKey(id)) {
+                loadedFiles.put(id, CompletableFuture.supplyAsync(() -> {
                     serverProfiler.startTick();
                     clientProfiler.push("Loading MSON model - " + id);
                     Identifier file = new Identifier(id.getNamespace(), "models/" + id.getPath() + ".json");
 
                     try (Resource res = manager.getResource(file);
                          Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
-                        return new StoredModelData(id, GSON.fromJson(reader, JsonObject.class));
+                        return new StoredModelData(this, id, GSON.fromJson(reader, JsonObject.class));
                     } catch (Exception e) {
                         MsonImpl.LOGGER.error("Could not load model json for {}", file, ThrowableUtils.getRootCause(e));
                     } finally {
@@ -84,260 +64,7 @@ class ModelFoundry {
                     return NullContext.INSTANCE;
                 }, executor));
             }
-            return load.get(id);
+            return loadedFiles.get(id);
         }
-    }
-
-    public JsonContext getModelData(ModelKey<?> key) throws InterruptedException, ExecutionException {
-        return load.get(key.getId()).get();
-    }
-
-    public class StoredModelData implements JsonContext {
-
-        private final Map<String, JsonComponent<?>> elements = new HashMap<>();
-
-        private final Map<String, Incomplete<Float>> locals;
-
-        private final CompletableFuture<JsonContext> parent;
-
-        private final CompletableFuture<Texture> texture;
-
-        private float scale = -1;
-
-        private final Identifier id;
-
-        StoredModelData(Identifier id, JsonObject json) {
-            this.id = id;
-            parent = JsonUtil.accept(json, "parent")
-                .map(JsonElement::getAsString)
-                .map(Identifier::new)
-                .map(ModelFoundry.this::loadJsonModel)
-                .orElseGet(() -> CompletableFuture.completedFuture(NullContext.INSTANCE));
-
-            JsonUtil.accept(json, "scale")
-                .map(JsonElement::getAsFloat)
-                .ifPresent(scale -> this.scale = scale);
-
-            texture = JsonTexture.unlocalized(JsonUtil.accept(json, "texture"), parent.thenComposeAsync(JsonContext::getTexture));
-
-            locals = JsonUtil.accept(json, "locals")
-                    .map(JsonElement::getAsJsonObject)
-                    .map(JsonObject::entrySet)
-                    .orElseGet(() -> new HashSet<>())
-                    .stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            e -> LocalsImpl.createLocal(e.getValue())));
-
-            elements.putAll(json.entrySet().stream()
-                    .filter(this::isElement)
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            entry -> loadComponent(entry.getKey(), entry.getValue(), JsonCuboid.ID).orElseGet(null)
-            )));;
-        }
-
-        private boolean isElement(Map.Entry<String, JsonElement> entry) {
-            switch (entry.getKey()) {
-                case "scale":
-                case "parent":
-                case "texture":
-                case "locals":
-                    return false;
-                default:
-                    return entry.getValue().isJsonObject()
-                       || (entry.getValue().isJsonPrimitive() && entry.getValue().getAsJsonPrimitive().isString());
-            }
-        }
-
-        @Override
-        public Identifier getId() {
-            return id;
-        }
-
-        @Override
-        public CompletableFuture<Set<String>> getComponentNames() {
-            return parent.thenComposeAsync(p -> p.getComponentNames()).thenApply(output -> {
-                output.addAll(elements.keySet());
-                return output;
-            });
-        }
-
-        @Override
-        public <T> void addNamedComponent(String name, JsonComponent<T> component) {
-            if (!Strings.isNullOrEmpty(name)) {
-                elements.put(name, component);
-            }
-        }
-
-        @Override
-        public <T> Optional<JsonComponent<T>> loadComponent(JsonElement json, Identifier defaultAs) {
-            return loadComponent("", json, defaultAs);
-        }
-
-        @SuppressWarnings("unchecked")
-        private <T> Optional<JsonComponent<T>> loadComponent(String name, JsonElement json, Identifier defaultAs) {
-            if (json.isJsonObject()) {
-                JsonObject o = json.getAsJsonObject();
-                final String fname = Strings.nullToEmpty(name).trim();
-
-                return Optional
-                        .ofNullable(mson.componentTypes.get(JsonUtil.accept(o, "type")
-                                .map(JsonElement::getAsString)
-                                .map(Identifier::new)
-                                .orElse(defaultAs)))
-                        .map(c -> (JsonComponent<T>)c.loadJson(this, fname, o));
-            }
-            if (json.isJsonPrimitive()) {
-                JsonPrimitive prim = json.getAsJsonPrimitive();
-                if (prim.isString()) {
-                    return Optional.of((JsonComponent<T>)new JsonLink(prim.getAsString()));
-                }
-            }
-
-            throw new UnsupportedOperationException("Json was not a js object and could not be resolved to a js link");
-        }
-
-        @Override
-        public CompletableFuture<Texture> getTexture() {
-            return texture;
-        }
-
-        @Override
-        public CompletableFuture<Incomplete<Float>> getLocalVariable(String name) {
-            if (locals.containsKey(name)) {
-                return CompletableFuture.completedFuture(locals.get(name));
-            }
-            return parent.thenComposeAsync(p -> p.getLocalVariable(name));
-        }
-
-        @Override
-        public CompletableFuture<Set<String>> getVariableNames() {
-            return parent.thenComposeAsync(p -> p.getVariableNames()).thenApply(output -> {
-                output.addAll(locals.keySet());
-                return output;
-            });
-        }
-
-        @Override
-        public CompletableFuture<JsonContext> resolve(JsonElement json) {
-
-            if (json.isJsonPrimitive()) {
-                return loadJsonModel(new Identifier(json.getAsString()));
-            }
-
-            Identifier autoGen = new Identifier(getId().getNamespace(), getId().getPath() + "_dynamic");
-
-            return CompletableFuture.completedFuture(new StoredModelData(autoGen, json.getAsJsonObject()));
-        }
-
-        @Override
-        public ModelContext createContext(Model model, ModelContext.Locals locals) {
-            return new RootContext(model, scale, parent.getNow(NullContext.INSTANCE).createContext(model, locals), locals);
-        }
-
-        @Override
-        public Variables getVarLookup() {
-            return VariablesImpl.INSTANCE;
-        }
-
-        public class RootContext implements ModelContext {
-
-            private Model model;
-
-            private final Map<String, Object> objectCache = new HashMap<>();
-
-            private final ModelContext inherited;
-            private final Locals locals;
-
-            private final float scale;
-
-            RootContext(Model model, float scale, ModelContext inherited, Locals locals) {
-                this.model = model;
-                this.scale = scale;
-                this.inherited = inherited;
-                this.locals = locals;
-            }
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public <T extends Model> T getModel() {
-                return (T)model;
-            }
-
-            public void setModel(Model model) {
-                this.model = model;
-            }
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public <T> T getContext() {
-                return (T)model;
-            }
-
-            @Override
-            public Locals getLocals() {
-                return locals;
-            }
-
-            @Override
-            public float getScale() {
-                if (scale > 0) {
-                    return scale;
-                }
-                return inherited.getScale();
-            }
-
-            @Override
-            public void getTree(ModelContext context, Map<String, ModelPart> tree) {
-                elements.entrySet().forEach(entry -> {
-                    if (!tree.containsKey(entry.getKey())) {
-                        entry.getValue().tryExportTreeNodes(context, ModelPart.class).ifPresent(part -> {
-                            tree.put(entry.getKey(), part);
-                        });
-                    }
-                });
-                inherited.getTree(context, tree);
-            }
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public <T> T findByName(ModelContext context, String name) {
-                if (elements.containsKey(name)) {
-                    try {
-                        return (T)elements.get(name).export(context);
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new FutureAwaitException(e);
-                    }
-                }
-                return inherited.findByName(context, name);
-            }
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public <T> T computeIfAbsent(String name, ContentSupplier<T> supplier) {
-                Objects.requireNonNull(supplier);
-
-                if (Strings.isNullOrEmpty(name)) {
-                    return supplier.apply(name);
-                }
-
-                return (T)Maps.computeIfAbsent(objectCache, name, supplier);
-            }
-
-            @Override
-            public ModelContext resolve(Object child, Locals locals) {
-                if (child == getContext() && locals == getLocals()) {
-                    return this;
-                }
-                return new SubContext(this, locals, child);
-            }
-
-            @Override
-            public ModelContext getRoot() {
-                return this;
-            }
-        }
-
     }
 }

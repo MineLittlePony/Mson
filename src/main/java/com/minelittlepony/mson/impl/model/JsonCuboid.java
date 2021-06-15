@@ -9,11 +9,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.impl.exception.FutureAwaitException;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -48,9 +48,9 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     private final String name;
 
     public JsonCuboid(JsonContext context, String name, JsonObject json) {
-        center = context.getVarLookup().getFloats(json, "center", 3);
-        offset = context.getVarLookup().getFloats(json, "offset", 3);
-        rotation = context.getVarLookup().getFloats(json, "rotate", 3);
+        center = context.getVariables().getFloats(json, "center", 3);
+        offset = context.getVariables().getFloats(json, "offset", 3);
+        rotation = context.getVariables().getFloats(json, "rotate", 3);
         JsonUtil.getBooleans(json, "mirror", mirror);
 
         visible = JsonUtils.getBooleanOr("visible", json, true);

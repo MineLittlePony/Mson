@@ -6,11 +6,10 @@ import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.exception.EmptyContextException;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
-import com.minelittlepony.mson.api.json.Variables;
 import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.impl.exception.EmptyContextException;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 import com.minelittlepony.mson.util.Incomplete;
 
@@ -20,11 +19,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-final class NullContext implements JsonContext, ModelContext {
+final class NullContext implements ModelContext, ModelContext.Locals, JsonContext, VariablesImpl {
 
     static NullContext INSTANCE = new NullContext();
     static Identifier ID = new Identifier("mson", "null");
-    static Locals EMPTY_LOCALS = new LocalsImpl(ID, INSTANCE);
 
     private NullContext() {}
 
@@ -78,7 +76,7 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public CompletableFuture<Set<String>> getVariableNames() {
+    public CompletableFuture<Set<String>> getKeys() {
         return CompletableFuture.completedFuture(new HashSet<>());
     }
 
@@ -102,8 +100,18 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public CompletableFuture<Incomplete<Float>> getLocalVariable(String name) {
+    public CompletableFuture<Incomplete<Float>> getVariable(String name) {
         return CompletableFuture.completedFuture(Incomplete.ZERO);
+    }
+
+    @Override
+    public Identifier getModelId() {
+        return ID;
+    }
+
+    @Override
+    public CompletableFuture<Float> getValue(String name) {
+        return CompletableFuture.completedFuture(0F);
     }
 
     @Override
@@ -112,12 +120,12 @@ final class NullContext implements JsonContext, ModelContext {
     }
 
     @Override
-    public Locals getLocals() {
-        return EMPTY_LOCALS;
+    public ModelContext.Locals getLocals() {
+        return this;
     }
 
     @Override
-    public Variables getVarLookup() {
-        return VariablesImpl.INSTANCE;
+    public JsonContext.Variables getVariables() {
+        return this;
     }
 }
