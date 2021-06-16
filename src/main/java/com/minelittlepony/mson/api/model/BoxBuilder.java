@@ -17,26 +17,16 @@ import java.util.function.Function;
  * A builder for building boxes.
  *
  * Holds all the parameters so we don't have to shove them into a Box sub-class.
- *
  */
 public final class BoxBuilder {
 
     public final PartBuilder parent;
 
-    public float x;
-    public float y;
-    public float z;
+    public float[] pos = new float[3];
+    public float[] size = new float[3];
+    public float[] dilate = new float[3];
 
-    public float dx;
-    public float dy;
-    public float dz;
-
-    public int u;
-    public int v;
-
-    public float stretchX;
-    public float stretchY;
-    public float stretchZ;
+    public int u, v;
 
     public boolean[] mirror = new boolean[3];
 
@@ -48,10 +38,7 @@ public final class BoxBuilder {
     public BoxBuilder(ModelContext context) {
         this((PartBuilder)context.getContext());
 
-        float scale = context.getScale();
-        stretchX = scale;
-        stretchY = scale;
-        stretchZ = scale;
+        dilate(context.getLocals().getDilation().getNow(new float[3]));
 
         u = parent.texture.getU();
         v = parent.texture.getV();
@@ -65,9 +52,9 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder pos(float... pos) {
-        x = pos[0] + parent.offset[0];
-        y = pos[1] + parent.offset[1];
-        z = pos[2] + parent.offset[2];
+        this.pos[0] = pos[0] + parent.offset[0];
+        this.pos[1] = pos[1] + parent.offset[1];
+        this.pos[2] = pos[2] + parent.offset[2];
         return this;
     }
 
@@ -80,9 +67,9 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder size(float... size) {
-        dx = size[0];
-        dy = size[1];
-        dz = size[2];
+        this.size[0] = size[0];
+        this.size[1] = size[1];
+        this.size[2] = size[2];
         return this;
     }
 
@@ -94,10 +81,10 @@ public final class BoxBuilder {
         );
     }
 
-    public BoxBuilder stretch(float... stretch) {
-        this.stretchX += stretch[0];
-        this.stretchY += stretch[1];
-        this.stretchZ += stretch[2];
+    public BoxBuilder dilate(float... dilate) {
+        this.dilate[0] += dilate[0];
+        this.dilate[1] += dilate[1];
+        this.dilate[2] += dilate[2];
         return this;
     }
 
@@ -164,11 +151,12 @@ public final class BoxBuilder {
     }
 
     public Cuboid build() {
+        // TODO: Offset is doubled here
         return new Cuboid(
                 u, v,
-                parent.offset[0] + x, parent.offset[1] + y, parent.offset[2] + z,
-                dx, dy, dz,
-                stretchX, stretchY, stretchZ,
+                parent.offset[0] + pos[0], parent.offset[1] + pos[1], parent.offset[2] + pos[2],
+                size[0], size[1], size[2],
+                dilate[0], dilate[1], dilate[2],
                 mirror[0],
                 parent.texture.getWidth(), parent.texture.getHeight());
     }

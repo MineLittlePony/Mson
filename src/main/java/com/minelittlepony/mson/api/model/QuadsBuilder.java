@@ -16,13 +16,13 @@ public interface QuadsBuilder {
      */
     static QuadsBuilder cone(float tipInset) {
         return ctx -> {
-            float xMax = ctx.x + ctx.dx + ctx.stretchX;
-            float yMax = ctx.y + ctx.dy + ctx.stretchY;
-            float zMax = ctx.z + ctx.dz + ctx.stretchZ;
+            float xMax = ctx.pos[0] + ctx.size[0] + ctx.dilate[0];
+            float yMax = ctx.pos[1] + ctx.size[1] + ctx.dilate[1];
+            float zMax = ctx.pos[2] + ctx.size[2] + ctx.dilate[2];
 
-            float xMin = ctx.x - ctx.stretchX;
-            float yMin = ctx.y - ctx.stretchY;
-            float zMin = ctx.z - ctx.stretchZ;
+            float xMin = ctx.pos[0] - ctx.dilate[0];
+            float yMin = ctx.pos[1] - ctx.dilate[1];
+            float zMin = ctx.pos[2] - ctx.dilate[2];
 
             if (ctx.mirror[0]) {
                 float v = xMax;
@@ -30,10 +30,10 @@ public interface QuadsBuilder {
                 xMin = v;
             }
 
-            float tipXmin = xMin + ctx.dx * tipInset;
-            float tipZmin = zMin + ctx.dz * tipInset;
-            float tipXMax = xMax - ctx.dx * tipInset;
-            float tipZMax = zMax - ctx.dz * tipInset;
+            float tipXmin = xMin + ctx.size[0] * tipInset;
+            float tipZmin = zMin + ctx.size[2] * tipInset;
+            float tipXMax = xMax - ctx.size[0] * tipInset;
+            float tipZMax = zMax - ctx.size[2] * tipInset;
 
             // w:west e:east d:down u:up s:south n:north
             Vert wds = ctx.vert(tipXmin, yMin, tipZmin, 0, 0);
@@ -46,12 +46,12 @@ public interface QuadsBuilder {
             Vert wun = ctx.vert(xMin,    yMax, zMax,    8, 0);
 
             return new Rect[] {
-                ctx.quad(ctx.u + ctx.dz + ctx.dx,          ctx.dz, ctx.v + ctx.dz,  ctx.dy, Direction.EAST,  edn, eds, eus, eun),
-                ctx.quad(ctx.u,                            ctx.dz, ctx.v + ctx.dz,  ctx.dy, Direction.WEST,  wds, wdn, wun, wus),
-                ctx.quad(ctx.u + ctx.dz,                   ctx.dx, ctx.v,           ctx.dz, Direction.DOWN,  edn, wdn, wds, eds),
-                ctx.quad(ctx.u + ctx.dz + ctx.dx,          ctx.dx, ctx.v + ctx.dz, -ctx.dz, Direction.UP,    eus, wus, wun, eun),
-                ctx.quad(ctx.u + ctx.dz,                   ctx.dx, ctx.v + ctx.dz,  ctx.dy, Direction.NORTH, eds, wds, wus, eus),
-                ctx.quad(ctx.u + ctx.dz + ctx.dx + ctx.dz, ctx.dx, ctx.v + ctx.dz,  ctx.dy, Direction.SOUTH, wdn, edn, eun, wun)
+                ctx.quad(ctx.u + ctx.size[2] + ctx.size[0],               ctx.size[2], ctx.v + ctx.size[2],  ctx.size[1], Direction.EAST,  edn, eds, eus, eun),
+                ctx.quad(ctx.u,                                           ctx.size[2], ctx.v + ctx.size[2],  ctx.size[1], Direction.WEST,  wds, wdn, wun, wus),
+                ctx.quad(ctx.u + ctx.size[2],                             ctx.size[0], ctx.v,                ctx.size[2], Direction.DOWN,  edn, wdn, wds, eds),
+                ctx.quad(ctx.u + ctx.size[2] + ctx.size[0],               ctx.size[0], ctx.v + ctx.size[2], -ctx.size[2], Direction.UP,    eus, wus, wun, eun),
+                ctx.quad(ctx.u + ctx.size[2],                             ctx.size[0], ctx.v + ctx.size[2],  ctx.size[1], Direction.NORTH, eds, wds, wus, eus),
+                ctx.quad(ctx.u + ctx.size[2] + ctx.size[0] + ctx.size[2], ctx.size[0], ctx.v + ctx.size[2],  ctx.size[1], Direction.SOUTH, wdn, edn, eun, wun)
             };
         };
     }
@@ -61,17 +61,17 @@ public interface QuadsBuilder {
      */
     static QuadsBuilder plane(Face face) {
         return ctx -> {
-            float xMax = ctx.x + ctx.dx;
-            float yMax = ctx.y + ctx.dy;
-            float zMax = ctx.z + ctx.dz;
+            float xMax = ctx.pos[0] + ctx.size[0];
+            float yMax = ctx.pos[1] + ctx.size[1];
+            float zMax = ctx.pos[2] + ctx.size[2];
 
-            xMax = ctx.fixture.stretchCoordinate(Axis.X, xMax, yMax, zMax, ctx.stretchX);
-            yMax = ctx.fixture.stretchCoordinate(Axis.Y, xMax, yMax, zMax, face.applyFixtures(ctx.stretchY));
-            zMax = ctx.fixture.stretchCoordinate(Axis.Z, xMax, yMax, zMax, ctx.stretchZ);
+            xMax = ctx.fixture.stretchCoordinate(Axis.X, xMax, yMax, zMax, ctx.dilate[0]);
+            yMax = ctx.fixture.stretchCoordinate(Axis.Y, xMax, yMax, zMax, face.applyFixtures(ctx.dilate[1]));
+            zMax = ctx.fixture.stretchCoordinate(Axis.Z, xMax, yMax, zMax, ctx.dilate[2]);
 
-            float xMin = ctx.fixture.stretchCoordinate(Axis.X, ctx.x, ctx.y, ctx.z, -ctx.stretchX);
-            float yMin = ctx.fixture.stretchCoordinate(Axis.Y, ctx.x, ctx.y, ctx.z, face.applyFixtures(-ctx.stretchY));
-            float zMin = ctx.fixture.stretchCoordinate(Axis.Z, ctx.x, ctx.y, ctx.z, -ctx.stretchZ);
+            float xMin = ctx.fixture.stretchCoordinate(Axis.X, ctx.pos[0], ctx.pos[1], ctx.pos[2], -ctx.dilate[0]);
+            float yMin = ctx.fixture.stretchCoordinate(Axis.Y, ctx.pos[0], ctx.pos[1], ctx.pos[2], face.applyFixtures(-ctx.dilate[1]));
+            float zMin = ctx.fixture.stretchCoordinate(Axis.Z, ctx.pos[0], ctx.pos[1], ctx.pos[2], -ctx.dilate[2]);
 
             if (ctx.mirror[0]) {
                 float v = xMax;
@@ -112,22 +112,22 @@ public interface QuadsBuilder {
             }
 
             if (face == Face.EAST) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dz, ctx.dy, lighting, mirror, edn, eds, eus, eun);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.size[2], ctx.size[1], lighting, mirror, edn, eds, eus, eun);
             }
             if (face == Face.WEST) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dz, ctx.dy, lighting, mirror, wds, wdn, wun, wus);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.size[2], ctx.size[1], lighting, mirror, wds, wdn, wun, wus);
             }
             if (face == Face.UP) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dz, lighting, mirror, eus, wus, wun, eun);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.size[0], ctx.size[2], lighting, mirror, eus, wus, wun, eun);
             }
             if (face == Face.DOWN) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dz, lighting, mirror, edn, wdn, wds, eds);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.size[0], ctx.size[2], lighting, mirror, edn, wdn, wds, eds);
             }
             if (face == Face.SOUTH) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dy, lighting, mirror, wdn, edn, eun, wun);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.size[0], ctx.size[1], lighting, mirror, wdn, edn, eun, wun);
             }
             if (face == Face.NORTH) {
-                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.dx, ctx.dy, lighting, mirror, eds, wds, wus, eus);
+                quads[0] = ctx.quad(ctx.u, ctx.v, ctx.size[0], ctx.size[1], lighting, mirror, eds, wds, wus, eus);
             }
 
             return quads;

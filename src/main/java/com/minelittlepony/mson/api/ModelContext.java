@@ -45,7 +45,10 @@ public interface ModelContext {
 
     /**
      * Gets the world scale factor.
+     *
+     * @Deprecated Use getLocals().getDilation() instead
      */
+    @Deprecated
     float getScale();
 
     /**
@@ -129,6 +132,11 @@ public interface ModelContext {
          * Gets the composed texture visible to the current scope.
          */
         CompletableFuture<Texture> getTexture();
+
+        /**
+         * Gets the global amount that this model should be dilated by.
+         */
+        CompletableFuture<float[]> getDilation();
 
         /**
          * Queries for a specific named variable.

@@ -10,6 +10,7 @@ import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Face;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -25,18 +26,23 @@ public class JsonPlane implements JsonComponent<Cuboid> {
 
     private final Incomplete<Texture> texture;
 
-    private final float[] stretch = new float[3];
+    private final float[] dilate = new float[3];
 
     private final boolean[] mirror = new boolean[3];
 
     private final Face face;
 
     public JsonPlane(JsonContext context, String name, JsonObject json) {
-        position = context.getVariables().getFloats(json, "position", 3);
-        size = context.getVariables().getFloats(json, "size", 3);
+        position = context.getVariables().getValue(json, "position", 3);
+        size = context.getVariables().getValue(json, "size", 3);
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
         JsonUtil.getBooleans(json, "mirror", mirror);
-        JsonUtil.getFloats(json, "stretch", stretch);
+        if (json.has("stretch")) {
+            MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getId());
+            JsonUtil.getFloats(json, "stretch", dilate);
+        } else {
+            JsonUtil.getFloats(json, "dilate", dilate);
+        }
         face = Face.valueOf(JsonUtil.require(json, "face").getAsString().toUpperCase());
     }
 
@@ -47,7 +53,7 @@ public class JsonPlane implements JsonComponent<Cuboid> {
             .mirror(face.getAxis(), mirror)
             .pos(position.complete(context))
             .size(face.getAxis(), size.complete(context))
-            .stretch(stretch)
+            .dilate(dilate)
             .build(QuadsBuilder.plane(face));
     }
 }

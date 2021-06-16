@@ -30,7 +30,7 @@ public class JsonCone extends JsonBox {
             .tex(texture)
             .pos(from.complete(context))
             .size(size.complete(context))
-            .stretch(stretch)
+            .dilate(dilate)
             .mirror(Axis.X, mirror)
             .build(QuadsBuilder.cone(taper));
     }

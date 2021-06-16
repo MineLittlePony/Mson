@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-final class NullContext implements ModelContext, ModelContext.Locals, JsonContext, VariablesImpl {
+final class NullContext implements ModelContext, ModelContext.Locals, JsonContext, JsonLocalsImpl {
 
     static NullContext INSTANCE = new NullContext();
     static Identifier ID = new Identifier("mson", "null");
@@ -66,7 +66,7 @@ final class NullContext implements ModelContext, ModelContext.Locals, JsonContex
     }
 
     @Override
-    public ModelContext resolve(Object child, Locals locals) {
+    public ModelContext resolve(Object child, ModelContext.Locals locals) {
         return this;
     }
 
@@ -90,7 +90,7 @@ final class NullContext implements ModelContext, ModelContext.Locals, JsonContex
     }
 
     @Override
-    public ModelContext createContext(Model model, Locals locals) {
+    public ModelContext createContext(Model model, ModelContext.Locals locals) {
         return this;
     }
 
@@ -100,7 +100,7 @@ final class NullContext implements ModelContext, ModelContext.Locals, JsonContex
     }
 
     @Override
-    public CompletableFuture<Incomplete<Float>> getVariable(String name) {
+    public CompletableFuture<Incomplete<Float>> getInheritedValue(String name) {
         return CompletableFuture.completedFuture(Incomplete.ZERO);
     }
 
@@ -115,6 +115,11 @@ final class NullContext implements ModelContext, ModelContext.Locals, JsonContex
     }
 
     @Override
+    public CompletableFuture<float[]> getDilation() {
+        return CompletableFuture.completedFuture(new float[] { 0, 0, 0 });
+    }
+
+    @Override
     public float getScale() {
         return 0;
     }
@@ -125,7 +130,7 @@ final class NullContext implements ModelContext, ModelContext.Locals, JsonContex
     }
 
     @Override
-    public JsonContext.Variables getVariables() {
+    public JsonContext.Locals getVariables() {
         return this;
     }
 }

@@ -5,6 +5,7 @@ import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.client.realms.util.JsonUtils;
 import net.minecraft.util.Identifier;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
@@ -13,10 +14,12 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,16 +27,18 @@ import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JsonCuboid implements JsonComponent<ModelPart> {
     public static final Identifier ID = new Identifier("mson", "compound");
     private static final float RADS_DEGS_FACTOR = (float)Math.PI / 180F;
 
-    private final Incomplete<float[]> center;
+    private final Incomplete<float[]> pivot;
 
+    @Deprecated
     private final Incomplete<float[]> offset;
 
-    private final Incomplete<float[]> rotation;
+    private final Incomplete<float[]> rotate;
 
     private final boolean[] mirror = new boolean[3];
     private final boolean visible;
@@ -46,17 +51,26 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     private final String name;
 
     public JsonCuboid(JsonContext context, String name, JsonObject json) {
-        center = context.getVariables().getFloats(json, "center", 3);
-        offset = context.getVariables().getFloats(json, "offset", 3);
-        rotation = context.getVariables().getFloats(json, "rotate", 3);
-        JsonUtil.getBooleans(json, "mirror", mirror);
+        if (json.has("offset")) {
+            MsonImpl.LOGGER.warn("Model {} is using the `offset` property. This is deprecated and will be removed in 1.18.", context.getId());
+        }
+        offset = context.getVariables().getValue(json, "offset", 3);
 
+        if (json.has("center")) {
+            MsonImpl.LOGGER.warn("Model {} is using the `center` property. This is deprecated and will be removed in 1.18. Please replace with `pivot`", context.getId());
+            pivot = context.getVariables().getValue(json, "center", 3);
+        } else {
+            pivot = context.getVariables().getValue(json, "pivot", 3);
+        }
+
+        rotate = context.getVariables().getValue(json, "rotate", 3);
+        JsonUtil.getBooleans(json, "mirror", mirror);
         visible = JsonUtils.getBooleanOr("visible", json, true);
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
         this.name = name.isEmpty() ? JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("") : name;
 
         JsonUtil.accept(json, "children").ifPresent(el -> {
-            children.putAll(el.getAsJsonObject().entrySet().stream().collect(Collectors.toMap(
+            children.putAll(parseChildren(context, el).collect(Collectors.toMap(
                 Map.Entry::getKey,
                 i -> context.loadComponent(i.getValue(), ID).orElse(null))
             ));
@@ -70,6 +84,22 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
         context.addNamedComponent(this.name, this);
     }
 
+    private Stream<Map.Entry<String, JsonElement>> parseChildren(JsonContext context, JsonElement json) {
+        if (json.isJsonObject()) {
+            return json.getAsJsonObject().entrySet().stream();
+        }
+        if (json.isJsonArray()) {
+            MsonImpl.LOGGER.warn("Model {} is using a children array. Versions in 1.18 will require this to be an object.", context.getId());
+            JsonArray arr = json.getAsJsonArray();
+            Map<String, JsonElement> children = new HashMap<>();
+            for (int i = 0; i < arr.size(); i++) {
+                children.put("unnamed_element_" + i, arr.get(i));
+            }
+            return children.entrySet().stream();
+        }
+        return Stream.empty();
+    }
+
     @Override
     public ModelPart export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
@@ -78,16 +108,16 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     }
 
     protected PartBuilder export(ModelContext context, PartBuilder builder) throws InterruptedException, ExecutionException {
-        float[] rotation = this.rotation.complete(context);
+        float[] rotate = this.rotate.complete(context);
         builder
                 .hidden(!visible)
-                .pivot(this.center.complete(context))
+                .pivot(this.pivot.complete(context))
                 .offset(this.offset.complete(context))
                 .mirror(mirror)
                 .rotate(
-                    rotation[0] * RADS_DEGS_FACTOR,
-                    rotation[1] * RADS_DEGS_FACTOR,
-                    rotation[2] * RADS_DEGS_FACTOR)
+                    rotate[0] * RADS_DEGS_FACTOR,
+                    rotate[1] * RADS_DEGS_FACTOR,
+                    rotate[2] * RADS_DEGS_FACTOR)
                 .tex(texture.complete(context));
 
         final ModelContext subContext = context.resolve(builder, new Locals(context.getLocals()));
@@ -101,7 +131,6 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     }
 
     class Locals implements ModelContext.Locals {
-
         private final ModelContext.Locals parent;
 
         Locals(ModelContext.Locals parent) {
@@ -111,6 +140,11 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
         @Override
         public Identifier getModelId() {
             return parent.getModelId();
+        }
+
+        @Override
+        public CompletableFuture<float[]> getDilation() {
+            return parent.getDilation();
         }
 
         @Override

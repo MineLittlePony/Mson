@@ -18,6 +18,7 @@ import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.FixtureImpl;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -34,11 +35,16 @@ public class JsonPlanar extends JsonCuboid {
 
     private final Map<Face, JsonFaceSet> faces = new EnumMap<>(Face.class);
 
-    private final float[] stretch = new float[3];
+    private final float[] dilate = new float[3];
 
     public JsonPlanar(JsonContext context, String name, JsonObject json) {
         super(context, name, json);
-        JsonUtil.getFloats(json, "stretch", stretch);
+        if (json.has("stretch")) {
+            MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getId());
+            JsonUtil.getFloats(json, "stretch", dilate);
+        } else {
+            JsonUtil.getFloats(json, "dilate", dilate);
+        }
 
         Face.VALUES.forEach(face -> {
             JsonUtil.accept(json, face.name().toLowerCase())
@@ -135,8 +141,8 @@ public class JsonPlanar extends JsonCuboid {
 
                 if (json.size() > 6) {
                     texture = createTexture(
-                            context.getVariables().getFloat(json.get(5).getAsJsonPrimitive()),
-                            context.getVariables().getFloat(json.get(6).getAsJsonPrimitive())
+                            context.getVariables().getValue(json.get(5).getAsJsonPrimitive()),
+                            context.getVariables().getValue(json.get(6).getAsJsonPrimitive())
                     );
                 } else {
                     texture = Incomplete.completed(Optional.empty());
@@ -159,7 +165,7 @@ public class JsonPlanar extends JsonCuboid {
             @Override
             public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
                 return new BoxBuilder(context)
-                    .stretch(stretch)
+                    .dilate(dilate)
                     .fix(JsonFaceSet.this)
                     .tex(texture.complete(context))
                     .pos(position)

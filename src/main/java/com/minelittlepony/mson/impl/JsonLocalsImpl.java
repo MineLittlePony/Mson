@@ -8,14 +8,14 @@ import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
-public interface VariablesImpl extends JsonContext.Variables {
+public interface JsonLocalsImpl extends JsonContext.Locals {
     @Override
-    default Incomplete<Float> getFloat(JsonPrimitive json) {
-        return LocalsImpl.variableReference(json);
+    default Incomplete<Float> getValue(JsonPrimitive json) {
+        return ModelLocalsImpl.variableReference(json);
     }
 
     @Override
-    default Incomplete<float[]> getFloats(JsonObject json, String member, int len) {
+    default Incomplete<float[]> getValue(JsonObject json, String member, int len) {
         return toFloats(getIncompletes(json, member, len));
     }
 
@@ -33,7 +33,7 @@ public interface VariablesImpl extends JsonContext.Variables {
                     if (!arr.get(i).isJsonPrimitive()) {
                         throw new JsonParseException("Non-primitive type found in array. Can only be values (Number) or variable references (#variable). " + arr.toString());
                     }
-                    output[i] = LocalsImpl.variableReference(arr.get(i).getAsJsonPrimitive());
+                    output[i] = ModelLocalsImpl.variableReference(arr.get(i).getAsJsonPrimitive());
                 }
             });
 

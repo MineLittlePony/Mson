@@ -9,8 +9,8 @@ import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.impl.LocalsImpl;
-import com.minelittlepony.mson.impl.VariablesImpl;
+import com.minelittlepony.mson.impl.ModelLocalsImpl;
+import com.minelittlepony.mson.impl.JsonLocalsImpl;
 import com.minelittlepony.mson.impl.key.ReflectedModelKey;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -25,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class JsonSlot<T> implements JsonComponent<T> {
-
     public static final Identifier ID = new Identifier("mson", "slot");
 
     private final ReflectedModelKey<T> implementation;
@@ -61,7 +60,7 @@ public class JsonSlot<T> implements JsonComponent<T> {
                 .stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> LocalsImpl.createLocal(e.getValue())));
+                        e -> ModelLocalsImpl.createLocal(e.getValue())));
     }
 
     @Override
@@ -85,7 +84,7 @@ public class JsonSlot<T> implements JsonComponent<T> {
                     //               |       /
                     //               |-slot\/
                     //              self
-                    .createContext(context.getModel(), new LocalsImpl(implementation.getId(), new Vars(jsContext)));
+                    .createContext(context.getModel(), new ModelLocalsImpl(implementation.getId(), new Locals(jsContext)));
 
             T inst = implementation.createModel(subContext);
             if (inst instanceof MsonModel) {
@@ -96,12 +95,16 @@ public class JsonSlot<T> implements JsonComponent<T> {
         });
     }
 
-    class Vars implements VariablesImpl {
+    private class Locals implements JsonLocalsImpl {
+        private final JsonContext.Locals parent;
 
-        private final JsonContext.Variables parent;
-
-        Vars(JsonContext parent) {
+        Locals(JsonContext parent) {
             this.parent = parent.getVariables();
+        }
+
+        @Override
+        public CompletableFuture<float[]> getDilation() {
+            return parent.getDilation();
         }
 
         @Override
@@ -112,11 +115,11 @@ public class JsonSlot<T> implements JsonComponent<T> {
         }
 
         @Override
-        public CompletableFuture<Incomplete<Float>> getVariable(String name) {
+        public CompletableFuture<Incomplete<Float>> getInheritedValue(String name) {
             if (locals.containsKey(name)) {
                 return CompletableFuture.completedFuture(locals.get(name));
             }
-            return parent.getVariable(name);
+            return parent.getInheritedValue(name);
         }
 
         @Override

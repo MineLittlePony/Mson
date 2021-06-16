@@ -65,8 +65,8 @@ abstract class MixinModelPartData implements VanillaModelExporter.JsonConvertabl
                 children.forEach((key, value) -> js.add(key, exporter.export(value)));
             }));
             if (rotationData != ModelTransform.NONE) {
-                exporter.array(json, "center", rotationData.pivotX, rotationData.pivotY, rotationData.pivotZ);
-                exporter.array(json, "rotation", rotationData.pitch, rotationData.yaw, rotationData.roll);
+                exporter.array(json, "pivot", rotationData.pivotX, rotationData.pivotY, rotationData.pivotZ);
+                exporter.array(json, "rotate", rotationData.pitch, rotationData.yaw, rotationData.roll);
             }
         });
     }
@@ -84,7 +84,7 @@ abstract class MixinModelCuboidData implements VanillaModelExporter.JsonConverta
         return exporter.of(json -> {
             exporter.array(json, "from", offset);
             exporter.array(json, "size", dimensions);
-            exporter.array(json, "stretch", ((MixinDilation)extraSize).getX(), ((MixinDilation)extraSize).getY(), ((MixinDilation)extraSize).getZ());
+            exporter.array(json, "dilate", ((MixinDilation)extraSize).getX(), ((MixinDilation)extraSize).getY(), ((MixinDilation)extraSize).getZ());
             json.addProperty("mirror", mirror);
             exporter.object(json, "texture", exporter.of(js -> {
                 if (textureUV.getX() != 0) js.addProperty("u", textureUV.getX());

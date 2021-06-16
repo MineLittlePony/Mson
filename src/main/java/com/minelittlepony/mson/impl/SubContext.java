@@ -64,6 +64,7 @@ class SubContext implements ModelContext {
         return parent.getRoot();
     }
 
+    @Deprecated
     @Override
     public float getScale() {
         return parent.getScale();

@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class StoredModelData implements JsonContext {
 
@@ -38,9 +39,7 @@ class StoredModelData implements JsonContext {
 
     private final CompletableFuture<JsonContext> parent;
 
-    private final JsonContext.Variables variables;
-
-    private float scale = -1;
+    private final JsonContext.Locals variables;
 
     private final Identifier id;
 
@@ -53,31 +52,39 @@ class StoredModelData implements JsonContext {
             .map(foundry::loadJsonModel)
             .orElseGet(() -> CompletableFuture.completedFuture(NullContext.INSTANCE));
 
-        JsonUtil.accept(json, "scale")
-            .map(JsonElement::getAsFloat)
-            .ifPresent(scale -> this.scale = scale);
+        if (json.has("scale")) {
+            MsonImpl.LOGGER.warn("Model {} is using the `scale` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", getId());
+        }
 
         variables = new RootVariables(json, parent.thenApplyAsync(JsonContext::getVariables));
 
-        elements.putAll(json.entrySet().stream()
-                .filter(this::isElement)
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> loadComponent(entry.getKey(), entry.getValue(), JsonCuboid.ID).orElseGet(null)
-        )));;
+        elements.putAll(getChildren(json).collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> loadComponent(entry.getKey(), entry.getValue(), JsonCuboid.ID).orElseGet(null)
+        )));
     }
 
-    private boolean isElement(Map.Entry<String, JsonElement> entry) {
-        switch (entry.getKey()) {
-            case "scale":
-            case "parent":
-            case "texture":
-            case "locals":
-                return false;
-            default:
-                return entry.getValue().isJsonObject()
-                   || (entry.getValue().isJsonPrimitive() && entry.getValue().getAsJsonPrimitive().isString());
+    private Stream<Map.Entry<String, JsonElement>> getChildren(JsonObject json) {
+        if (json.has("children")) {
+            return json.get("children").getAsJsonObject().entrySet().stream().filter(entry -> {
+                return entry.getValue().isJsonObject() || (entry.getValue().isJsonPrimitive() && entry.getValue().getAsJsonPrimitive().isString());
+            });
         }
+
+        MsonImpl.LOGGER.warn("Model {} is using a flat definition! This will be removed in 1.18. Rather place your children into a `children` property", getId());
+        return json.entrySet().stream().filter(entry -> {
+            switch (entry.getKey()) {
+                case "scale":
+                case "parent":
+                case "texture":
+                case "children":
+                case "locals":
+                    return false;
+                default:
+                    return entry.getValue().isJsonObject()
+                       || (entry.getValue().isJsonPrimitive() && entry.getValue().getAsJsonPrimitive().isString());
+            }
+        });
     }
 
     @Override
@@ -146,18 +153,21 @@ class StoredModelData implements JsonContext {
     }
 
     @Override
-    public JsonContext.Variables getVariables() {
+    public JsonContext.Locals getVariables() {
         return variables;
     }
 
-    public static class RootVariables implements VariablesImpl {
-        private final CompletableFuture<JsonContext.Variables> parent;
+    public static class RootVariables implements JsonLocalsImpl {
+        private final CompletableFuture<JsonContext.Locals> parent;
         private final CompletableFuture<Texture> texture;
+
         private final Map<String, Incomplete<Float>> locals;
 
-        RootVariables(JsonObject json, CompletableFuture<JsonContext.Variables> parent) {
+        private final float[] dilate;
+
+        RootVariables(JsonObject json, CompletableFuture<JsonContext.Locals> parent) {
             this.parent = parent;
-            texture = JsonTexture.unlocalized(JsonUtil.accept(json, "texture"), parent.thenComposeAsync(Variables::getTexture));
+            texture = JsonTexture.unlocalized(JsonUtil.accept(json, "texture"), parent.thenComposeAsync(Locals::getTexture));
             locals = JsonUtil.accept(json, "locals")
                     .map(JsonElement::getAsJsonObject)
                     .map(JsonObject::entrySet)
@@ -165,7 +175,24 @@ class StoredModelData implements JsonContext {
                     .stream()
                     .collect(Collectors.toMap(
                             Map.Entry::getKey,
-                            e -> LocalsImpl.createLocal(e.getValue())));
+                            e -> ModelLocalsImpl.createLocal(e.getValue())));
+
+            if (json.has("scale")) {
+                dilate = new float[] { 0, 0, 0 };
+                JsonUtil.getFloats(json, "scale", dilate);
+            } else {
+                dilate = new float[] { 0, 0, 0 };
+                JsonUtil.getFloats(json, "dilate", dilate);
+            }
+
+        }
+
+        @Override
+        public CompletableFuture<float[]> getDilation() {
+            if (dilate != null) {
+                return CompletableFuture.completedFuture(dilate);
+            }
+            return parent.thenComposeAsync(JsonContext.Locals::getDilation);
         }
 
         @Override
@@ -174,16 +201,16 @@ class StoredModelData implements JsonContext {
         }
 
         @Override
-        public CompletableFuture<Incomplete<Float>> getVariable(String name) {
+        public CompletableFuture<Incomplete<Float>> getInheritedValue(String name) {
             if (locals.containsKey(name)) {
                 return CompletableFuture.completedFuture(locals.get(name));
             }
-            return parent.thenComposeAsync(p -> p.getVariable(name));
+            return parent.thenComposeAsync(p -> p.getInheritedValue(name));
         }
 
         @Override
         public CompletableFuture<Set<String>> getKeys() {
-            return parent.thenComposeAsync(Variables::getKeys).thenApply(output -> {
+            return parent.thenComposeAsync(Locals::getKeys).thenApply(output -> {
                 output.addAll(locals.keySet());
                 return output;
             });
@@ -226,12 +253,10 @@ class StoredModelData implements JsonContext {
             return locals;
         }
 
+        @Deprecated
         @Override
         public float getScale() {
-            if (scale > 0) {
-                return scale;
-            }
-            return inherited.getScale();
+            return getLocals().getDilation().thenApply(f -> f[0]).getNow(0F);
         }
 
         @Override

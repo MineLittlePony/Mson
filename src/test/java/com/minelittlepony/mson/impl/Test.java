@@ -19,13 +19,10 @@ import com.minelittlepony.mson.api.model.biped.MsonEndermanRenderer;
 import com.minelittlepony.mson.api.model.biped.MsonPlayer;
 import com.minelittlepony.mson.api.model.quadruped.MsonCowRenderer;
 import com.minelittlepony.mson.api.model.quadruped.MsonPigRenderer;
-import com.minelittlepony.mson.impl.key.ReflectionTest;
 
 public final class Test {
 
     public static void init() {
-        ReflectionTest.init();
-
         /*MsonImpl.DEBUG = true;
         ModelKey<MsonPlayer<AbstractClientPlayerEntity>> STEVE = Mson.getInstance().registerModel(new Identifier("mson", "steve"), MsonPlayer::new);
         ModelKey<MsonPlayer<AbstractClientPlayerEntity>> ALEX = Mson.getInstance().registerModel(new Identifier("mson", "alex"), MsonPlayer::new);

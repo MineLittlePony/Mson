@@ -63,22 +63,27 @@ public interface JsonContext {
     /**
      * Gets the local variable resolver for this context.
      */
-    Variables getVariables();
+    Locals getVariables();
 
     /**
-     * Interface for accessing contextual values in the current json context.
+     * Interface for accessing contextual values.
+     * <p>
+     * This typically includes variables and other things that only become available
+     * until after the parent model has been resolved.
+     * <p>
+     * Incompletes are variable-based and require a ModelContext in order to resolve.
      */
-    public interface Variables {
+    public interface Locals {
         /**
          * Reads a json value into an incomplete holding an unresolved floating point number.
          */
-        Incomplete<Float> getFloat(JsonPrimitive json);
+        Incomplete<Float> getValue(JsonPrimitive json);
 
         /**
          * Reads a json member into an incomplete holding a unresolved float array.
          * Variables in the array are resolved against the model context when requested.
          */
-        Incomplete<float[]> getFloats(JsonObject json, String member, int len);
+        Incomplete<float[]> getValue(JsonObject json, String member, int len);
 
         /**
          * Gets the texture information from the enclosing context or its parent.
@@ -86,9 +91,14 @@ public interface JsonContext {
         CompletableFuture<Texture> getTexture();
 
         /**
+         * Gets the global amount that this model should be dilated by.
+         */
+        CompletableFuture<float[]> getDilation();
+
+        /**
          * Gets a local variable from this context.
          */
-        CompletableFuture<Incomplete<Float>> getVariable(String name);
+        CompletableFuture<Incomplete<Float>> getInheritedValue(String name);
 
         /**
          * Gets a set of all named variables.

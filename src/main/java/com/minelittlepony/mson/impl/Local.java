@@ -30,8 +30,8 @@ class Local implements Incomplete<Float> {
             throw new JsonParseException("Invalid operation. One of [+,-,*,/]");
         }
 
-        left = LocalsImpl.createLocal(tokens.get(0));
-        right = LocalsImpl.createLocal(tokens.get(2));
+        left = ModelLocalsImpl.createLocal(tokens.get(0));
+        right = ModelLocalsImpl.createLocal(tokens.get(2));
     }
 
     @Override

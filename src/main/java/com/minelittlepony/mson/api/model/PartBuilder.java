@@ -13,9 +13,10 @@ public class PartBuilder {
 
     Texture texture = JsonTexture.EMPTY;
 
+    @Deprecated
     float[] offset = new float[3];
 
-    private float[] rotation = new float[3];
+    private float[] rotate = new float[3];
     private float[] pivot = new float[3];
 
     boolean[] mirror = new boolean[3];
@@ -49,7 +50,7 @@ public class PartBuilder {
     }
 
     public PartBuilder rotate(float... rotation) {
-        this.rotation = rotation;
+        this.rotate = rotation;
         return this;
     }
 
@@ -69,6 +70,7 @@ public class PartBuilder {
     /**
      * Sets an offset to be used on all shapes and children created through this renderer.
      */
+    @Deprecated
     public PartBuilder offset(float... offset) {
         this.offset = offset;
         return this;
@@ -77,7 +79,7 @@ public class PartBuilder {
     public ModelPart build() {
         ModelPart part = new ModelPart(cubes, children);
         ((MsonPart)(Object)part)
-            .rotate(rotation)
+            .rotate(rotate)
             .around(pivot)
             .setHidden(hidden);
 

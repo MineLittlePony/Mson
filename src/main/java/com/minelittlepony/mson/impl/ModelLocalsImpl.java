@@ -18,26 +18,26 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public final class LocalsImpl implements ModelContext.Locals, VariablesImpl {
+public final class ModelLocalsImpl implements ModelContext.Locals {
 
     private final Identifier id;
-    private final JsonContext.Variables context;
+    private final JsonContext.Locals context;
 
     private final Map<String, CompletableFuture<Float>> precalculatedValues = new HashMap<>();
 
-    public LocalsImpl(Identifier id, JsonContext.Variables context) {
+    public ModelLocalsImpl(Identifier id, JsonContext.Locals context) {
         this.id = id;
         this.context = context;
     }
 
     @Override
-    public CompletableFuture<Incomplete<Float>> getVariable(String name) {
-        return context.getVariable(name);
+    public Identifier getModelId() {
+        return id;
     }
 
     @Override
-    public Identifier getModelId() {
-        return id;
+    public CompletableFuture<float[]> getDilation() {
+        return context.getDilation();
     }
 
     @Override
@@ -47,16 +47,14 @@ public final class LocalsImpl implements ModelContext.Locals, VariablesImpl {
 
     @Override
     public CompletableFuture<Float> getValue(String name) {
-        return Maps.computeIfAbsent(precalculatedValues, name, this::lookupValue);
-    }
-
-    private CompletableFuture<Float> lookupValue(String name) {
-        return context.getVariable(name).thenApplyAsync(value -> {
-            try {
-                return value.complete(new StackFrame(this, name));
-            } catch (InterruptedException | ExecutionException e) {
-                throw new FutureAwaitException(e);
-            }
+        return Maps.computeIfAbsent(precalculatedValues, name, n -> {
+            return context.getInheritedValue(n).thenApplyAsync(value -> {
+                try {
+                    return value.complete(new StackFrame(this, n));
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new FutureAwaitException(e);
+                }
+            });
         });
     }
 
@@ -117,6 +115,11 @@ public final class LocalsImpl implements ModelContext.Locals, VariablesImpl {
         @Override
         public CompletableFuture<Texture> getTexture() {
             return parent.getTexture();
+        }
+
+        @Override
+        public CompletableFuture<float[]> getDilation() {
+            return parent.getDilation();
         }
 
         @Override
