@@ -88,7 +88,7 @@ abstract class MixinModelCuboidData implements VanillaModelExporter.JsonConverta
             exporter.array(json, "from", offset);
             exporter.array(json, "size", dimensions);
             exporter.array(json, "dilate", ((MixinDilation)extraSize).getX(), ((MixinDilation)extraSize).getY(), ((MixinDilation)extraSize).getZ());
-            json.addProperty("mirror", mirror);
+            if (mirror) json.addProperty("mirror", mirror);
             exporter.object(json, "texture", exporter.of(js -> {
                 if (textureUV.getX() != 0) js.addProperty("u", textureUV.getX());
                 if (textureUV.getY() != 0) js.addProperty("v", textureUV.getY());
