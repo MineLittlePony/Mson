@@ -20,8 +20,8 @@ public class VanillaModelExporter {
         return json;
     }
 
-    public JsonObject object(JsonObject json, String name, JsonObject obj) {
-        if (obj != null && obj.size() > 0) {
+    public JsonObject object(JsonObject json, String name, JsonElement obj) {
+        if (obj != null && obj.isJsonObject() && obj.getAsJsonObject().size() > 0) {
             json.add(name, obj);
         }
         return json;

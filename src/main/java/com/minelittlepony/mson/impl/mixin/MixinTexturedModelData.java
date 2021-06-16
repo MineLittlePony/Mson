@@ -46,10 +46,13 @@ abstract class MixinTexturedModelData implements MsonImpl.KeyHolder, VanillaMode
 
     @Override
     public JsonObject toJson(VanillaModelExporter exporter) {
-        return exporter.object(exporter.export(data), "texture", exporter.of(js -> {
-            js.addProperty("w", ((MixinTextureDimensions)dimensions).getWidth());
-            js.addProperty("h", ((MixinTextureDimensions)dimensions).getHeight());
-        }));
+        return exporter.of(json -> {
+            exporter.object(json, "data", exporter.export(data).get("children"));
+            exporter.object(json, "texture", exporter.of(js -> {
+                js.addProperty("w", ((MixinTextureDimensions)dimensions).getWidth());
+                js.addProperty("h", ((MixinTextureDimensions)dimensions).getHeight());
+            }));
+        });
     }
 }
 @Mixin(ModelPartData.class)

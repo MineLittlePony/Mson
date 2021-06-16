@@ -65,19 +65,19 @@ class StoredModelData implements JsonContext {
     }
 
     private Stream<Map.Entry<String, JsonElement>> getChildren(JsonObject json) {
-        if (json.has("children")) {
-            return json.get("children").getAsJsonObject().entrySet().stream().filter(entry -> {
+        if (json.has("data")) {
+            return json.get("data").getAsJsonObject().entrySet().stream().filter(entry -> {
                 return entry.getValue().isJsonObject() || (entry.getValue().isJsonPrimitive() && entry.getValue().getAsJsonPrimitive().isString());
             });
         }
 
-        MsonImpl.LOGGER.warn("Model {} is using a flat definition! This will be removed in 1.18. Rather place your children into a `children` property", getId());
+        MsonImpl.LOGGER.warn("Model {} is using a flat definition! This will be removed in 1.18. All structural components now belong under a `data` property", getId());
         return json.entrySet().stream().filter(entry -> {
             switch (entry.getKey()) {
                 case "scale":
                 case "parent":
                 case "texture":
-                case "children":
+                case "data":
                 case "locals":
                     return false;
                 default:
