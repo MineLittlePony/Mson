@@ -14,6 +14,7 @@ import com.minelittlepony.mson.api.json.JsonContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -89,7 +90,12 @@ public final class ReflectedModelKey<T> extends AbstractModelKeyImpl<T> {
     }
 
     @Override
-    public JsonContext getModelData() {
+    public Optional<JsonContext> getModelData() {
         throw new NotImplementedException("getModelData");
+    }
+
+    @Override
+    public Optional<ModelPart> createTree() {
+        throw new NotImplementedException("createTree");
     }
 }

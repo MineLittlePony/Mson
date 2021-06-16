@@ -5,7 +5,6 @@ import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.client.realms.util.JsonUtils;
 import net.minecraft.util.Identifier;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
@@ -18,7 +17,6 @@ import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,32 +55,19 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
         this.name = name.isEmpty() ? JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("") : name;
 
-        JsonUtil.accept(json, "children").map(this::loadChildrenMap).ifPresent(el -> {
-            children.putAll(el.stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            i -> context.loadComponent(i.getValue(), ID).orElse(null))
-                    ));
+        JsonUtil.accept(json, "children").ifPresent(el -> {
+            children.putAll(el.getAsJsonObject().entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey,
+                i -> context.loadComponent(i.getValue(), ID).orElse(null))
+            ));
         });
-        JsonUtil.accept(json, "cubes").map(JsonElement::getAsJsonArray).ifPresent(el -> {
-            el.forEach(element -> {
+        JsonUtil.accept(json, "cubes").ifPresent(el -> {
+            el.getAsJsonArray().forEach(element -> {
                 context.loadComponent(element, JsonBox.ID).ifPresent(cubes::add);
             });
         });
 
         context.addNamedComponent(this.name, this);
-    }
-
-    private Set<Map.Entry<String, JsonElement>> loadChildrenMap(JsonElement json) {
-        if (json.isJsonObject()) {
-            return json.getAsJsonObject().entrySet();
-        }
-        Map<String, JsonElement> map = new HashMap<>();
-        JsonArray arr = json.getAsJsonArray();
-        for (int i = 0; i < arr.size(); i++) {
-            map.put("unnamed_member_" + i, arr.get(i));
-        }
-        return map.entrySet();
     }
 
     @Override

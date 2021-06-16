@@ -1,8 +1,11 @@
 package com.minelittlepony.mson.impl;
 
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.TexturedModelData;
+import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
@@ -32,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -63,20 +67,25 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         componentTypes.put(JsonQuads.ID, JsonQuads::new);
     }
 
+    public void registerVanillaModels(Map<EntityModelLayer, TexturedModelData> modelParts) {
+        modelParts.forEach((layer, vanilla) -> {
+            Identifier id = new Identifier(layer.getId().getNamespace(), String.format("mson/%s", layer.getId().getPath()));
+            ((MsonImpl.KeyHolder)vanilla).setKey(registeredModels.computeIfAbsent(id, VanillaKey::new));
+        });
+    }
+
     @Override
     public CompletableFuture<Void> reload(Synchronizer sync, ResourceManager sender,
             Profiler serverProfiler, Profiler clientProfiler,
             Executor serverExecutor, Executor clientExecutor) {
-
         foundry = new ModelFoundry(sender, serverExecutor, serverProfiler, clientProfiler);
-        CompletableFuture<?>[] tasks = registeredModels.values().stream()
-                .map(key -> foundry.loadJsonModel(key.getId()))
-                .toArray(i -> new CompletableFuture[i]);
-
-        CompletableFuture<?> all = CompletableFuture.allOf(tasks);
-
-        sync.getClass();
-        return all.thenCompose(sync::whenPrepared).thenRunAsync(renderers::initialize, clientExecutor);
+        return MinecraftClient.getInstance().getEntityModelLoader().reload(sync, sender, serverProfiler, clientProfiler, serverExecutor, clientExecutor).thenCompose(v -> {
+            return CompletableFuture.allOf(registeredModels.values().stream()
+                    .map(key -> foundry.loadJsonModel(key.getId(), !(key instanceof VanillaKey)))
+                    .toArray(CompletableFuture[]::new))
+                    .thenCompose(sync::whenPrepared)
+                    .thenRunAsync(renderers::initialize, clientExecutor);
+        });
     }
 
     @Override
@@ -116,7 +125,22 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         Preconditions.checkArgument(!"dynamic".equalsIgnoreCase(namespace), "`dynamic` is a reserved namespace.");
     }
 
-    private final class Key<T extends Model> extends AbstractModelKeyImpl<T> {
+    public interface KeyHolder {
+        void setKey(ModelKey<?> key);
+    }
+
+    private final class VanillaKey<T extends Model> extends Key<T> {
+        VanillaKey(Identifier id) {
+            super(id, null);
+        }
+
+        @Override
+        public <V extends T> V createModel() {
+            throw new IllegalStateException("Cannot create a model for a key (" + getId() + ") with unknown type. For built-in models please use createModel(factory)");
+        }
+    }
+
+    private class Key<T extends Model> extends AbstractModelKeyImpl<T> {
         private final MsonModel.Factory<T> constr;
 
         public Key(Identifier id, MsonModel.Factory<T> constr) {
@@ -131,28 +155,42 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         }
 
         @Override
-        public <V extends T> V createModel(MsonModel.Factory<V> factory) {
-            Preconditions.checkState(foundry != null, "You're too early. Wait for Mson to load first.");
+        public Optional<ModelPart> createTree() {
+            return getModelData().map(context -> {
+                ModelContext.Locals locals = new LocalsImpl(getId(), context.getVariables());
 
-            JsonContext context = getModelData();
-            ModelContext.Locals locals = new LocalsImpl(getId(), context.getVariables());
+                Map<String, ModelPart> tree = new HashMap<>();
+                context.createContext(null, locals).getTree(tree);
 
-            Map<String, ModelPart> tree = new HashMap<>();
-            ModelContext ctx = context.createContext(null, locals);
-            ctx.getTree(tree);
-
-            V t = factory.create(new ModelPart(new ArrayList<>(), tree));
-            if (t instanceof MsonModel) {
-                if (ctx instanceof RootContext) {
-                    ((RootContext)ctx).setModel(t);
-                }
-                ((MsonModel)t).init(ctx);
-            }
-            return t;
+                return new ModelPart(new ArrayList<>(), tree);
+            });
         }
 
         @Override
-        public JsonContext getModelData() {
+        public <V extends T> V createModel(MsonModel.Factory<V> factory) {
+            Preconditions.checkNotNull(factory, "Factory should not be null");
+
+            return getModelData().map(context -> {
+                ModelContext.Locals locals = new LocalsImpl(getId(), context.getVariables());
+
+                Map<String, ModelPart> tree = new HashMap<>();
+                ModelContext ctx = context.createContext(null, locals);
+                ctx.getTree(tree);
+
+                V t = factory.create(new ModelPart(new ArrayList<>(), tree));
+                if (t instanceof MsonModel) {
+                    if (ctx instanceof RootContext) {
+                        ((RootContext)ctx).setModel(t);
+                    }
+                    ((MsonModel)t).init(ctx);
+                }
+                return t;
+            })
+            .orElseThrow(() -> new IllegalStateException("Model file for " + getId() + " was not loaded!"));
+        }
+
+        @Override
+        public Optional<JsonContext> getModelData() {
             Preconditions.checkState(foundry != null, "You're too early. Wait for Mson to load first.");
             try {
                 return foundry.getModelData(this);

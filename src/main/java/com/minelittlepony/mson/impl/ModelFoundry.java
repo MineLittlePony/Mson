@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -39,11 +40,18 @@ class ModelFoundry {
         this.clientProfiler = clientProfiler;
     }
 
-    public JsonContext getModelData(ModelKey<?> key) throws InterruptedException, ExecutionException {
-        return loadedFiles.get(key.getId()).get();
+    public Optional<JsonContext> getModelData(ModelKey<?> key) throws InterruptedException, ExecutionException {
+        if (!loadedFiles.containsKey(key.getId())) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(loadedFiles.get(key.getId()).get()).filter(m -> m != NullContext.INSTANCE);
     }
 
     public CompletableFuture<JsonContext> loadJsonModel(Identifier id) {
+        return loadJsonModel(id, true);
+    }
+
+    public CompletableFuture<JsonContext> loadJsonModel(Identifier id, boolean failHard) {
         synchronized (loadedFiles) {
             if (!loadedFiles.containsKey(id)) {
                 loadedFiles.put(id, CompletableFuture.supplyAsync(() -> {
@@ -51,6 +59,12 @@ class ModelFoundry {
                     clientProfiler.push("Loading MSON model - " + id);
                     Identifier file = new Identifier(id.getNamespace(), "models/" + id.getPath() + ".json");
 
+                    if (!manager.containsResource(file)) {
+                        if (failHard) {
+                            MsonImpl.LOGGER.error("Could not load model json for {}", file);
+                        }
+                        return NullContext.INSTANCE;
+                    }
                     try (Resource res = manager.getResource(file);
                          Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
                         return new StoredModelData(this, id, GSON.fromJson(reader, JsonObject.class));
