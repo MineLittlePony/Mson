@@ -5,14 +5,18 @@
     "refmap": "mson.mixin.refmap.json",
     "compatibilityLevel": "JAVA_16",
     "client": [
-    	"MixinEntityModelLoader",
-        "MixinEntityRenderDispatcher",
         "MixinBlockEntityRenderDispatcher",
-        "MixinCuboid",
+        "MixinDilation",
+        "MixinEntityModelLoader",
+        "MixinEntityRenderDispatcher",
         "MixinModel",
         "MixinModelPart",
-        "MixinQuad",
+            "MixinCuboid",
+            "MixinQuad",
+            "MixinVertex",
+        "MixinTextureDimensions",
         "MixinTexturedModelData",
-        "MixinVertex"
+            "MixinModelPartData",
+            "MixinModelCuboidData"
     ]
 }

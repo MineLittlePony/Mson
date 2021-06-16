@@ -1,6 +1,7 @@
 package com.minelittlepony.mson.impl;
 
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
@@ -22,6 +23,7 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.Mson;
 import com.minelittlepony.mson.impl.StoredModelData.RootContext;
+import com.minelittlepony.mson.impl.export.VanillaModelExportWriter;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.JsonBox;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
@@ -72,6 +74,9 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             Identifier id = new Identifier(layer.getId().getNamespace(), String.format("mson/%s", layer.getId().getPath()));
             ((MsonImpl.KeyHolder)vanilla).setKey(registeredModels.computeIfAbsent(id, VanillaKey::new));
         });
+        if (DEBUG) {
+            new VanillaModelExportWriter().exportAll(FabricLoader.getInstance().getGameDir().resolve("debug_model_export").normalize());
+        }
     }
 
     @Override
