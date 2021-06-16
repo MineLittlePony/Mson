@@ -3,11 +3,13 @@
 	"locals": {
 		"leg_length": 6
 	},
-	"head": {
-		"center": [0, "#head_rotation_y", -6],
-		"cubes": [
-			{ "from": [-4, -4, -8], "size": [ 8, 8, 8] },
-			{ "from": [-2,  0, -9], "size": [ 4, 3, 1], "texture": {"u": 16, "v": 16 } }
-		]
+	"data": {
+		"head": {
+			"pivot": [0, "#head_rotation_y", -6],
+			"cubes": [
+				{ "from": [-4, -4, -8], "size": [ 8, 8, 8] },
+				{ "from": [-2,  0, -9], "size": [ 4, 3, 1], "texture": {"u": 16, "v": 16 } }
+			]
+		}
 	}
 }

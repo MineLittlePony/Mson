@@ -12,45 +12,48 @@
 		"head_rotation_y": [18, "-", "#leg_length"],
 		"body_rotation_y": [17, "-", "#leg_length"]
 	},
-	"head": {
-		"center": [0, "#head_rotation_y", -6],
-		"cubes": [
-			{ "from": [-4, -4, -8], "size": [ 8, 8, 8] }
-		]
-	},
-	"body": {
-		"center": [0, "#body_rotation_y", 2],
-		"texture": { "u": 28, "v": 8 },
-		"cubes": [
-			{ "from": [-5, -10, -7], "size": [ 10, 16, 8] }
-		]
-	},
-	"right_hind_leg": {
-		"center": ["#leg_rotation_x_neg", "#leg_rotation_y", "#leg_rotation_z_neg"],
-		"texture": { "u": 0, "v": 16 },
-		"cubes": [
-			{ "from": [-2, 0, -2], "size": [ 4, "#leg_length", 4] }
-		]
-	},
-	"left_hind_leg": {
-		"center": ["#leg_rotation_x", "#leg_rotation_y", "#leg_rotation_z_neg"],
-		"texture": { "u": 0, "v": 16 },
-		"cubes": [
-			{ "from": [-2, 0, -2], "size": [ 4, "#leg_length", 4] }
-		]
-	},
-	"right_front_leg": {
-		"center": ["#leg_rotation_x_neg", "#leg_rotation_y", "#leg_rotation_z"],
-		"texture": { "u": 0, "v": 16 },
-		"cubes": [
-			{ "from": [-2, 0, -2], "size": [ 4, "#leg_length", 4] }
-		]
-	},
-	"left_front_leg": {
-		"center": ["#leg_rotation_x", "#leg_rotation_y", "#leg_rotation_z"],
-		"texture": { "u": 0, "v": 16 },
-		"cubes": [
-			{ "from": [-2, 0, -2], "size": [ 4, "#leg_length", 4] }
-		]
+	"data": {
+		"head": {
+			"pivot": [0, "#head_rotation_y", -6],
+			"cubes": [
+				{ "from": [-4, -4, -8], "size": [ 8, 8, 8] }
+			]
+		},
+		"body": {
+			"pivot": [0, "#body_rotation_y", 2],
+			"rotate": [90, 0, 0],
+			"texture": { "u": 28, "v": 8 },
+			"cubes": [
+				{ "from": [-5, -10, -7], "size": [ 10, 16, 8] }
+			]
+		},
+		"right_hind_leg": {
+			"pivot": ["#leg_rotation_x_neg", "#leg_rotation_y", "#leg_rotation_z_neg"],
+			"texture": { "u": 0, "v": 16 },
+			"cubes": [
+				{ "from": [-2, 0, -2], "size": [ 4, "#leg_length", 4] }
+			]
+		},
+		"left_hind_leg": {
+			"pivot": ["#leg_rotation_x", "#leg_rotation_y", "#leg_rotation_z_neg"],
+			"texture": { "u": 0, "v": 16 },
+			"cubes": [
+				{ "from": [-2, 0, -2], "size": [ 4, "#leg_length", 4] }
+			]
+		},
+		"right_front_leg": {
+			"pivot": ["#leg_rotation_x_neg", "#leg_rotation_y", "#leg_rotation_z"],
+			"texture": { "u": 0, "v": 16 },
+			"cubes": [
+				{ "from": [-2, 0, -2], "size": [ 4, "#leg_length", 4] }
+			]
+		},
+		"left_front_leg": {
+			"pivot": ["#leg_rotation_x", "#leg_rotation_y", "#leg_rotation_z"],
+			"texture": { "u": 0, "v": 16 },
+			"cubes": [
+				{ "from": [-2, 0, -2], "size": [ 4, "#leg_length", 4] }
+			]
+		}
 	}
 }

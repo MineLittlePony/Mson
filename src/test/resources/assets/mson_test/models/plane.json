@@ -1,29 +1,31 @@
 {
 	"parent": "mson:alex",
-	"head": {
-		"visible": false
-	},
-	"body": {
-		"cubes": [
-			{
-				"type": "mson:plane",
-				"face": "west",
-				"size": [64, 64],
-				"position": [-32, -32, 0],
-				"mirror": [false, true]
-			}
-		]
-	},
-	"left_arm": {
-		"visible": false
-	},
-	"left_leg": {
-		"visible": false
-	},
-	"right_arm": {
-		"visible": false
-	},
-	"right_leg": {
-		"visible": false
+	"data": {
+		"head": {
+			"visible": false
+		},
+		"body": {
+			"cubes": [
+				{
+					"type": "mson:plane",
+					"face": "west",
+					"size": [64, 64],
+					"position": [-32, -32, 0],
+					"mirror": [false, true]
+				}
+			]
+		},
+		"left_arm": {
+			"visible": false
+		},
+		"left_leg": {
+			"visible": false
+		},
+		"right_arm": {
+			"visible": false
+		},
+		"right_leg": {
+			"visible": false
+		}
 	}
 }
