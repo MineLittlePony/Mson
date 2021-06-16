@@ -8,6 +8,6 @@ public final class MsonMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(MsonImpl.INSTANCE);
-         Test.init();
+        // Test.init();
     }
 }
