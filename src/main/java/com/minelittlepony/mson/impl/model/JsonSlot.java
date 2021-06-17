@@ -12,6 +12,7 @@ import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.ModelLocalsImpl;
 import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.impl.JsonLocalsImpl;
+import com.minelittlepony.mson.impl.Local;
 import com.minelittlepony.mson.impl.key.ReflectedModelKey;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -66,7 +67,7 @@ public class JsonSlot<T> implements JsonComponent<T> {
                 .stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> ModelLocalsImpl.createLocal(e.getValue())));
+                        e -> Local.create(e.getValue())));
     }
 
     @Override

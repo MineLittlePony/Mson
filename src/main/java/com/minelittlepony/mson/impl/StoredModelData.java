@@ -172,7 +172,7 @@ class StoredModelData implements JsonContext {
                     .stream()
                     .collect(Collectors.toMap(
                             Map.Entry::getKey,
-                            e -> ModelLocalsImpl.createLocal(e.getValue())));
+                            e -> Local.create(e.getValue())));
 
             if (json.has("scale")) {
                 dilate = new float[] { 0, 0, 0 };

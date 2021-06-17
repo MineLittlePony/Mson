@@ -123,7 +123,6 @@ public class JsonPlanar extends JsonCuboid {
             protected boolean isFixed(Axis axis, float x, float y, float z) {
                 return getLockedVectors(axis).contains(new Vec3d(x, y, z));
             }
-
         }
 
         class JsonFace {
