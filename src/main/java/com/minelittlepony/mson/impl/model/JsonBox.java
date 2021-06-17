@@ -13,7 +13,6 @@ import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
-import com.minelittlepony.mson.util.TriState;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -28,7 +27,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
 
     protected final Incomplete<float[]> dilate;
 
-    protected final TriState mirror;
+    protected final Optional<Boolean> mirror;
 
     protected final Optional<Texture> texture;
 
@@ -36,7 +35,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
         from = context.getLocals().get(json, "from", 3);
         size = context.getLocals().get(json, "size", 3);
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::create);
-        mirror = JsonUtil.getTriState("mirror", json);
+        mirror = JsonUtil.getBoolean("mirror", json);
         if (json.has("stretch")) {
             MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getLocals().getModelId());
             dilate = context.getLocals().get(json, "stretch", 3);

@@ -25,11 +25,11 @@ public class JsonUtil {
         return json.get(member);
     }
 
-    public static TriState getTriState(String member, JsonObject json) {
+    public static Optional<Boolean> getBoolean(String member, JsonObject json) {
         if (json.has(member)) {
-            return TriState.of(JsonUtils.getBooleanOr(member, json, false));
+            return Optional.of(JsonUtils.getBooleanOr(member, json, false));
         }
-        return TriState.UNKNOWN;
+        return Optional.empty();
     }
 
     public static float getFloatOr(String member, JsonObject json, float def) {

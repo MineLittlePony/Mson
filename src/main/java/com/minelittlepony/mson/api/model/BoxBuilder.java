@@ -8,7 +8,6 @@ import net.minecraft.util.math.Direction;
 
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
-import com.minelittlepony.mson.util.TriState;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -95,18 +94,8 @@ public final class BoxBuilder {
         return this;
     }
 
-    public BoxBuilder mirror(Axis axis, TriState mirror) {
-        if (mirror.isKnown()) {
-            if (axis == Axis.X) {
-                this.mirror[0] = mirror.toBoolean();
-            }
-            if (axis == Axis.Y) {
-                this.mirror[1] = mirror.toBoolean();
-            }
-            if (axis == Axis.Z) {
-                this.mirror[2] = mirror.toBoolean();
-            }
-        }
+    public BoxBuilder mirror(Axis axis, Optional<Boolean> mirror) {
+        mirror.ifPresent(m -> this.mirror[axis.ordinal()] = m);
         return this;
     }
 
