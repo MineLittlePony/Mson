@@ -26,22 +26,22 @@ public class JsonBox implements JsonComponent<Cuboid> {
 
     protected final Incomplete<float[]> size;
 
-    protected final float[] dilate = new float[3];
+    protected final Incomplete<float[]> dilate;
 
     protected final TriState mirror;
 
     protected final Optional<Texture> texture;
 
     public JsonBox(JsonContext context, String name, JsonObject json) {
-        from = context.getVariables().getValue(json, "from", 3);
-        size = context.getVariables().getValue(json, "size", 3);
+        from = context.getLocals().get(json, "from", 3);
+        size = context.getLocals().get(json, "size", 3);
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::create);
         mirror = JsonUtil.getTriState("mirror", json);
         if (json.has("stretch")) {
-            MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getId());
-            JsonUtil.getFloats(json, "stretch", dilate);
+            MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getLocals().getModelId());
+            dilate = context.getLocals().get(json, "stretch", 3);
         } else {
-            JsonUtil.getFloats(json, "dilate", dilate);
+            dilate = context.getLocals().get(json, "dilate", 3);
         }
     }
 
@@ -51,7 +51,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
             .tex(texture)
             .pos(from.complete(context))
             .size(size.complete(context))
-            .dilate(dilate)
+            .dilate(dilate.complete(context))
             .mirror(Axis.X, mirror)
             .build();
     }

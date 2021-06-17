@@ -2,6 +2,8 @@ package com.minelittlepony.mson.impl;
 
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
+
+import com.minelittlepony.mson.api.FutureSupplier;
 import com.minelittlepony.mson.api.ModelContext;
 
 import org.jetbrains.annotations.Nullable;
@@ -47,7 +49,7 @@ class SubContext implements ModelContext {
     }
 
     @Override
-    public <T> T computeIfAbsent(String name, ContentSupplier<T> supplier) {
+    public <T> T computeIfAbsent(String name, FutureSupplier<T> supplier) {
         return parent.computeIfAbsent(name, supplier);
     }
 

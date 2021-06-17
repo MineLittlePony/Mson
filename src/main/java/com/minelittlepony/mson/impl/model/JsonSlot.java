@@ -50,7 +50,7 @@ public class JsonSlot<T> implements JsonComponent<T> {
     public JsonSlot(JsonContext context, String name, JsonObject json) {
         implementation = ReflectedModelKey.fromJson(json);
         if (json.has("content")) {
-            MsonImpl.LOGGER.warn("Model {} is using a slot with the `content` property. This is deprecated and will be removed in 1.18. Use `data` instead", context.getId());
+            MsonImpl.LOGGER.warn("Model {} is using a slot with the `content` property. This is deprecated and will be removed in 1.18. Use `data` instead", context.getLocals().getModelId());
             data = context.resolve(json.get("content"));
         } else {
             data = context.resolve(json.get("data"));
@@ -88,7 +88,12 @@ public class JsonSlot<T> implements JsonComponent<T> {
         private final JsonContext.Locals parent;
 
         Locals(JsonContext parent) {
-            this.parent = parent.getVariables();
+            this.parent = parent.getLocals();
+        }
+
+        @Override
+        public Identifier getModelId() {
+            return parent.getModelId();
         }
 
         @Override
@@ -104,16 +109,16 @@ public class JsonSlot<T> implements JsonComponent<T> {
         }
 
         @Override
-        public CompletableFuture<Incomplete<Float>> getInheritedValue(String name) {
+        public CompletableFuture<Incomplete<Float>> getLocal(String name) {
             if (locals.containsKey(name)) {
                 return CompletableFuture.completedFuture(locals.get(name));
             }
-            return parent.getInheritedValue(name);
+            return parent.getLocal(name);
         }
 
         @Override
-        public CompletableFuture<Set<String>> getKeys() {
-            return parent.getKeys().thenApplyAsync(output -> {
+        public CompletableFuture<Set<String>> keys() {
+            return parent.keys().thenApplyAsync(output -> {
                output.addAll(locals.keySet());
                return output;
             });

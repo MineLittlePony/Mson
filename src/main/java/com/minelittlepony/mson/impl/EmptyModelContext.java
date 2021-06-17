@@ -4,36 +4,27 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
-import com.google.gson.JsonElement;
+import com.minelittlepony.mson.api.FutureSupplier;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.EmptyContextException;
-import com.minelittlepony.mson.api.json.JsonComponent;
-import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.model.JsonTexture;
-import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-final class NullContext implements ModelContext, ModelContext.Locals, JsonContext, JsonLocalsImpl {
+final class EmptyModelContext implements ModelContext, ModelContext.Locals {
 
-    static NullContext INSTANCE = new NullContext();
+    static ModelContext INSTANCE = new EmptyModelContext();
     static Identifier ID = new Identifier("mson", "null");
 
-    private NullContext() {}
+    private EmptyModelContext() {}
 
     @Override
     public <T extends Model> T getModel() {
         throw new EmptyContextException("getModel");
-    }
-
-    @Override
-    public Identifier getId() {
-        return ID;
     }
 
     @Override
@@ -42,12 +33,7 @@ final class NullContext implements ModelContext, ModelContext.Locals, JsonContex
     }
 
     @Override
-    public CompletableFuture<JsonContext> resolve(JsonElement json) {
-        throw new EmptyContextException("resolve");
-    }
-
-    @Override
-    public <T> T computeIfAbsent(String name, ContentSupplier<T> supplier) {
+    public <T> T computeIfAbsent(String name, FutureSupplier<T> supplier) {
         return supplier.apply(name);
     }
 
@@ -71,27 +57,8 @@ final class NullContext implements ModelContext, ModelContext.Locals, JsonContex
     }
 
     @Override
-    public CompletableFuture<Set<String>> getComponentNames() {
+    public CompletableFuture<Set<String>> keys() {
         return CompletableFuture.completedFuture(new HashSet<>());
-    }
-
-    @Override
-    public CompletableFuture<Set<String>> getKeys() {
-        return CompletableFuture.completedFuture(new HashSet<>());
-    }
-
-    @Override
-    public <T> void addNamedComponent(String name, JsonComponent<T> component) {
-    }
-
-    @Override
-    public <T> Optional<JsonComponent<T>> loadComponent(JsonElement json, Identifier defaultAs) {
-        return Optional.empty();
-    }
-
-    @Override
-    public ModelContext createContext(Model model, ModelContext.Locals locals) {
-        return this;
     }
 
     @Override
@@ -100,17 +67,12 @@ final class NullContext implements ModelContext, ModelContext.Locals, JsonContex
     }
 
     @Override
-    public CompletableFuture<Incomplete<Float>> getInheritedValue(String name) {
-        return CompletableFuture.completedFuture(Incomplete.ZERO);
-    }
-
-    @Override
     public Identifier getModelId() {
         return ID;
     }
 
     @Override
-    public CompletableFuture<Float> getValue(String name) {
+    public CompletableFuture<Float> getLocal(String name) {
         return CompletableFuture.completedFuture(0F);
     }
 
@@ -119,6 +81,7 @@ final class NullContext implements ModelContext, ModelContext.Locals, JsonContex
         return CompletableFuture.completedFuture(new float[] { 0, 0, 0 });
     }
 
+    @Deprecated
     @Override
     public float getScale() {
         return 0;
@@ -126,11 +89,6 @@ final class NullContext implements ModelContext, ModelContext.Locals, JsonContex
 
     @Override
     public ModelContext.Locals getLocals() {
-        return this;
-    }
-
-    @Override
-    public JsonContext.Locals getVariables() {
         return this;
     }
 }

@@ -6,8 +6,8 @@ import net.minecraft.util.Identifier;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.minelittlepony.mson.api.CommonLocals;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.Optional;
@@ -20,11 +20,6 @@ import java.util.concurrent.CompletableFuture;
  * Allows for components to read and write contextual information during parsing.
  */
 public interface JsonContext {
-    /**
-     * The ID this model was registered as.
-     */
-    Identifier getId();
-
     /**
      * Registers a component with a name to the enclosing scope.
      */
@@ -63,7 +58,7 @@ public interface JsonContext {
     /**
      * Gets the local variable resolver for this context.
      */
-    Locals getVariables();
+    Locals getLocals();
 
     /**
      * Interface for accessing contextual values.
@@ -73,36 +68,31 @@ public interface JsonContext {
      * <p>
      * Incompletes are variable-based and require a ModelContext in order to resolve.
      */
-    public interface Locals {
+    public interface Locals extends CommonLocals {
         /**
-         * Reads a json value into an incomplete holding an unresolved floating point number.
+         * Reads a json primitive into an incomplete float value.
          */
-        Incomplete<Float> getValue(JsonPrimitive json);
+        Incomplete<Float> get(JsonPrimitive json);
 
         /**
-         * Reads a json member into an incomplete holding a unresolved float array.
+         * Converts an array of json primitives into an incomplete float array.
+         */
+        Incomplete<float[]> get(JsonPrimitive... arr);
+
+        /**
+         * Reads a json member into an incomplete float array.
+         */
+        Incomplete<float[]> get(JsonObject json, String member, int len);
+
+        /**
+         * Reads a json member into an incomplete holding a unresolved float.
          * Variables in the array are resolved against the model context when requested.
          */
-        Incomplete<float[]> getValue(JsonObject json, String member, int len);
+        Incomplete<Float> get(JsonObject json, String member);
 
         /**
-         * Gets the texture information from the enclosing context or its parent.
+         * Gets a local variable as an incomplete float.
          */
-        CompletableFuture<Texture> getTexture();
-
-        /**
-         * Gets the global amount that this model should be dilated by.
-         */
-        CompletableFuture<float[]> getDilation();
-
-        /**
-         * Gets a local variable from this context.
-         */
-        CompletableFuture<Incomplete<Float>> getInheritedValue(String name);
-
-        /**
-         * Gets a set of all named variables.
-         */
-        CompletableFuture<Set<String>> getKeys();
+        CompletableFuture<Incomplete<Float>> getLocal(String name);
     }
 }

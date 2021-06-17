@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -34,15 +35,25 @@ public class JsonTexture implements Texture {
             .orElse(JsonTexture::unresolvedInherited);
     }
 
-    private static Texture unresolvedInherited(ModelContext.Locals locals) throws InterruptedException, ExecutionException {
-        return locals.getTexture().get();
+    private static Texture unresolvedInherited(ModelContext.Locals locals) throws FutureAwaitException {
+        try {
+            return locals.getTexture().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new FutureAwaitException(e);
+        }
     }
 
     private static Incomplete<Texture> unresolvedMerged(JsonElement el) {
         if (el.isJsonArray()) {
             return Incomplete.completed(new JsonTexture(el.getAsJsonArray()));
         }
-        return locals -> resolve(el, locals.getTexture()).get();
+        return locals -> {
+            try {
+                return resolve(el, locals.getTexture()).get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new FutureAwaitException(e);
+            }
+        };
     }
 
     public static Texture create(JsonElement json) {

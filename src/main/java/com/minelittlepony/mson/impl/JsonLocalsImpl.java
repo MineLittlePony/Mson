@@ -10,16 +10,32 @@ import com.minelittlepony.mson.util.JsonUtil;
 
 public interface JsonLocalsImpl extends JsonContext.Locals {
     @Override
-    default Incomplete<Float> getValue(JsonPrimitive json) {
+    default Incomplete<Float> get(JsonPrimitive json) {
         return ModelLocalsImpl.variableReference(json);
     }
 
     @Override
-    default Incomplete<float[]> getValue(JsonObject json, String member, int len) {
-        return toFloats(getIncompletes(json, member, len));
+    default Incomplete<float[]> get(JsonPrimitive... arr) {
+
+        @SuppressWarnings("unchecked")
+        Incomplete<Float>[] output = new Incomplete[arr.length];
+
+        for (int i = 0; i < output.length; i++) {
+            output[i] = Incomplete.ZERO;
+        }
+
+        for (int i = 0; i < arr.length; i++) {
+            if (!arr[i].isJsonPrimitive()) {
+                throw new JsonParseException("Non-primitive type found in array. Can only be values (Number) or variable references (#variable). " + arr.toString());
+            }
+            output[i] = ModelLocalsImpl.variableReference(arr[i].getAsJsonPrimitive());
+        }
+
+        return toFloats(output);
     }
 
-    private static Incomplete<Float>[] getIncompletes(JsonObject json, String member, int len) {
+    @Override
+    default Incomplete<float[]> get(JsonObject json, String member, int len) {
         @SuppressWarnings("unchecked")
         Incomplete<Float>[] output = new Incomplete[len];
 
@@ -37,7 +53,17 @@ public interface JsonLocalsImpl extends JsonContext.Locals {
                 }
             });
 
-        return output;
+        return toFloats(output);
+    }
+
+    @Override
+    default Incomplete<Float> get(JsonObject json, String member) {
+        JsonElement js = JsonUtil.require(json, member);
+
+        if (!js.isJsonPrimitive()) {
+            throw new JsonParseException("Non-primitive type found in member " + member + ". Can only be values (Number) or variable references (#variable). " + js.toString());
+        }
+        return ModelLocalsImpl.variableReference(js.getAsJsonPrimitive());
     }
 
     private static Incomplete<float[]> toFloats(Incomplete<Float>[] input) {

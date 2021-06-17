@@ -162,7 +162,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         @Override
         public Optional<ModelPart> createTree() {
             return getModelData().map(context -> {
-                ModelContext.Locals locals = new ModelLocalsImpl(getId(), context.getVariables());
+                ModelContext.Locals locals = new ModelLocalsImpl(getId(), context.getLocals());
 
                 Map<String, ModelPart> tree = new HashMap<>();
                 context.createContext(null, locals).getTree(tree);
@@ -176,7 +176,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             Preconditions.checkNotNull(factory, "Factory should not be null");
 
             return getModelData().map(context -> {
-                ModelContext.Locals locals = new ModelLocalsImpl(getId(), context.getVariables());
+                ModelContext.Locals locals = new ModelLocalsImpl(getId(), context.getLocals());
 
                 Map<String, ModelPart> tree = new HashMap<>();
                 ModelContext ctx = context.createContext(null, locals);

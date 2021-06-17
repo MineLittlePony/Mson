@@ -33,12 +33,12 @@ public class JsonPlane implements JsonComponent<Cuboid> {
     private final Face face;
 
     public JsonPlane(JsonContext context, String name, JsonObject json) {
-        position = context.getVariables().getValue(json, "position", 3);
-        size = context.getVariables().getValue(json, "size", 3);
+        position = context.getLocals().get(json, "position", 3);
+        size = context.getLocals().get(json, "size", 3);
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
         JsonUtil.getBooleans(json, "mirror", mirror);
         if (json.has("stretch")) {
-            MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getId());
+            MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getLocals().getModelId());
             JsonUtil.getFloats(json, "stretch", dilate);
         } else {
             JsonUtil.getFloats(json, "dilate", dilate);

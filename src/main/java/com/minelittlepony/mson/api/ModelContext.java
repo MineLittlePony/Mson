@@ -2,17 +2,11 @@ package com.minelittlepony.mson.api;
 
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.util.Identifier;
-
-import com.minelittlepony.mson.api.model.Texture;
 
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 
 /**
  * The loading context for when a model is first created.
@@ -20,6 +14,13 @@ import java.util.function.Function;
  * This allows access to getting out named elements from the model json.
  */
 public interface ModelContext {
+
+    /**
+     * Gets the root context.
+     * Returns `this` when called on the root context.
+     */
+    ModelContext getRoot();
+
     /**
      * Gets the currently-active model instance.
      */
@@ -38,8 +39,9 @@ public interface ModelContext {
     <T> T getContext() throws ClassCastException;
 
     /**
-     * Gets the json context creating this model.
-     * The json context is filtered bubbled up from the initial call site.
+     * Provides access to the contextual information for the current context.
+     * <p>
+     * Includes access to inherited values and properties.
      */
     Locals getLocals();
 
@@ -57,12 +59,20 @@ public interface ModelContext {
      *
      * Will always return a new instance if the name is empty or null.
      */
-    <T> T computeIfAbsent(@Nullable String name, ContentSupplier<T> supplier);
+    <T> T computeIfAbsent(@Nullable String name, FutureSupplier<T> supplier);
 
+    /**
+     * Converts the entire model tree into native objects, outputting into the provided output object.
+     */
     default void getTree(Map<String, ModelPart> tree) {
         getTree(this, tree);
     }
 
+    /**
+     * Converts the entire model tree into native objects, outputting into the provided output object.
+     *
+     * @param context The context where this call originated.
+     */
     void getTree(ModelContext context, Map<String, ModelPart> tree);
 
     /**
@@ -84,12 +94,6 @@ public interface ModelContext {
     <T> T findByName(ModelContext context, String name);
 
     /**
-     * Gets the root context.
-     * Returns `this` when called on the root context.
-     */
-    ModelContext getRoot();
-
-    /**
      * Resolves this context against the given object.
      * Returns a new sub-context as a child of this one where the result of `getContext()` returns the passed in object.
      *
@@ -107,45 +111,16 @@ public interface ModelContext {
      */
     ModelContext resolve(Object child, Locals locals);
 
-    @FunctionalInterface
-    interface ContentSupplier<T> extends Function<String, T> {
-        @Override
-        default T apply(String key) {
-            try {
-                return get(key);
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        T get(String key) throws InterruptedException, ExecutionException;
-    }
-
-    interface Locals {
+    /**
+     * Interface for accessing contextual values.
+     * <p>
+     * This typically includes variables and other things that only become available
+     * until after the parent model has been resolved.
+     */
+    interface Locals extends CommonLocals {
         /**
-         * Gets the current model's id.
-         * This corresponds to the id of the key used to register that model.
+         * Gets a completed local variable.
          */
-        Identifier getModelId();
-
-        /**
-         * Gets the composed texture visible to the current scope.
-         */
-        CompletableFuture<Texture> getTexture();
-
-        /**
-         * Gets the global amount that this model should be dilated by.
-         */
-        CompletableFuture<float[]> getDilation();
-
-        /**
-         * Queries for a specific named variable.
-         */
-        CompletableFuture<Float> getValue(String name);
-
-        /**
-         * Gets a set containing the names of all the variables available in this scope.
-         */
-        CompletableFuture<Set<String>> getKeys();
+        CompletableFuture<Float> getLocal(String name);
     }
 }

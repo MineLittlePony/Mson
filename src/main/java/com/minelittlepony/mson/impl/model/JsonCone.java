@@ -9,7 +9,7 @@ import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
-import com.minelittlepony.mson.util.JsonUtil;
+import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.concurrent.ExecutionException;
 
@@ -17,11 +17,11 @@ public class JsonCone extends JsonBox {
 
     public static final Identifier ID = new Identifier("mson", "cone");
 
-    private final float taper;
+    private final Incomplete<Float> taper;
 
     public JsonCone(JsonContext context, String name, JsonObject json) {
         super(context, name, json);
-        taper = JsonUtil.require(json, "taper").getAsFloat();
+        taper = context.getLocals().get(json, "taper");
     }
 
     @Override
@@ -30,8 +30,8 @@ public class JsonCone extends JsonBox {
             .tex(texture)
             .pos(from.complete(context))
             .size(size.complete(context))
-            .dilate(dilate)
+            .dilate(dilate.complete(context))
             .mirror(Axis.X, mirror)
-            .build(QuadsBuilder.cone(taper));
+            .build(QuadsBuilder.cone(taper.complete(context)));
     }
 }

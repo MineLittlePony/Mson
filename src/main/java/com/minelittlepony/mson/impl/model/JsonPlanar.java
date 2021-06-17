@@ -9,7 +9,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
-import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Face.Axis;
@@ -35,15 +34,15 @@ public class JsonPlanar extends JsonCuboid {
 
     private final Map<Face, JsonFaceSet> faces = new EnumMap<>(Face.class);
 
-    private final float[] dilate = new float[3];
+    protected final Incomplete<float[]> dilate;
 
     public JsonPlanar(JsonContext context, String name, JsonObject json) {
         super(context, name, json);
         if (json.has("stretch")) {
-            MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getId());
-            JsonUtil.getFloats(json, "stretch", dilate);
+            MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getLocals().getModelId());
+            dilate = context.getLocals().get(json, "stretch", 3);
         } else {
-            JsonUtil.getFloats(json, "dilate", dilate);
+            dilate = context.getLocals().get(json, "dilate", 3);
         }
 
         Face.VALUES.forEach(face -> {
@@ -54,7 +53,7 @@ public class JsonPlanar extends JsonCuboid {
     }
 
     @Override
-    protected PartBuilder export(ModelContext context, PartBuilder builder) throws InterruptedException, ExecutionException {
+    protected PartBuilder export(ModelContext context, PartBuilder builder) throws FutureAwaitException {
         super.export(context, builder);
         ModelContext subContext = context.resolve(builder);
         faces.values().forEach(face -> {
@@ -64,13 +63,11 @@ public class JsonPlanar extends JsonCuboid {
         return builder;
     }
 
-    class JsonFaceSet extends FixtureImpl {
+    class JsonFaceSet {
 
         private final Face face;
 
         private final List<JsonFace> elements = new ArrayList<>();
-
-        private final Map<Axis, List<Vec3d>> lockedVectors = new HashMap<>();
 
         public JsonFaceSet(JsonContext context, JsonArray json, Face face) {
             this.face = face;
@@ -82,67 +79,75 @@ public class JsonPlanar extends JsonCuboid {
             } else {
                 elements.add(new JsonFace(context, json));
             }
-
-            for (Axis axis : Axis.values()) {
-                if (axis != face.getAxis()) {
-                    for (JsonFace i : elements) {
-                        face.getVertices(i.position, i.size, axis, 0.5F).forEach(vertex -> {
-
-                            List<Vec3d> locked = getLockedVectors(axis);
-
-                            if (locked.contains(vertex.normal)) {
-                                return;
-                            }
-
-                            for (JsonFace f : elements) {
-                                if (f != i && face.isInside(f.position, f.size, vertex.stretched)) {
-                                    locked.add(vertex.normal);
-                                    break;
-                                }
-                            }
-                        });
-                    }
-                }
-            }
         }
 
-        List<Vec3d> getLockedVectors(Axis axis) {
-            return lockedVectors.computeIfAbsent(axis, a -> new ArrayList<>());
-        }
-
-        void export(ModelContext subContext) {
+        void export(ModelContext subContext) throws FutureAwaitException {
+            Fixtures fixtures = new Fixtures(subContext);
             elements.stream().forEach(face -> {
-                try {
-                    face.export(subContext);
-                } catch (InterruptedException | ExecutionException e) {
-                    throw new FutureAwaitException(e);
-                }
+                face.export(subContext, fixtures);
             });
         }
 
-        @Override
-        protected boolean isFixed(Axis axis, float x, float y, float z) {
-            return getLockedVectors(axis).contains(new Vec3d(x, y, z));
+        class Fixtures extends FixtureImpl {
+            private final Map<Axis, List<Vec3d>> lockedVectors = new HashMap<>();
+
+            Fixtures(ModelContext context) throws FutureAwaitException {
+                for (Axis axis : Axis.values()) {
+                    if (axis != face.getAxis()) {
+                        for (JsonFace i : elements) {
+                            face.getVertices(i.position.complete(context), i.size.complete(context), axis, 0.5F).forEach(vertex -> {
+
+                                List<Vec3d> locked = getLockedVectors(axis);
+
+                                if (locked.contains(vertex.normal)) {
+                                    return;
+                                }
+
+                                for (JsonFace f : elements) {
+                                    if (f != i && face.isInside(f.position.complete(context), f.size.complete(context), vertex.stretched)) {
+                                        locked.add(vertex.normal);
+                                        break;
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+
+            List<Vec3d> getLockedVectors(Axis axis) {
+                return lockedVectors.computeIfAbsent(axis, a -> new ArrayList<>());
+            }
+
+            @Override
+            protected boolean isFixed(Axis axis, float x, float y, float z) {
+                return getLockedVectors(axis).contains(new Vec3d(x, y, z));
+            }
+
         }
 
-        class JsonFace implements JsonComponent<Cuboid> {
+        class JsonFace {
 
-            final float[] position = new float[3];
-            final float[] size = new float[2];
+            final Incomplete<float[]> position;
+            final Incomplete<float[]> size;
 
             private final Incomplete<Optional<Texture>> texture;
 
             public JsonFace(JsonContext context, JsonArray json) {
-                position[0] =  json.get(0).getAsFloat();
-                position[1] =  json.get(1).getAsFloat();
-                position[2] =  json.get(2).getAsFloat();
-                size[0] =      json.get(3).getAsFloat();
-                size[1] =      json.get(4).getAsFloat();
+                position = context.getLocals().get(
+                        json.get(0).getAsJsonPrimitive(),
+                        json.get(1).getAsJsonPrimitive(),
+                        json.get(2).getAsJsonPrimitive()
+                );
+                size = context.getLocals().get(
+                        json.get(3).getAsJsonPrimitive(),
+                        json.get(4).getAsJsonPrimitive()
+                );
 
                 if (json.size() > 6) {
                     texture = createTexture(
-                            context.getVariables().getValue(json.get(5).getAsJsonPrimitive()),
-                            context.getVariables().getValue(json.get(6).getAsJsonPrimitive())
+                            context.getLocals().get(json.get(5).getAsJsonPrimitive()),
+                            context.getLocals().get(json.get(6).getAsJsonPrimitive())
                     );
                 } else {
                     texture = Incomplete.completed(Optional.empty());
@@ -151,25 +156,27 @@ public class JsonPlanar extends JsonCuboid {
 
             private Incomplete<Optional<Texture>> createTexture(Incomplete<Float> u, Incomplete<Float> v) {
                 return locals -> {
-                    Texture parent = locals.getTexture().get();
-
-                    return Optional.of(new JsonTexture(
-                            u.complete(locals).intValue(),
-                            v.complete(locals).intValue(),
-                            parent.getWidth(),
-                            parent.getHeight()
-                    ));
+                    try {
+                        Texture parent = locals.getTexture().get();
+                        return Optional.of(new JsonTexture(
+                                u.complete(locals).intValue(),
+                                v.complete(locals).intValue(),
+                                parent.getWidth(),
+                                parent.getHeight()
+                        ));
+                    } catch (InterruptedException | ExecutionException e) {
+                        throw new FutureAwaitException(e);
+                    }
                 };
             }
 
-            @Override
-            public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
+            public Cuboid export(ModelContext context, Fixtures fixtures) throws FutureAwaitException {
                 return new BoxBuilder(context)
-                    .dilate(dilate)
-                    .fix(JsonFaceSet.this)
+                    .dilate(dilate.complete(context))
+                    .fix(fixtures)
                     .tex(texture.complete(context))
-                    .pos(position)
-                    .size(face.getAxis(), size)
+                    .pos(position.complete(context))
+                    .size(face.getAxis(), size.complete(context))
                     .build(QuadsBuilder.plane(face));
             }
 

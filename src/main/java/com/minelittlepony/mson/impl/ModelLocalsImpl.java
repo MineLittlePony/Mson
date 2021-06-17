@@ -46,21 +46,17 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
     }
 
     @Override
-    public CompletableFuture<Float> getValue(String name) {
+    public CompletableFuture<Float> getLocal(String name) {
         return Maps.computeIfAbsent(precalculatedValues, name, n -> {
-            return context.getInheritedValue(n).thenApplyAsync(value -> {
-                try {
-                    return value.complete(new StackFrame(this, n));
-                } catch (InterruptedException | ExecutionException e) {
-                    throw new FutureAwaitException(e);
-                }
+            return context.getLocal(n).thenApplyAsync(value -> {
+                return value.complete(new StackFrame(this, n));
             });
         });
     }
 
     @Override
-    public CompletableFuture<Set<String>> getKeys() {
-        return context.getKeys();
+    public CompletableFuture<Set<String>> keys() {
+        return context.keys();
     }
 
     @Override
@@ -78,7 +74,13 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
             String variableName = prim.getAsString();
             if (variableName.startsWith("#")) {
                 String name = variableName.substring(1);
-                return local -> local.getValue(name).get();
+                return local -> {
+                    try {
+                        return local.getLocal(name).get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        throw new FutureAwaitException(e);
+                    }
+                };
             }
             return Incomplete.ZERO;
         }
@@ -123,16 +125,16 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
         }
 
         @Override
-        public CompletableFuture<Float> getValue(String name) {
+        public CompletableFuture<Float> getLocal(String name) {
             if (currentVariableRef.equalsIgnoreCase(name)) {
                 throw new RuntimeException("Cyclical reference. " + toString());
             }
-            return parent.getValue(name);
+            return parent.getLocal(name);
         }
 
         @Override
-        public CompletableFuture<Set<String>> getKeys() {
-            return parent.getKeys();
+        public CompletableFuture<Set<String>> keys() {
+            return parent.keys();
         }
 
         @Override

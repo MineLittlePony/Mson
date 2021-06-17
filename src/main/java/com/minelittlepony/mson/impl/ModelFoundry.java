@@ -44,7 +44,7 @@ class ModelFoundry {
         if (!loadedFiles.containsKey(key.getId())) {
             return Optional.empty();
         }
-        return Optional.ofNullable(loadedFiles.get(key.getId()).get()).filter(m -> m != NullContext.INSTANCE);
+        return Optional.ofNullable(loadedFiles.get(key.getId()).get()).filter(m -> m != EmptyJsonContext.INSTANCE);
     }
 
     public CompletableFuture<JsonContext> loadJsonModel(Identifier id) {
@@ -63,7 +63,7 @@ class ModelFoundry {
                         if (failHard) {
                             MsonImpl.LOGGER.error("Could not load model json for {}", file);
                         }
-                        return NullContext.INSTANCE;
+                        return EmptyJsonContext.INSTANCE;
                     }
                     try (Resource res = manager.getResource(file);
                          Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
@@ -75,7 +75,7 @@ class ModelFoundry {
                         serverProfiler.endTick();
                     }
 
-                    return NullContext.INSTANCE;
+                    return EmptyJsonContext.INSTANCE;
                 }, executor));
             }
             return loadedFiles.get(id);

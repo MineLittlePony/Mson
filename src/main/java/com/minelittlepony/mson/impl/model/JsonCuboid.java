@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,18 +51,18 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
 
     public JsonCuboid(JsonContext context, String name, JsonObject json) {
         if (json.has("offset")) {
-            MsonImpl.LOGGER.warn("Model {} is using the `offset` property. This is deprecated and will be removed in 1.18.", context.getId());
+            MsonImpl.LOGGER.warn("Model {} is using the `offset` property. This is deprecated and will be removed in 1.18.", context.getLocals().getModelId());
         }
-        offset = context.getVariables().getValue(json, "offset", 3);
+        offset = context.getLocals().get(json, "offset", 3);
 
         if (json.has("center")) {
-            MsonImpl.LOGGER.warn("Model {} is using the `center` property. This is deprecated and will be removed in 1.18. Please replace with `pivot`", context.getId());
-            pivot = context.getVariables().getValue(json, "center", 3);
+            MsonImpl.LOGGER.warn("Model {} is using the `center` property. This is deprecated and will be removed in 1.18. Please replace with `pivot`", context.getLocals().getModelId());
+            pivot = context.getLocals().get(json, "center", 3);
         } else {
-            pivot = context.getVariables().getValue(json, "pivot", 3);
+            pivot = context.getLocals().get(json, "pivot", 3);
         }
 
-        rotate = context.getVariables().getValue(json, "rotate", 3);
+        rotate = context.getLocals().get(json, "rotate", 3);
         JsonUtil.getBooleans(json, "mirror", mirror);
         visible = JsonUtils.getBooleanOr("visible", json, true);
         texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
@@ -89,7 +88,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
             return json.getAsJsonObject().entrySet().stream();
         }
         if (json.isJsonArray()) {
-            MsonImpl.LOGGER.warn("Model {} is using a children array. Versions in 1.18 will require this to be an object.", context.getId());
+            MsonImpl.LOGGER.warn("Model {} is using a children array. Versions in 1.18 will require this to be an object.", context.getLocals().getModelId());
             JsonArray arr = json.getAsJsonArray();
             Map<String, JsonElement> children = new HashMap<>();
             for (int i = 0; i < arr.size(); i++) {
@@ -107,7 +106,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
         });
     }
 
-    protected PartBuilder export(ModelContext context, PartBuilder builder) throws InterruptedException, ExecutionException {
+    protected PartBuilder export(ModelContext context, PartBuilder builder) throws FutureAwaitException {
         float[] rotate = this.rotate.complete(context);
         builder
                 .hidden(!visible)
@@ -149,21 +148,17 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
 
         @Override
         public CompletableFuture<Texture> getTexture() {
-            try {
-                return CompletableFuture.completedFuture(texture.complete(parent));
-            } catch (InterruptedException | ExecutionException e) {
-                throw new FutureAwaitException(e);
-            }
+            return CompletableFuture.completedFuture(texture.complete(parent));
         }
 
         @Override
-        public CompletableFuture<Float> getValue(String name) {
-            return parent.getValue(name);
+        public CompletableFuture<Float> getLocal(String name) {
+            return parent.getLocal(name);
         }
 
         @Override
-        public CompletableFuture<Set<String>> getKeys() {
-            return parent.getKeys();
+        public CompletableFuture<Set<String>> keys() {
+            return parent.keys();
         }
     }
 }

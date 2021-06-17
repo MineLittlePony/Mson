@@ -4,12 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelContext.Locals;
+import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 
 class Local implements Incomplete<Float> {
@@ -35,7 +35,7 @@ class Local implements Incomplete<Float> {
     }
 
     @Override
-    public Float complete(Locals locals) throws InterruptedException, ExecutionException {
+    public Float complete(Locals locals) throws FutureAwaitException {
         return operation.apply(left.complete(locals), right.complete(locals));
     }
 
