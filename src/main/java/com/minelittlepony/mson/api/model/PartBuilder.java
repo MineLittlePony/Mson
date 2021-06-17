@@ -2,8 +2,6 @@ package com.minelittlepony.mson.api.model;
 
 import net.minecraft.client.model.ModelPart;
 
-import com.minelittlepony.mson.impl.model.JsonTexture;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +9,7 @@ import java.util.Map;
 
 public class PartBuilder {
 
-    Texture texture = JsonTexture.EMPTY;
+    Texture texture = Texture.EMPTY;
 
     @Deprecated
     float[] offset = new float[3];

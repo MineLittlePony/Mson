@@ -157,7 +157,7 @@ public class JsonPlanar extends JsonCuboid {
                 return locals -> {
                     try {
                         Texture parent = locals.getTexture().get();
-                        return Optional.of(new JsonTexture(
+                        return Optional.of(new Texture(
                                 u.complete(locals).intValue(),
                                 v.complete(locals).intValue(),
                                 parent.width(),

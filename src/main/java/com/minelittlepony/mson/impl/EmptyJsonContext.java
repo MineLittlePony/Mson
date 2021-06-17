@@ -9,7 +9,6 @@ import com.minelittlepony.mson.api.exception.EmptyContextException;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.impl.model.JsonTexture;
 import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.HashSet;
@@ -59,7 +58,7 @@ final class EmptyJsonContext implements JsonContext, JsonLocalsImpl {
 
     @Override
     public CompletableFuture<Texture> getTexture() {
-        return CompletableFuture.completedFuture(JsonTexture.EMPTY);
+        return CompletableFuture.completedFuture(Texture.EMPTY);
     }
 
     @Override

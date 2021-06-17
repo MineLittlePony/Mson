@@ -9,6 +9,7 @@ import net.minecraft.util.math.Direction;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -66,9 +67,7 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder size(float... size) {
-        this.size[0] = size[0];
-        this.size[1] = size[1];
-        this.size[2] = size[2];
+        System.arraycopy(size, 0, this.size, 0, 3);
         return this;
     }
 
