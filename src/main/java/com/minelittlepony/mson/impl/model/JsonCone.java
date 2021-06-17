@@ -4,12 +4,12 @@ import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonObject;
+import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
-import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.concurrent.ExecutionException;
 

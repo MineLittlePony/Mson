@@ -7,6 +7,7 @@ import net.minecraft.util.math.Vec3d;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.json.JsonContext;
@@ -18,7 +19,6 @@ import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.FixtureImpl;
 import com.minelittlepony.mson.impl.MsonImpl;
-import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.ArrayList;

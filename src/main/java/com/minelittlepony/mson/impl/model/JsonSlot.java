@@ -4,6 +4,7 @@ import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.json.JsonComponent;
@@ -14,7 +15,6 @@ import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.impl.JsonLocalsImpl;
 import com.minelittlepony.mson.impl.Local;
 import com.minelittlepony.mson.impl.key.ReflectedModelKey;
-import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import org.jetbrains.annotations.Nullable;

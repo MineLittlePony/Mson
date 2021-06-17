@@ -1,6 +1,5 @@
-package com.minelittlepony.mson.util;
+package com.minelittlepony.mson.api;
 
-import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 
 import java.util.Objects;

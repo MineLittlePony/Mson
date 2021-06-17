@@ -7,8 +7,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.CommonLocals;
+import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.Optional;
 import java.util.Set;

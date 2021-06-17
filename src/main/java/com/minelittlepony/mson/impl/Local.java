@@ -5,9 +5,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
+import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext.Locals;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
-import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.HashMap;
 import java.util.List;

@@ -9,6 +9,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.FutureSupplier;
+import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.json.JsonComponent;
@@ -17,7 +18,6 @@ import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.model.JsonCuboid;
 import com.minelittlepony.mson.impl.model.JsonLink;
 import com.minelittlepony.mson.impl.model.JsonTexture;
-import com.minelittlepony.mson.util.Incomplete;
 import com.minelittlepony.mson.util.JsonUtil;
 import com.minelittlepony.mson.util.Maps;
 

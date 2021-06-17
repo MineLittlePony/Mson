@@ -4,12 +4,12 @@ import net.minecraft.client.model.Model;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
+import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.EmptyContextException;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.util.Incomplete;
 
 import java.util.HashSet;
 import java.util.Optional;
