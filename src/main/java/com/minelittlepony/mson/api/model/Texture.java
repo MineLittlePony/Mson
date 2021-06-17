@@ -3,26 +3,26 @@ package com.minelittlepony.mson.api.model;
 /**
  * Represents the texture configuration fields for a model.
  */
-public interface Texture {
-
+public record Texture(
+        /**
+         * The texture horizontal x-position. (U)
+         */
+        int u,
+        /**
+         * The texture vertical y-position. (V)
+         */
+        int v,
+        /**
+         * Pixel width of the texture file.
+         */
+        int width,
+        /**
+         * Pixel height of the texture file.
+         */
+        int height
+        ) {
     /**
-     * The texture horizontal x-position. (U)
+     * A blank texture. Contains the default parameters to be used when no other exist to override them.
      */
-    int getU();
-
-    /**
-     * The texture vertical y-position. (V)
-     * @return
-     */
-    int getV();
-
-    /**
-     * Pixel width of the texture file.
-     */
-    int getWidth();
-
-    /**
-     * Pixel height of the texture file.
-     */
-    int getHeight();
+    public static final Texture EMPTY = new Texture(0, 0, 64, 32);
 }

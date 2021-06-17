@@ -14,15 +14,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class JsonTexture implements Texture {
-
-    /**
-     * A blank texture. Contains the default parameters to be used when no other exist to override them.
-     */
-    public static final Texture EMPTY = new JsonTexture(0, 0, 64, 32);
-
-    private final int[] parameters;
-
+public class JsonTexture {
     /**
      * Returns an incomplete texture, ready to be resolved against the given context using the supplied json.
      *
@@ -35,17 +27,9 @@ public class JsonTexture implements Texture {
             .orElse(JsonTexture::unresolvedInherited);
     }
 
-    private static Texture unresolvedInherited(ModelContext.Locals locals) throws FutureAwaitException {
-        try {
-            return locals.getTexture().get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new FutureAwaitException(e);
-        }
-    }
-
     private static Incomplete<Texture> unresolvedMerged(JsonElement el) {
         if (el.isJsonArray()) {
-            return Incomplete.completed(new JsonTexture(el.getAsJsonArray()));
+            return Incomplete.completed(of(el.getAsJsonArray()));
         }
         return locals -> {
             try {
@@ -56,11 +40,19 @@ public class JsonTexture implements Texture {
         };
     }
 
+    private static Texture unresolvedInherited(ModelContext.Locals locals) throws FutureAwaitException {
+        try {
+            return locals.getTexture().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new FutureAwaitException(e);
+        }
+    }
+
     public static Texture create(JsonElement json) {
         if (json.isJsonArray()) {
-            return new JsonTexture(json.getAsJsonArray());
+            return of(json.getAsJsonArray());
         }
-        return new JsonTexture(json.getAsJsonObject(), EMPTY);
+        return of(json.getAsJsonObject(), Texture.EMPTY);
     }
 
     /**
@@ -85,47 +77,25 @@ public class JsonTexture implements Texture {
 
     private static CompletableFuture<Texture> resolve(JsonElement json, CompletableFuture<Texture> inherited) {
         if (json.isJsonArray()) {
-            return CompletableFuture.completedFuture(new JsonTexture(json.getAsJsonArray()));
+            return CompletableFuture.completedFuture(of(json.getAsJsonArray()));
         }
 
-        return inherited.thenApplyAsync(t -> new JsonTexture(json.getAsJsonObject(), t));
+        return inherited.thenApplyAsync(t -> of(json.getAsJsonObject(), t));
     }
 
-    private JsonTexture(JsonArray arr) {
-        this(0, 0, 0, 0);
+    private static Texture of(JsonArray arr) {
+        int[] parameters = new int[4];
         JsonUtil.getAsInts(arr.getAsJsonArray(), parameters);
+        return new Texture(parameters[0], parameters[1], parameters[2], parameters[2]);
     }
 
-    private JsonTexture(JsonObject tex, Texture inherited) {
-        this(
-            JsonUtils.getIntOr("u", tex, inherited.getU()),
-            JsonUtils.getIntOr("v", tex, inherited.getV()),
-            JsonUtils.getIntOr("w", tex, inherited.getWidth()),
-            JsonUtils.getIntOr("h", tex, inherited.getHeight())
+    private static Texture of(JsonObject tex, Texture inherited) {
+        return new Texture(
+            JsonUtils.getIntOr("u", tex, inherited.u()),
+            JsonUtils.getIntOr("v", tex, inherited.v()),
+            JsonUtils.getIntOr("w", tex, inherited.width()),
+            JsonUtils.getIntOr("h", tex, inherited.height())
         );
     }
 
-    public JsonTexture(int... params) {
-        parameters = params;
-    }
-
-    @Override
-    public int getU() {
-        return parameters[0];
-    }
-
-    @Override
-    public int getV() {
-        return parameters[1];
-    }
-
-    @Override
-    public int getWidth() {
-        return parameters[2];
-    }
-
-    @Override
-    public int getHeight() {
-        return parameters[3];
-    }
 }

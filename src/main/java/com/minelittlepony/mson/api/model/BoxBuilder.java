@@ -39,8 +39,8 @@ public final class BoxBuilder {
 
         dilate(context.getLocals().getDilation().getNow(new float[3]));
 
-        u = parent.texture.getU();
-        v = parent.texture.getV();
+        u = parent.texture.u();
+        v = parent.texture.v();
 
         System.arraycopy(parent.mirror, 0, mirror, 0, 3);
     }
@@ -59,8 +59,8 @@ public final class BoxBuilder {
 
     public BoxBuilder tex(Optional<Texture> tex) {
         tex.ifPresent(t -> {
-            u = t.getU();
-            v = t.getV();
+            u = t.u();
+            v = t.v();
         });
         return this;
     }
@@ -134,7 +134,7 @@ public final class BoxBuilder {
                 verts,
                 u,         v,
                 u + w, v + h,
-                parent.texture.getWidth(), parent.texture.getHeight(),
+                parent.texture.width(), parent.texture.height(),
                 mirror,
                 direction);
     }
@@ -147,7 +147,7 @@ public final class BoxBuilder {
                 size[0], size[1], size[2],
                 dilate[0], dilate[1], dilate[2],
                 mirror[0],
-                parent.texture.getWidth(), parent.texture.getHeight());
+                parent.texture.width(), parent.texture.height());
     }
 
     public Cuboid build(QuadsBuilder builder) {

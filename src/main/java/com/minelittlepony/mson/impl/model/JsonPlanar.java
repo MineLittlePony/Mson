@@ -160,8 +160,8 @@ public class JsonPlanar extends JsonCuboid {
                         return Optional.of(new JsonTexture(
                                 u.complete(locals).intValue(),
                                 v.complete(locals).intValue(),
-                                parent.getWidth(),
-                                parent.getHeight()
+                                parent.width(),
+                                parent.height()
                         ));
                     } catch (InterruptedException | ExecutionException e) {
                         throw new FutureAwaitException(e);
