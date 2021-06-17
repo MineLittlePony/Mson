@@ -23,10 +23,9 @@ public class JsonPlane implements JsonComponent<Cuboid> {
 
     private final Incomplete<float[]> position;
     private final Incomplete<float[]> size;
+    private final Incomplete<float[]> dilate;
 
     private final Incomplete<Texture> texture;
-
-    private final float[] dilate = new float[3];
 
     private final boolean[] mirror = new boolean[3];
 
@@ -39,9 +38,9 @@ public class JsonPlane implements JsonComponent<Cuboid> {
         JsonUtil.getBooleans(json, "mirror", mirror);
         if (json.has("stretch")) {
             MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getLocals().getModelId());
-            JsonUtil.getFloats(json, "stretch", dilate);
+            dilate = context.getLocals().get(json, "stretch", 3);
         } else {
-            JsonUtil.getFloats(json, "dilate", dilate);
+            dilate = context.getLocals().get(json, "dilate", 3);
         }
         face = Face.valueOf(JsonUtil.require(json, "face").getAsString().toUpperCase());
     }
@@ -53,7 +52,7 @@ public class JsonPlane implements JsonComponent<Cuboid> {
             .mirror(face.getAxis(), mirror)
             .pos(position.complete(context))
             .size(face.getAxis(), size.complete(context))
-            .dilate(dilate)
+            .dilate(dilate.complete(context))
             .build(QuadsBuilder.plane(face));
     }
 }
