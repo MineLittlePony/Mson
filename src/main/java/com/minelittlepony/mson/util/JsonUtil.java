@@ -34,7 +34,7 @@ public class JsonUtil {
 
     public static float getFloatOr(String member, JsonObject json, float def) {
         JsonElement el = json.get(member);
-        if (el != null && !el.isJsonNull()) {
+        if (el != null && el.isJsonPrimitive() && !el.isJsonNull()) {
             return el.getAsFloat();
         }
         return def;
@@ -42,11 +42,7 @@ public class JsonUtil {
 
     public static void getFloats(JsonObject json, String member, float[] output) {
         accept(json, member).ifPresent(el -> {
-            if (el.isJsonArray()) {
-                getAsFloats(el.getAsJsonArray(), output);
-            } else {
-                Arrays.fill(output, el.getAsFloat());
-            }
+            getAsFloats(el.getAsJsonArray(), output);
         });
     }
 
@@ -62,12 +58,6 @@ public class JsonUtil {
         }
     }
 
-    public static void getAsBooleans(JsonArray arr, boolean[] output) {
-        for (int i = 0; i < output.length && i < arr.size(); i++) {
-            output[i] = arr.get(i).getAsBoolean();
-        }
-    }
-
     public static void getBooleans(JsonObject json, String member, boolean[] output) {
         accept(json, member).ifPresent(el -> {
             if (el.isJsonArray()) {
@@ -76,5 +66,11 @@ public class JsonUtil {
                 Arrays.fill(output, el.getAsBoolean());
             }
         });
+    }
+
+    private static void getAsBooleans(JsonArray arr, boolean[] output) {
+        for (int i = 0; i < output.length && i < arr.size(); i++) {
+            output[i] = arr.get(i).getAsBoolean();
+        }
     }
 }
