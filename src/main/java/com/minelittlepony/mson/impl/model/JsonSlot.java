@@ -10,6 +10,7 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.ModelLocalsImpl;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.impl.JsonLocalsImpl;
 import com.minelittlepony.mson.impl.key.ReflectedModelKey;
 import com.minelittlepony.mson.util.Incomplete;
@@ -29,7 +30,7 @@ public class JsonSlot<T> implements JsonComponent<T> {
 
     private final ReflectedModelKey<T> implementation;
 
-    private final CompletableFuture<JsonContext> content;
+    private final CompletableFuture<JsonContext> data;
 
     private final Map<String, Incomplete<Float>> locals;
 
@@ -48,7 +49,12 @@ public class JsonSlot<T> implements JsonComponent<T> {
 
     public JsonSlot(JsonContext context, String name, JsonObject json) {
         implementation = ReflectedModelKey.fromJson(json);
-        content = context.resolve(json.get("content"));
+        if (json.has("content")) {
+            MsonImpl.LOGGER.warn("Model {} is using a slot with the `content` property. This is deprecated and will be removed in 1.18. Use `data` instead", context.getId());
+            data = context.resolve(json.get("content"));
+        } else {
+            data = context.resolve(json.get("data"));
+        }
         this.name = name.isEmpty() ? JsonUtil.require(json, "name").getAsString() : name;
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::create);
         context.addNamedComponent(this.name, this);
@@ -66,25 +72,8 @@ public class JsonSlot<T> implements JsonComponent<T> {
     @Override
     public T export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            JsonContext jsContext = content.get();
-            ModelContext subContext = jsContext
-                    // slots have their own inheritance tree distinct from the host file
-                    // and variables defined on the slot itself are appended over what is inherited
-                    // from its included content, creating what is effectively a virtual model file
-                    // inserted into the host at the slot's position in the tree
-                    // i.e
-                    //              root_1
-                    //               |
-                    //               \/         root_2
-                    //              parent      |
-                    //               |         parent_2
-                    //               \/         |
-                    //              main_file  \/
-                    //               |        imported_file
-                    //               |       /
-                    //               |-slot\/
-                    //              self
-                    .createContext(context.getModel(), new ModelLocalsImpl(implementation.getId(), new Locals(jsContext)));
+            JsonContext jsContext = data.get();
+            ModelContext subContext = jsContext.createContext(context.getModel(), new ModelLocalsImpl(implementation.getId(), new Locals(jsContext)));
 
             T inst = implementation.createModel(subContext);
             if (inst instanceof MsonModel) {
