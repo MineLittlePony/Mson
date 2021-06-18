@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.impl;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -29,16 +30,21 @@ public interface JsonLocalsImpl extends JsonContext.Locals {
 
     @Override
     default Incomplete<float[]> get(JsonObject json, String member, int len) {
-        return toFloats(JsonUtil.accept(json, member)
-            .map(JsonElement::getAsJsonArray)
-            .map(arr -> {
+        return toFloats(JsonUtil.accept(json, member).map(js -> {
                 Incomplete<Float>[] output = zeros(len);
 
-                for (int i = 0; i < len && i < arr.size(); i++) {
-                    if (!arr.get(i).isJsonPrimitive()) {
-                        throw new JsonParseException("Non-primitive type found in array. Can only be values (Number) or variable references (#variable). " + arr.toString());
+                if (!js.isJsonArray()) {
+                    Arrays.fill(output, Local.ref(js.getAsJsonPrimitive()));
+                    MsonImpl.LOGGER.warn("Model {} is using a flexible array in the `{}` property. These are deprecated and will be removed in 1.18 and should be replaced with the expanded form: float[{}]", getModelId(), member, len);
+                } else {
+                    JsonArray arr = js.getAsJsonArray();
+
+                    for (int i = 0; i < len && i < arr.size(); i++) {
+                        if (!arr.get(i).isJsonPrimitive()) {
+                            throw new JsonParseException(String.format("Non-primitive type found in array for model %s. Can only be values (Number) or variable references (#variable). %s", getModelId(), arr));
+                        }
+                        output[i] = Local.ref(arr.get(i).getAsJsonPrimitive());
                     }
-                    output[i] = Local.ref(arr.get(i).getAsJsonPrimitive());
                 }
                 return output;
             }).orElseGet(() -> zeros(len)));
@@ -56,7 +62,7 @@ public interface JsonLocalsImpl extends JsonContext.Locals {
         JsonElement js = JsonUtil.require(json, member, " required by " + getModelId());
 
         if (!js.isJsonPrimitive()) {
-            throw new JsonParseException("Non-primitive type found in member " + member + ". Can only be values (Number) or variable references (#variable). " + js.toString());
+            throw new JsonParseException(String.format("Non-primitive type found in member %s for model %s. Can only be values (Number) or variable references (#variable). %s", member, getModelId(), js));
         }
         return Local.ref(js.getAsJsonPrimitive());
     }
