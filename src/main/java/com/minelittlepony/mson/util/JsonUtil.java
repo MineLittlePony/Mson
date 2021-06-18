@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.minelittlepony.mson.impl.MsonImpl;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -43,11 +44,15 @@ public class JsonUtil {
     private static float[] getAsFloats(JsonElement json, float[] output) {
         if (!json.isJsonArray()) {
             Arrays.fill(output, json.getAsFloat());
+            MsonImpl.LOGGER.warn("Flexible float arrays are deprecated and will be removed in 1.18. The given definition was {} Please replace with {}", json, Arrays.toString(output));
             return output;
         }
         JsonArray arr = json.getAsJsonArray();
         for (int i = 0; i < output.length && i < arr.size(); i++) {
             output[i] = arr.get(i).getAsFloat();
+        }
+        if (arr.size() < output.length) {
+            MsonImpl.LOGGER.warn("Flexible float arrays are deprecated and will be removed in 1.18. The given definition was {} Please replace with {}", json, Arrays.toString(output));
         }
         return output;
     }
@@ -65,15 +70,18 @@ public class JsonUtil {
         return output;
     }
 
-    // Boolean arrays are flexible
     private static boolean[] getAsBooleans(JsonElement json, boolean[] output) {
         if (!json.isJsonArray()) {
             Arrays.fill(output, json.getAsBoolean());
+            MsonImpl.LOGGER.warn("Flexible boolean arrays are deprecated and will be removed in 1.18. The given definition was {} Please replace with {}", json, Arrays.toString(output));
             return output;
         }
         JsonArray arr = json.getAsJsonArray();
         for (int i = 0; i < output.length && i < arr.size(); i++) {
             output[i] = arr.get(i).getAsBoolean();
+        }
+        if (arr.size() < output.length) {
+            MsonImpl.LOGGER.warn("Flexible int arrays are deprecated and will be removed in 1.18. The given definition was {} Please replace with {}", json, Arrays.toString(output));
         }
         return output;
     }
