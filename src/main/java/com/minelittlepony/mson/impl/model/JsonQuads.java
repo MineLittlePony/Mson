@@ -31,15 +31,17 @@ public class JsonQuads implements JsonComponent<Cuboid>, QuadsBuilder {
     private final int texV;
 
     public JsonQuads(JsonContext context, String name, JsonObject json) {
-        texU = JsonUtil.require(json, "u").getAsInt();
-        texV = JsonUtil.require(json, "v").getAsInt();
+        String caller = " required by mson:quads component in " + context.getLocals().getModelId();
+        texU = JsonUtil.require(json, "u", caller).getAsInt();
+        texV = JsonUtil.require(json, "v", caller).getAsInt();
 
-        List<JsonVertex> vertices = Streams.stream(JsonUtil.require(json, "vertices").getAsJsonArray())
+        List<JsonVertex> vertices = Streams.stream(JsonUtil.require(json, "vertices", caller)
+                .getAsJsonArray())
                 .map(JsonVertex::new)
                 .collect(Collectors.toList());
 
-        quads = Streams.stream(JsonUtil.require(json, "faces").getAsJsonArray())
-            .map(v -> new JsonQuad(vertices, v))
+        quads = Streams.stream(JsonUtil.require(json, "faces", caller).getAsJsonArray())
+            .map(v -> new JsonQuad(context, vertices, v))
             .collect(Collectors.toList());
     }
 
@@ -66,13 +68,14 @@ public class JsonQuads implements JsonComponent<Cuboid>, QuadsBuilder {
 
         private final List<JsonVertex> verts;
 
-        JsonQuad(List<JsonVertex> vertices, JsonElement json) {
+        JsonQuad(JsonContext context, List<JsonVertex> vertices, JsonElement json) {
             JsonObject o = json.getAsJsonObject();
             x = JsonUtils.getIntOr("x", o, 0);
             y = JsonUtils.getIntOr("y", o, 0);
             w = JsonUtils.getIntOr("w", o, 0);
             h = JsonUtils.getIntOr("h", o, 0);
-            verts = Streams.stream(JsonUtil.require(o, "vertices").getAsJsonArray())
+            String caller = " required by quads block in mson:quads component in " + context.getLocals().getModelId();
+            verts = Streams.stream(JsonUtil.require(o, "vertices", caller).getAsJsonArray())
                 .map(JsonElement::getAsInt)
                 .map(vertices::get)
                 .collect(Collectors.toList());

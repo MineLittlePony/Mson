@@ -29,13 +29,13 @@ public class JsonBox implements JsonComponent<Cuboid> {
 
     protected final Optional<Boolean> mirror;
 
-    protected final Optional<Texture> texture;
+    protected final Incomplete<Texture> texture;
 
     public JsonBox(JsonContext context, String name, JsonObject json) {
         from = context.getLocals().get(json, "from", 3);
         size = context.getLocals().get(json, "size", 3);
-        texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
-        mirror = JsonUtil.getBoolean("mirror", json);
+        texture = JsonTexture.incomplete(JsonUtil.accept(json, "texture"));
+        mirror = JsonUtil.acceptBoolean(json, "mirror");
         if (json.has("stretch")) {
             MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getLocals().getModelId());
             dilate = context.getLocals().get(json, "stretch", 3);
@@ -47,7 +47,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
     @Override
     public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
         return new BoxBuilder(context)
-            .tex(texture)
+            .tex(texture.complete(context))
             .pos(from.complete(context))
             .size(size.complete(context))
             .dilate(dilate.complete(context))

@@ -63,9 +63,9 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
         }
 
         rotate = context.getLocals().get(json, "rotate", 3);
-        JsonUtil.getBooleans(json, "mirror", mirror);
+        JsonUtil.acceptBooleans(json, "mirror", mirror);
         visible = JsonUtils.getBooleanOr("visible", json, true);
-        texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
+        texture = JsonTexture.incomplete(JsonUtil.accept(json, "texture"));
         this.name = name.isEmpty() ? JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("") : name;
 
         JsonUtil.accept(json, "children").ifPresent(el -> {

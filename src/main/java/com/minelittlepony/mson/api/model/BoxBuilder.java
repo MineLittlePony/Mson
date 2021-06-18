@@ -57,11 +57,9 @@ public final class BoxBuilder {
         return this;
     }
 
-    public BoxBuilder tex(Optional<Texture> tex) {
-        tex.ifPresent(t -> {
-            u = t.u();
-            v = t.v();
-        });
+    public BoxBuilder tex(Texture tex) {
+        u = tex.u();
+        v = tex.v();
         return this;
     }
 

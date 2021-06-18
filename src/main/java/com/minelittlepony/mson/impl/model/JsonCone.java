@@ -27,7 +27,7 @@ public class JsonCone extends JsonBox {
     @Override
     public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
         return new BoxBuilder(context)
-            .tex(texture)
+            .tex(texture.complete(context))
             .pos(from.complete(context))
             .size(size.complete(context))
             .dilate(dilate.complete(context))

@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.impl.model;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
@@ -22,38 +21,28 @@ public class JsonTexture {
      * When resolved the parameters of the json object will
      * be applied on top of the inherited texture parameters.
      */
-    public static Incomplete<Texture> localized(Optional<JsonElement> json) {
+    public static Incomplete<Texture> incomplete(Optional<JsonElement> json) {
         return json
-            .map(JsonTexture::unresolvedMerged)
-            .orElse(JsonTexture::unresolvedInherited);
+            .map(JsonTexture::merged)
+            .orElse(JsonTexture::fromParent);
     }
 
-    private static Incomplete<Texture> unresolvedMerged(JsonElement el) {
-        if (el.isJsonArray()) {
-            return Incomplete.completed(of(el.getAsJsonArray()));
-        }
+    private static Incomplete<Texture> merged(JsonElement el) {
         return locals -> {
             try {
-                return resolve(el, locals.getTexture()).get();
+                return resolved(el, locals.getTexture()).get();
             } catch (InterruptedException | ExecutionException e) {
                 throw new FutureAwaitException(e);
             }
         };
     }
 
-    private static Texture unresolvedInherited(ModelContext.Locals locals) throws FutureAwaitException {
+    public static Texture fromParent(ModelContext.Locals locals) throws FutureAwaitException {
         try {
             return locals.getTexture().get();
         } catch (InterruptedException | ExecutionException e) {
             throw new FutureAwaitException(e);
         }
-    }
-
-    public static Texture of(JsonElement json) {
-        if (json.isJsonArray()) {
-            return of(json.getAsJsonArray());
-        }
-        return of(json.getAsJsonObject(), Texture.EMPTY);
     }
 
     /**
@@ -63,7 +52,7 @@ public class JsonTexture {
      * be applied on top of the inherited texture parameters.
      *
      * Unlike {@link localized(json)} this texture is only inherited to the current point
-     * in the model's hierarchyand may be different from the final texture made available
+     * in the model's hierarchy and may be different from the final texture made available
      * at model construction time.
      *
      * It's recommended to always use the {@link Incomplete<>}
@@ -71,28 +60,25 @@ public class JsonTexture {
      *
      */
     public static CompletableFuture<Texture> unlocalized(Optional<JsonElement> json, CompletableFuture<Texture> inherited) {
-        return json
-            .map(el -> resolve(el, inherited))
-            .orElse(inherited);
+        return json.map(el -> resolved(el, inherited)).orElse(inherited);
     }
 
-    private static CompletableFuture<Texture> resolve(JsonElement json, CompletableFuture<Texture> inherited) {
+    private static CompletableFuture<Texture> resolved(JsonElement json, CompletableFuture<Texture> inherited) {
+        return inherited.thenApplyAsync(t -> of(json, t));
+    }
+
+    public static Texture of(JsonElement json) {
+        return of(json, Texture.EMPTY);
+    }
+
+    private static Texture of(JsonElement json, Texture inherited) {
         if (json.isJsonArray()) {
-            return CompletableFuture.completedFuture(of(json.getAsJsonArray()));
+            MsonImpl.LOGGER.warn("Array-form textures do not support inheritance and will be removed in 1.18! Please replace with the expanded form.");
+            int[] parameters = JsonUtil.getAsInts(json.getAsJsonArray(), new int[4]);
+            return new Texture(parameters[0], parameters[1], parameters[2], parameters[3]);
         }
 
-        return inherited.thenApplyAsync(t -> of(json.getAsJsonObject(), t));
-    }
-
-    @Deprecated
-    private static Texture of(JsonArray arr) {
-        MsonImpl.LOGGER.warn("Array-form textures will be removed in 1.18! Please replace with the expanded form.");
-        int[] parameters = new int[4];
-        JsonUtil.getAsInts(arr.getAsJsonArray(), parameters);
-        return new Texture(parameters[0], parameters[1], parameters[2], parameters[2]);
-    }
-
-    private static Texture of(JsonObject tex, Texture inherited) {
+        JsonObject tex = json.getAsJsonObject();
         return new Texture(
             JsonUtils.getIntOr("u", tex, inherited.u()),
             JsonUtils.getIntOr("v", tex, inherited.v()),
@@ -100,5 +86,4 @@ public class JsonTexture {
             JsonUtils.getIntOr("h", tex, inherited.height())
         );
     }
-
 }

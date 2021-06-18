@@ -2,7 +2,6 @@ package com.minelittlepony.mson.impl.model;
 
 import net.minecraft.util.Identifier;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
@@ -19,12 +18,9 @@ import com.minelittlepony.mson.util.JsonUtil;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 public class JsonSlot<T> implements JsonComponent<T> {
     public static final Identifier ID = new Identifier("mson", "slot");
@@ -56,7 +52,7 @@ public class JsonSlot<T> implements JsonComponent<T> {
         } else {
             data = context.resolve(json.get("data"));
         }
-        this.name = name.isEmpty() ? JsonUtil.require(json, "name").getAsString() : name;
+        this.name = name.isEmpty() ? JsonUtil.require(json, "name", " required by mson:slot component in " + context.getLocals().getModelId()).getAsString() : name;
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
         context.addNamedComponent(this.name, this);
 

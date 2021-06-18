@@ -53,7 +53,7 @@ public interface JsonLocalsImpl extends JsonContext.Locals {
 
     @Override
     default Incomplete<Float> get(JsonObject json, String member) {
-        JsonElement js = JsonUtil.require(json, member);
+        JsonElement js = JsonUtil.require(json, member, " required by " + getModelId());
 
         if (!js.isJsonPrimitive()) {
             throw new JsonParseException("Non-primitive type found in member " + member + ". Can only be values (Number) or variable references (#variable). " + js.toString());

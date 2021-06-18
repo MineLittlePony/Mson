@@ -150,10 +150,9 @@ class StoredModelData implements JsonContext {
         private final Identifier id;
         private final CompletableFuture<JsonContext.Locals> parent;
         private final CompletableFuture<Texture> texture;
+        private final CompletableFuture<float[]> dilate;
 
         private final Local.Block locals;
-
-        private final Optional<CompletableFuture<float[]>> dilate;
 
         RootVariables(Identifier id, JsonObject json, CompletableFuture<JsonContext.Locals> parent) {
             this.id = id;
@@ -161,14 +160,13 @@ class StoredModelData implements JsonContext {
             texture = JsonTexture.unlocalized(JsonUtil.accept(json, "texture"), parent.thenComposeAsync(Locals::getTexture));
             locals = Local.of(JsonUtil.accept(json, "locals"));
 
-            if (json.has("scale")) {
+            boolean legacy = json.has("scale");
+            if (legacy) {
                 MsonImpl.LOGGER.warn("Model {} is using the `scale` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", id);
-                dilate = Optional.of(CompletableFuture.completedFuture(JsonUtil.getFloats(json, "scale", new float[3])));
-            } else if (json.has("dilate")) {
-                dilate = Optional.of(CompletableFuture.completedFuture(JsonUtil.getFloats(json, "dilate", new float[3])));
-            } else {
-                dilate = Optional.empty();
             }
+            dilate = JsonUtil.acceptFloats(json, legacy ? "scale" : "dilate", new float[3])
+                    .map(CompletableFuture::completedFuture)
+                    .orElseGet(() -> parent.thenComposeAsync(JsonContext.Locals::getDilation));
         }
 
         @Override
@@ -178,7 +176,7 @@ class StoredModelData implements JsonContext {
 
         @Override
         public CompletableFuture<float[]> getDilation() {
-            return dilate.orElseGet(() -> parent.thenComposeAsync(JsonContext.Locals::getDilation));
+            return dilate;
         }
 
         @Override

@@ -26,7 +26,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class JsonPlanar extends JsonCuboid {
@@ -130,7 +129,7 @@ public class JsonPlanar extends JsonCuboid {
             final Incomplete<float[]> position;
             final Incomplete<float[]> size;
 
-            private final Incomplete<Optional<Texture>> texture;
+            private final Incomplete<Texture> texture;
 
             public JsonFace(JsonContext context, JsonArray json) {
                 position = context.getLocals().get(
@@ -149,20 +148,20 @@ public class JsonPlanar extends JsonCuboid {
                             context.getLocals().get(json.get(6).getAsJsonPrimitive())
                     );
                 } else {
-                    texture = Incomplete.completed(Optional.empty());
+                    texture = JsonTexture::fromParent;
                 }
             }
 
-            private Incomplete<Optional<Texture>> createTexture(Incomplete<Float> u, Incomplete<Float> v) {
+            private Incomplete<Texture> createTexture(Incomplete<Float> u, Incomplete<Float> v) {
                 return locals -> {
                     try {
                         Texture parent = locals.getTexture().get();
-                        return Optional.of(new Texture(
+                        return new Texture(
                                 u.complete(locals).intValue(),
                                 v.complete(locals).intValue(),
                                 parent.width(),
                                 parent.height()
-                        ));
+                        );
                     } catch (InterruptedException | ExecutionException e) {
                         throw new FutureAwaitException(e);
                     }

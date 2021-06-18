@@ -14,7 +14,6 @@ import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.util.JsonUtil;
 
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class JsonPlane implements JsonComponent<Cuboid> {
@@ -34,21 +33,21 @@ public class JsonPlane implements JsonComponent<Cuboid> {
     public JsonPlane(JsonContext context, String name, JsonObject json) {
         position = context.getLocals().get(json, "position", 3);
         size = context.getLocals().get(json, "size", 3);
-        texture = JsonTexture.localized(JsonUtil.accept(json, "texture"));
-        JsonUtil.getBooleans(json, "mirror", mirror);
+        texture = JsonTexture.incomplete(JsonUtil.accept(json, "texture"));
+        JsonUtil.acceptBooleans(json, "mirror", mirror);
         if (json.has("stretch")) {
             MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getLocals().getModelId());
             dilate = context.getLocals().get(json, "stretch", 3);
         } else {
             dilate = context.getLocals().get(json, "dilate", 3);
         }
-        face = Face.valueOf(JsonUtil.require(json, "face").getAsString().toUpperCase());
+        face = Face.valueOf(JsonUtil.require(json, "face", " required by mson:plane component in " + context.getLocals().getModelId()).getAsString().toUpperCase());
     }
 
     @Override
     public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
         return new BoxBuilder(context)
-            .tex(Optional.of(texture.complete(context)))
+            .tex(texture.complete(context))
             .mirror(face.getAxis(), mirror)
             .pos(position.complete(context))
             .size(face.getAxis(), size.complete(context))
