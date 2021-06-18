@@ -9,7 +9,6 @@ import net.minecraft.util.math.Direction;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -75,7 +74,7 @@ public final class BoxBuilder {
         return size(
                 axis.getWidth().getFloat(dimension),
                 axis.getHeight().getFloat(dimension),
-                axis.getDeptch().getFloat(dimension)
+                axis.getDepth().getFloat(dimension)
         );
     }
 
@@ -89,7 +88,7 @@ public final class BoxBuilder {
     public BoxBuilder mirror(Axis axis, boolean... mirror) {
         this.mirror[0] = axis.getWidth().getBoolean(mirror);
         this.mirror[1] = axis.getHeight().getBoolean(mirror);
-        this.mirror[2] = axis.getDeptch().getBoolean(mirror);
+        this.mirror[2] = axis.getDepth().getBoolean(mirror);
         return this;
     }
 

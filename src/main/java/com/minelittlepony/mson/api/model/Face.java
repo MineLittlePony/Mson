@@ -55,7 +55,7 @@ public enum Face {
 
         float dx = getAxis().getWidth().getFloat(dimensions);
         float dy = getAxis().getHeight().getFloat(dimensions);
-        float dz = getAxis().getDeptch().getFloat(dimensions);
+        float dz = getAxis().getDepth().getFloat(dimensions);
 
         return isBetween(vertex.x, x, x + dx)
             && isBetween(vertex.y, y, y + dy)
@@ -72,9 +72,8 @@ public enum Face {
         Vec3d max = new Vec3d(
                 getAxis().getWidth().getFloat(dimensions),
                 getAxis().getHeight().getFloat(dimensions),
-                getAxis().getDeptch().getFloat(dimensions)
+                getAxis().getDepth().getFloat(dimensions)
         );
-
 
         Vec3d str = stretch == 0 ? Vec3d.ZERO : new Vec3d(
                 (axis == Axis.X ? stretch : 0),
@@ -118,7 +117,7 @@ public enum Face {
             return heightIndex;
         }
 
-        public Parameter getDeptch() {
+        public Parameter getDepth() {
             return depthIndex;
         }
 
