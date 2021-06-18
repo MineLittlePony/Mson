@@ -34,7 +34,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
     public JsonBox(JsonContext context, String name, JsonObject json) {
         from = context.getLocals().get(json, "from", 3);
         size = context.getLocals().get(json, "size", 3);
-        texture = JsonUtil.accept(json, "texture").map(JsonTexture::create);
+        texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
         mirror = JsonUtil.getBoolean("mirror", json);
         if (json.has("stretch")) {
             MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getLocals().getModelId());

@@ -40,10 +40,11 @@ public class JsonUtil {
         return def;
     }
 
-    public static void getFloats(JsonObject json, String member, float[] output) {
+    public static float[] getFloats(JsonObject json, String member, float[] output) {
         accept(json, member).ifPresent(el -> {
             getAsFloats(el.getAsJsonArray(), output);
         });
+        return output;
     }
 
     public static void getAsFloats(JsonArray arr, float[] output) {

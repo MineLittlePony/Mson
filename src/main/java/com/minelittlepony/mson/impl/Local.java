@@ -3,6 +3,7 @@ package com.minelittlepony.mson.impl;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.Incomplete;
@@ -10,10 +11,15 @@ import com.minelittlepony.mson.api.ModelContext.Locals;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 public class Local implements Incomplete<Float> {
     private final Incomplete<Float> left;
@@ -50,6 +56,17 @@ public class Local implements Incomplete<Float> {
         }
 
         throw new JsonParseException("Unsupported local type. A local must be either a value (number) string (#variable) or an array");
+    }
+
+    public static Block of(Optional<JsonElement> json) {
+        return new Block(json
+                .map(JsonElement::getAsJsonObject)
+                .map(JsonObject::entrySet)
+                .orElseGet(() -> new HashSet<>())
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> Local.create(e.getValue()))));
     }
 
     static Incomplete<Float> ref(JsonPrimitive prim) {
@@ -108,6 +125,30 @@ public class Local implements Incomplete<Float> {
 
         static {
             VALUES.forEach(v -> REGISTRY.put(v.op, v));
+        }
+    }
+
+    public static final class Block {
+        private final Map<String, Incomplete<Float>> locals;
+
+        Block(Map<String, Incomplete<Float>> locals) {
+            this.locals = locals;
+        }
+
+        public Map<String, Incomplete<Float>> entries() {
+            return locals;
+        }
+
+        public Set<String> appendKeys(Set<String> output) {
+            output.addAll(locals.keySet());
+            return output;
+        }
+
+        public Optional<CompletableFuture<Incomplete<Float>>> get(String name) {
+            if (locals.containsKey(name)) {
+                return Optional.of(CompletableFuture.completedFuture(locals.get(name)));
+            }
+            return Optional.empty();
         }
     }
 }

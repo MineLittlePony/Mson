@@ -22,7 +22,6 @@ import com.minelittlepony.mson.util.JsonUtil;
 import com.minelittlepony.mson.util.Maps;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,10 +50,6 @@ class StoredModelData implements JsonContext {
             .orElseGet(() -> CompletableFuture.completedFuture(EmptyJsonContext.INSTANCE));
 
         variables = new RootVariables(id, json, parent.thenApplyAsync(JsonContext::getLocals));
-
-        if (json.has("scale")) {
-            MsonImpl.LOGGER.warn("Model {} is using the `scale` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", getLocals().getModelId());
-        }
 
         elements.putAll(getChildren(json).collect(Collectors.toMap(
                 Map.Entry::getKey,
@@ -152,36 +147,28 @@ class StoredModelData implements JsonContext {
     }
 
     public static class RootVariables implements JsonLocalsImpl {
+        private final Identifier id;
         private final CompletableFuture<JsonContext.Locals> parent;
         private final CompletableFuture<Texture> texture;
 
-        private final Map<String, Incomplete<Float>> locals;
+        private final Local.Block locals;
 
-        private final float[] dilate;
-
-        private final Identifier id;
+        private final Optional<CompletableFuture<float[]>> dilate;
 
         RootVariables(Identifier id, JsonObject json, CompletableFuture<JsonContext.Locals> parent) {
             this.id = id;
             this.parent = parent;
             texture = JsonTexture.unlocalized(JsonUtil.accept(json, "texture"), parent.thenComposeAsync(Locals::getTexture));
-            locals = JsonUtil.accept(json, "locals")
-                    .map(JsonElement::getAsJsonObject)
-                    .map(JsonObject::entrySet)
-                    .orElseGet(() -> new HashSet<>())
-                    .stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            e -> Local.create(e.getValue())));
+            locals = Local.of(JsonUtil.accept(json, "locals"));
 
             if (json.has("scale")) {
-                dilate = new float[] { 0, 0, 0 };
-                JsonUtil.getFloats(json, "scale", dilate);
+                MsonImpl.LOGGER.warn("Model {} is using the `scale` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", id);
+                dilate = Optional.of(CompletableFuture.completedFuture(JsonUtil.getFloats(json, "scale", new float[3])));
+            } else if (json.has("dilate")) {
+                dilate = Optional.of(CompletableFuture.completedFuture(JsonUtil.getFloats(json, "dilate", new float[3])));
             } else {
-                dilate = new float[] { 0, 0, 0 };
-                JsonUtil.getFloats(json, "dilate", dilate);
+                dilate = Optional.empty();
             }
-
         }
 
         @Override
@@ -191,10 +178,7 @@ class StoredModelData implements JsonContext {
 
         @Override
         public CompletableFuture<float[]> getDilation() {
-            if (dilate != null) {
-                return CompletableFuture.completedFuture(dilate);
-            }
-            return parent.thenComposeAsync(JsonContext.Locals::getDilation);
+            return dilate.orElseGet(() -> parent.thenComposeAsync(JsonContext.Locals::getDilation));
         }
 
         @Override
@@ -204,18 +188,12 @@ class StoredModelData implements JsonContext {
 
         @Override
         public CompletableFuture<Incomplete<Float>> getLocal(String name) {
-            if (locals.containsKey(name)) {
-                return CompletableFuture.completedFuture(locals.get(name));
-            }
-            return parent.thenComposeAsync(p -> p.getLocal(name));
+            return locals.get(name).orElseGet(() -> parent.thenComposeAsync(p -> p.getLocal(name)));
         }
 
         @Override
         public CompletableFuture<Set<String>> keys() {
-            return parent.thenComposeAsync(Locals::keys).thenApply(output -> {
-                output.addAll(locals.keySet());
-                return output;
-            });
+            return parent.thenComposeAsync(Locals::keys).thenApply(locals::appendKeys);
         }
     }
 

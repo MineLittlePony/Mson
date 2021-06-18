@@ -33,7 +33,7 @@ public class JsonSlot<T> implements JsonComponent<T> {
 
     private final CompletableFuture<JsonContext> data;
 
-    private final Map<String, Incomplete<Float>> locals;
+    private final Local.Block locals;
 
     private final Optional<Texture> texture;
 
@@ -57,17 +57,10 @@ public class JsonSlot<T> implements JsonComponent<T> {
             data = context.resolve(json.get("data"));
         }
         this.name = name.isEmpty() ? JsonUtil.require(json, "name").getAsString() : name;
-        texture = JsonUtil.accept(json, "texture").map(JsonTexture::create);
+        texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
         context.addNamedComponent(this.name, this);
 
-        locals = JsonUtil.accept(json, "locals")
-                .map(JsonElement::getAsJsonObject)
-                .map(JsonObject::entrySet)
-                .orElseGet(() -> new HashSet<>())
-                .stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        e -> Local.create(e.getValue())));
+        locals = Local.of(JsonUtil.accept(json, "locals"));
     }
 
     @Override
@@ -111,18 +104,12 @@ public class JsonSlot<T> implements JsonComponent<T> {
 
         @Override
         public CompletableFuture<Incomplete<Float>> getLocal(String name) {
-            if (locals.containsKey(name)) {
-                return CompletableFuture.completedFuture(locals.get(name));
-            }
-            return parent.getLocal(name);
+            return locals.get(name).orElseGet(() -> parent.getLocal(name));
         }
 
         @Override
         public CompletableFuture<Set<String>> keys() {
-            return parent.keys().thenApplyAsync(output -> {
-               output.addAll(locals.keySet());
-               return output;
-            });
+            return parent.keys().thenApplyAsync(locals::appendKeys);
         }
     }
 }

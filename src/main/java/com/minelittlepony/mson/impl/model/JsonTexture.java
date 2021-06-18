@@ -7,6 +7,7 @@ import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.util.JsonUtil;
 import net.minecraft.client.realms.util.JsonUtils;
 
@@ -16,7 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 public class JsonTexture {
     /**
-     * Returns an incomplete texture, ready to be resolved against the given context using the supplied json.
+     * Returns an incomplete texture, ready to be resolved against a model context using the supplied json.
      *
      * When resolved the parameters of the json object will
      * be applied on top of the inherited texture parameters.
@@ -48,7 +49,7 @@ public class JsonTexture {
         }
     }
 
-    public static Texture create(JsonElement json) {
+    public static Texture of(JsonElement json) {
         if (json.isJsonArray()) {
             return of(json.getAsJsonArray());
         }
@@ -83,7 +84,9 @@ public class JsonTexture {
         return inherited.thenApplyAsync(t -> of(json.getAsJsonObject(), t));
     }
 
+    @Deprecated
     private static Texture of(JsonArray arr) {
+        MsonImpl.LOGGER.warn("Array-form textures will be removed in 1.18! Please replace with the expanded form.");
         int[] parameters = new int[4];
         JsonUtil.getAsInts(arr.getAsJsonArray(), parameters);
         return new Texture(parameters[0], parameters[1], parameters[2], parameters[2]);
