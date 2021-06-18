@@ -80,12 +80,6 @@ final class EmptyModelContext implements ModelContext, ModelContext.Locals {
         return CompletableFuture.completedFuture(new float[] { 0, 0, 0 });
     }
 
-    @Deprecated
-    @Override
-    public float getScale() {
-        return 0;
-    }
-
     @Override
     public ModelContext.Locals getLocals() {
         return this;

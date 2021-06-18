@@ -233,12 +233,6 @@ class StoredModelData implements JsonContext {
             return locals;
         }
 
-        @Deprecated
-        @Override
-        public float getScale() {
-            return getLocals().getDilation().thenApply(f -> f[0]).getNow(0F);
-        }
-
         @Override
         public void getTree(ModelContext context, Map<String, ModelPart> tree) {
             elements.entrySet().forEach(entry -> {

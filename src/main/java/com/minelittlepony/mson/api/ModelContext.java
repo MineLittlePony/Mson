@@ -46,14 +46,6 @@ public interface ModelContext {
     Locals getLocals();
 
     /**
-     * Gets the world scale factor.
-     *
-     * @Deprecated Use getLocals().getDilation() instead
-     */
-    @Deprecated
-    float getScale();
-
-    /**
      * Checks if a value has been stored for the given name.
      * If one was not found, computes one using the supplied method and returns that.
      *
