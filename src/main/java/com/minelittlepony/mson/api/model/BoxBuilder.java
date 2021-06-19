@@ -50,10 +50,12 @@ public final class BoxBuilder {
         return this;
     }
 
+    @SuppressWarnings("deprecation")
     public BoxBuilder pos(float... pos) {
-        this.pos[0] = pos[0] + parent.offset[0];
-        this.pos[1] = pos[1] + parent.offset[1];
-        this.pos[2] = pos[2] + parent.offset[2];
+        // We retain the doubling to maintain backwards compatibility.
+        this.pos[0] = pos[0] + (parent.offset[0] * 2);
+        this.pos[1] = pos[1] + (parent.offset[1] * 2);
+        this.pos[2] = pos[2] + (parent.offset[2] * 2);
         return this;
     }
 
@@ -136,10 +138,9 @@ public final class BoxBuilder {
     }
 
     public Cuboid build() {
-        // TODO: Offset is doubled here
         return new Cuboid(
                 u, v,
-                parent.offset[0] + pos[0], parent.offset[1] + pos[1], parent.offset[2] + pos[2],
+                pos[0], pos[1], pos[2],
                 size[0], size[1], size[2],
                 dilate[0], dilate[1], dilate[2],
                 mirror[0],
