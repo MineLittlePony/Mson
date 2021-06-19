@@ -76,11 +76,9 @@ public class PartBuilder {
 
     public ModelPart build() {
         ModelPart part = new ModelPart(cubes, children);
-        ((MsonPart)(Object)part)
-            .rotate(rotate)
-            .around(pivot)
-            .setHidden(hidden);
-
+        part.setAngles(rotate[0], rotate[1], rotate[2]);
+        part.setPivot(pivot[0], pivot[1], pivot[2]);
+        part.visible = !hidden;
         return part;
     }
 

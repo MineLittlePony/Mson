@@ -10,19 +10,12 @@ import com.minelittlepony.mson.api.model.MsonPart;
 import com.minelittlepony.mson.api.model.Rect;
 import com.minelittlepony.mson.api.model.Vert;
 
-import java.util.List;
-import java.util.Map;
-
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.math.Vec3f;
 
+@SuppressWarnings("deprecation")
 @Mixin(ModelPart.class)
-abstract class MixinModelPart implements MsonPart {
-    @Accessor("cuboids") @Override
-    public abstract List<ModelPart.Cuboid> getCubes();
-    @Accessor("children") @Override
-    public abstract Map<String, ModelPart> getChildren();
-}
+abstract class MixinModelPart implements MsonPart {}
 
 @Mixin(ModelPart.Cuboid.class)
 abstract class MixinCuboid implements Cube {

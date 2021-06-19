@@ -9,7 +9,7 @@ import net.minecraft.entity.LivingEntity;
 
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
-import com.minelittlepony.mson.api.model.MsonPart;
+import com.minelittlepony.mson.util.PartUtil;
 
 import java.util.Random;
 
@@ -26,13 +26,13 @@ public class MsonPlayer<T extends LivingEntity>
         super(tree, false);
         cape = tree.getChild("cloak");
         deadmsEars = tree.getChild("ear");
-        empty = tree.traverse().filter(p -> !p.isEmpty()).count() == 0;
+        empty = tree.traverse().noneMatch(p -> !p.isEmpty());
     }
 
     @Override
     public ModelPart getRandomPart(Random random) {
         if (empty) {
-            return MsonPart.EMPTY_PART;
+            return PartUtil.EMPTY_PART;
         }
         return super.getRandomPart(random);
     }
