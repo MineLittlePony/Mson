@@ -1,0 +1,49 @@
+/**
+ * Below is a simple definition of the structure of a Mson file
+ * for anyone with a technical mind.
+ * This file contains the structure of the root file, sans any sub-components.
+ * For those parts see their like-named files adjacent to this one.
+ * This is for documentation and examples. It is not a valid json file.
+ */
+
+ /**
+  * Slots are a bit of a special child, so here's a summary:
+  *
+  * Parent File is the file where the slot is defined.
+  * Imported file is the file the slot is referencing.
+  *
+  * texture  : slot or parent_file ---> output
+  * dilation : imported_file ---------> output
+  * locals   : parent_file + slot ----> output
+  */
+slot:
+    {
+        /**
+         * The type to implement when generating concrete model nodes for this slot.
+         * This type should implement either:
+         * A a default constructor accepting a model tree
+         * B the MsonModel.init method accepting a ModelContext
+         */
+        implementation: <fully-qualified-class-name>
+        /**
+          * The components (as per a model file) or a link to an existing file
+          */
+        data: [model]|<model-file-path>
+        /**
+          * A block of local variables that may be references by components within the data block.
+          * Values defined in here are applied over what is inherited from the referenced file.
+          *
+          * They are NOT available for use by the parent's components.
+          */
+        locals: {
+            <variable-name>: <expression>
+        }
+        /**
+          * This property is inherited by all components defined within
+          * this slot, and overrides the textures inherited by this slot from it's containing file.
+          * <p>
+          * This works to effectively insert this slot between both the parent file and the
+          * upper-most parent of the imported file this slot is linking to.
+          */
+        texture: <texture>
+    }

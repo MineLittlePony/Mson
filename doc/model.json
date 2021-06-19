@@ -1,0 +1,44 @@
+/*
+ * Below is a simple definition of the structure of a Mson file
+ * for anyone with a technical mind.
+ * This file contains the structure of the root file, sans any sub-components.
+ * For those parts see their like-named files adjacent to this one.
+ * This is for documentation and examples. It is not a valid json file.
+ */
+model:
+    /*root scope*/ {
+        /**
+          * The parent file to extend from.
+          *
+          */
+        [optional] parent: <parent-file-path>
+        /**
+          * Texture definition specifying the default width and height for the file.
+          * This property is inherited by all components defined in this file
+          * and defining it will function similarly to defining variables in the locals block.
+          */
+        [optional] texture: <texture>
+        /**
+          * The default growth (dilation) applied to all boxes defined by components in this file.
+          * Note that components may have their own dilation parameter, in which instance that value is *added*
+          * to this one
+          *
+          * ** DOES NOT SUPPORT VARIABLES **
+          */
+        [optional] dilate: [<x>, <y>, <z>]
+        /**
+          * A block of local variables that may be references by components within the data block.
+          * Values defined in here are typically applied over what is inherited from the parent file (if specified)
+          * and become available for use by the parent's components as well.
+          */
+        [optional] locals: {
+            <variable-name>: <expression>
+        }
+        [required] data: {
+            /**
+              * default type for components (if omitted): mson:compound
+              * allowed types: <mson:compound|mson:slot|mson:link|mson:planar>
+              */
+            <component-name>: <component>
+        }
+    }

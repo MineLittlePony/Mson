@@ -1,0 +1,39 @@
+/**
+ * Below is a simple definition of the structure of a Mson file
+ * for anyone with a technical mind.
+ * This file contains the structure of the root file, sans any sub-components.
+ * For those parts see their like-named files adjacent to this one.
+ * This is for documentation and examples. It is not a valid json file.
+ */
+/**
+ * Mson allows you to use variables and do basic calculations within the model file.
+ * Unless otherwise stated, it can be assumed that every place where a numerical value
+ * is expected can also accept a reference to a variable (see below).
+ *
+ * Expressions with calculations can only be done in the `local` blocks where veriables are defined.
+ */
+expression:
+		/* "#someValue" */
+		<variable>
+	or /* [ 1, "+", 1 ]
+		[<expression>,<operand>,<expression>]
+operand:
+	'+' /* ADD */
+	'-' /* SUBTRACT */
+	'*' /* MULTIPLY */
+	'/' /* DIVIDE */
+	'%' /* MODULUS */
+	'^' /* EXPONENT */
+variable:
+    <number>
+  or
+    '#' <variable-name>
+
+/**
+  * Eg. Given a locals block like the below:
+  * {
+  *    one: 1,
+  *    two: ["#one", "+", "#one"]
+  * }
+  * The value of #two would be 2.
+  */

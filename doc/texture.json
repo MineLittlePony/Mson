@@ -1,0 +1,21 @@
+/*
+ * Below is a simple definition of the structure of a Mson file
+ * for anyone with a technical mind.
+ * This file contains the structure of the root file, sans any sub-components.
+ * For those parts see their like-named files adjacent to this one.
+ * This is for documentation and examples. It is not a valid json file.
+ */
+texture:
+        [
+            [default=inherited|0] <u>,
+            [default=inherited|0] <v>,
+            [default=inherited|64] <w>,
+            [default=inherited|32] <h>
+        ]
+    or
+        {
+            [optional] [default=inherited|0] u: <number>
+            [optional] [default=inherited|0] v: <number>
+            [optional] [default=inherited|64] w: <number>
+            [optional] [default=inherited|32] h: <number>
+        }

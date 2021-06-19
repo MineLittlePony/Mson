@@ -1,0 +1,18 @@
+/**
+ * Below is a simple definition of the structure of a Mson file
+ * for anyone with a technical mind.
+ * This file contains the structure of the root file, sans any sub-components.
+ * For those parts see their like-named files adjacent to this one.
+ * This is for documentation and examples. It is not a valid json file.
+ */
+cone:
+    {
+        /**
+          * see: mson:box for additional supported properties
+          */
+        <box>
+        /**
+          * The amount of tapering to perform near the cone's end
+          */
+        taper: <number>
+    }

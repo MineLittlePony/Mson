@@ -1,0 +1,73 @@
+/**
+ * Below is a simple definition of the structure of a Mson file
+ * for anyone with a technical mind.
+ * This file contains the structure of the root file, sans any sub-components.
+ * For those parts see their like-named files adjacent to this one.
+ * This is for documentation and examples. It is not a valid json file.
+ */
+
+/**
+ * Disclaimer:
+ * This component is intended for advanced users who are already familiar
+ * with how vertex coordinates and uv mapping works in Minecraft to create a basic cube.
+ * There is no guarantee that this part will work correctly, if at all, in every version of Mson.
+ *
+ * For reference, here is a list of corners that when taken in order produce a cube:
+ * Vertices
+ *      [ 0, 0, 0 ] wds 0
+ *      [ 1, 0, 0 ] eds 1
+ *      [ 1, 1, 0 ] eus 2
+ *      [ 0, 1, 0 ] wus 3
+ *      [ 0, 0, 1 ] wdn 4
+ *      [ 1, 0, 1 ] edn 5
+ *      [ 1, 1, 1 ] eun 6
+ *      [ 0, 1, 1 ] wun 7
+ * Quads (faces):
+ * East:  [ edn, eds, eus, eun ]
+ * West:  [ wds, wdn, wun, wus ]
+ * UP:    [ eus, wus, wun, eun ]
+ * DOWN:  [ edn, wdn, wds, eds ]
+ * SOUTH: [ wdn, edn, eun, wun ]
+ * NORTH: [ eds, wds, wus, eus ]
+ *
+ * ((Variables are NOT supported by this component))
+ */
+quads:
+    {
+        u: <number>
+        v: <number>
+        /**
+         * A list of vertices to be used by the faces
+         */
+        vertices: [
+            <vertex>
+        ]
+        /**
+          * A list of faces forming the overall shape of this custom object
+          */
+        faces: [
+            {
+                [optional] [default=0] x: <number>
+                [optional] [default=0] y: <number>
+                [optional] [default=0] w: <number>
+                [optional] [default=0] h: <number>
+                /**
+                 * A list of vertex indices to use for this face.
+                 * Each face can have any number of vertices, and the same vertices can be used by multiple faces.
+                 */
+                vertices: [
+                    <number>
+                ]
+            }
+        ]
+    }
+vertex:
+        {
+            [optional] [default=0] x: <number>
+            [optional] [default=0] y: <number>
+            [optional] [default=0] z: <number>
+            [optional] [default=0] u: <number>
+            [optional] [default=0] v: <number>
+        }
+    or
+        [ <x>, <y>, <z>, <u>, <v> ]

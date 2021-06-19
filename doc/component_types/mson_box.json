@@ -1,0 +1,21 @@
+/**
+ * Below is a simple definition of the structure of a Mson file
+ * for anyone with a technical mind.
+ * This file contains the structure of the root file, sans any sub-components.
+ * For those parts see their like-named files adjacent to this one.
+ * This is for documentation and examples. It is not a valid json file.
+ */
+box:
+    {
+        /**
+         * The relative XYZ position of the box
+         */
+        from: [<x>, <y>, <z>]
+        /**
+          * The width, height, and depth of the box
+          */
+        size: [<width>, <height>, <depth>]
+        [optional] texture: <texture>
+        [optional] [default=false] mirror: [<mirror-x>, <mirror-y>, <mirror-z>]
+        [optional] dilate: [<stretch-x>, <stretch-y>, <stretch-z>]
+    }
