@@ -1,13 +1,9 @@
 package com.minelittlepony.mson.api.model.biped;
 
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.entity.LivingEntity;
 
-import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.util.PartUtil;
 
@@ -35,12 +31,5 @@ public class MsonPlayer<T extends LivingEntity>
             return PartUtil.EMPTY_PART;
         }
         return super.getRandomPart(random);
-    }
-
-    public static class Renderer extends PlayerEntityRenderer {
-        public Renderer(EntityRendererFactory.Context context, ModelKey<MsonPlayer<AbstractClientPlayerEntity>> key) {
-            super(context, false);
-            this.model = key.createModel();
-        }
     }
 }
