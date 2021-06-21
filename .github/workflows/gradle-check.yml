@@ -1,4 +1,4 @@
-name: Run Gradle on pull request
+name: Run Gradle on pull request and push
 on:
   - pull_request
   - push
