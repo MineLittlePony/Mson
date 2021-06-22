@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 public class JsonPlanar extends JsonCuboid {
     public static final Identifier ID = new Identifier("mson", "planar");
@@ -55,9 +56,10 @@ public class JsonPlanar extends JsonCuboid {
     protected PartBuilder export(ModelContext context, PartBuilder builder) throws FutureAwaitException {
         super.export(context, builder);
         ModelContext subContext = context.resolve(builder);
-        faces.values().forEach(face -> {
-            face.export(subContext);
-        });
+        faces.values()
+            .stream()
+            .flatMap(face -> face.export(subContext))
+            .forEach(builder::addCube);
 
         return builder;
     }
@@ -80,11 +82,9 @@ public class JsonPlanar extends JsonCuboid {
             }
         }
 
-        void export(ModelContext subContext) throws FutureAwaitException {
+        Stream<Cuboid> export(ModelContext subContext) throws FutureAwaitException {
             Fixtures fixtures = new Fixtures(subContext);
-            elements.stream().forEach(face -> {
-                face.export(subContext, fixtures);
-            });
+            return elements.stream().map(face -> face.export(subContext, fixtures));
         }
 
         class Fixtures extends FixtureImpl {
