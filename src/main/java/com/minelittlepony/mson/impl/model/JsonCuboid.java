@@ -45,7 +45,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     private final Map<String, JsonComponent<?>> children = new TreeMap<>();
     private final List<JsonComponent<?>> cubes = new ArrayList<>();
 
-    private final Incomplete<Texture> texture;
+    protected final Incomplete<Texture> texture;
 
     private final String name;
 
@@ -102,7 +102,9 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     @Override
     public ModelPart export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            return export(context, new PartBuilder()).build();
+            final PartBuilder builder = new PartBuilder();
+            final ModelContext subContext = context.resolve(builder, new Locals(context.getLocals()));
+            return export(subContext, builder).build();
         });
     }
 
@@ -119,13 +121,12 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
                     rotate[2] * RADS_DEGS_FACTOR)
                 .tex(texture.complete(context));
 
-        final ModelContext subContext = context.resolve(builder, new Locals(context.getLocals()));
         children.entrySet().forEach(c -> {
-            c.getValue().tryExport(subContext, ModelPart.class).ifPresent(part -> {
+            c.getValue().tryExport(context, ModelPart.class).ifPresent(part -> {
                builder.addChild(c.getKey(), part);
             });
         });
-        cubes.forEach(c -> c.tryExport(subContext, Cuboid.class).ifPresent(builder::addCube));
+        cubes.forEach(c -> c.tryExport(context, Cuboid.class).ifPresent(builder::addCube));
         return builder;
     }
 

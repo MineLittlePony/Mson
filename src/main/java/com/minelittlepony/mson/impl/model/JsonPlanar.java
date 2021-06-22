@@ -55,10 +55,9 @@ public class JsonPlanar extends JsonCuboid {
     @Override
     protected PartBuilder export(ModelContext context, PartBuilder builder) throws FutureAwaitException {
         super.export(context, builder);
-        ModelContext subContext = context.resolve(builder);
         faces.values()
             .stream()
-            .flatMap(face -> face.export(subContext))
+            .flatMap(face -> face.export(context))
             .forEach(builder::addCube);
 
         return builder;
