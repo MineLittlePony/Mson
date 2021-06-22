@@ -1,7 +1,6 @@
 name: Run Gradle on release
 on:
-  release:
-    types: [created]
+  - release
 jobs:
   gradle:
     runs-on: ubuntu-latest
