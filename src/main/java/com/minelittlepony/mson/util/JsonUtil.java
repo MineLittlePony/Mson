@@ -26,7 +26,7 @@ public class JsonUtil {
     }
 
     public static Optional<float[]> acceptFloats(JsonObject json, String member, float[] output) {
-        return accept(json, member).map(el -> getAsFloats(el.getAsJsonArray(), output));
+        return accept(json, member).map(el -> getAsFloats(el, output));
     }
 
     public static Optional<boolean[]> acceptBooleans(JsonObject json, String member, boolean[] output) {
