@@ -14,14 +14,14 @@ public class PartUtil {
      * Rotates this model to align itself with the angles of another.
      */
     public static void copyAngles(ModelPart from, ModelPart to) {
-        to.setPivot(from.pitch, from.yaw, from.roll);
+        to.setAngles(from.pitch, from.yaw, from.roll);
     }
 
     /**
      * Shifts this model to align its center with the center of another.
      */
     public static ModelPart copyPivot(ModelPart from, ModelPart to) {
-        to.setAngles(from.pivotX, from.pivotY, from.pivotZ);
+        to.setPivot(from.pivotX, from.pivotY, from.pivotZ);
         return to;
     }
 
