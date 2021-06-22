@@ -1,4 +1,4 @@
-name: Run Gradle on release
+name: Publish To Maven
 on:
   - release
 jobs:
