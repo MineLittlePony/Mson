@@ -9,7 +9,7 @@ jobs:
       - name: Checkout Commit
         uses: actions/checkout@v2
       - name: Fetch Tags
-        run: git fetch --tags
+        run: git pull --tags
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
