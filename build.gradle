@@ -110,7 +110,7 @@ publishing {
     repositories {
 	    maven {
 	        name = "GitHubPackages"
-	        url = "https://maven.pkg.github.com/octocat/hello-world"
+	        url = "https://maven.pkg.github.com/MineLittlePony/Mson"
 	        credentials {
 	            username = System.env.GITHUB_ACTOR
 	            password = System.env.GITHUB_TOKEN
