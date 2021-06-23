@@ -1,6 +1,12 @@
  # M-SON
-  ![](https://travis-ci.org/MineLittlePony/Mson.svg?branch=1.15-pre6)
  
+[![Build Status](https://img.shields.io/github/workflow/status/MineLittlePony/Mson/Check%20on%20pull%20request%20and%20push)](https://github.com/MineLittlePony/Mson/actions/workflows/gradle-check.yml)
+![Build Status](https://img.shields.io/github/v/release/MineLittlePony/Mson)
+![Downloads](https://img.shields.io/github/downloads/MineLittlePony/Mson/total.svg?color=yellowgreen)
+[![Discord Server](https://img.shields.io/discord/182490536119107584.svg?color=blueviolet)](https://discord.gg/HbJSFyu)
+![License](https://img.shields.io/github/license/MineLittlePony/Mson)
+![](https://img.shields.io/badge/api-fabric-orange.svg)
+
  ## /ˈmeɪs(ə)n/
 
 > _noun_  
