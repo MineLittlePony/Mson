@@ -1,7 +1,6 @@
-name: Check on pull request and push
+name: Build on Pull Request
 on:
   - pull_request
-  - push
 jobs:
   gradle:
     runs-on: ubuntu-latest

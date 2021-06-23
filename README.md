@@ -1,6 +1,6 @@
  # M-SON
  
-[![Build Status](https://img.shields.io/github/workflow/status/MineLittlePony/Mson/Check%20on%20pull%20request%20and%20push)](https://github.com/MineLittlePony/Mson/actions/workflows/gradle-check.yml)
+[![Build Status](https://img.shields.io/github/workflow/status/MineLittlePony/Mson/Build%20on%20Pull)](https://github.com/MineLittlePony/Mson/actions/workflows/gradle-build.yml)
 ![Build Status](https://img.shields.io/github/v/release/MineLittlePony/Mson)
 ![Downloads](https://img.shields.io/github/downloads/MineLittlePony/Mson/total.svg?color=yellowgreen)
 [![Discord Server](https://img.shields.io/discord/182490536119107584.svg?color=blueviolet)](https://discord.gg/HbJSFyu)
