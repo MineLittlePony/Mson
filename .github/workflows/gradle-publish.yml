@@ -1,9 +1,7 @@
 name: Publish To Maven
 on:
   release:
-    types: [created]
-  prerelease:
-    types: [created]
+    types: [created, released, prereleased]
 jobs:
   gradle:
     runs-on: ubuntu-latest
