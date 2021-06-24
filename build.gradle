@@ -108,14 +108,6 @@ publishing {
     }
 
     repositories {
-	    maven {
-	        name = "GitHubPackages"
-	        url = "https://maven.pkg.github.com/MineLittlePony/Mson"
-	        credentials {
-	            username = System.env.GITHUB_ACTOR
-	            password = System.env.GITHUB_TOKEN
-	        }
-	    }
         maven {
             name = "MineLittlePony"
             // https://github.com/ajoberstar/reckon/blob/f4a4608f996b39b3ca6eafe4804c5b38435457c4/reckon-gradle/src/main/java/org/ajoberstar/reckon/gradle/ReckonPlugin.java#L82
