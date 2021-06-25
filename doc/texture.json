@@ -6,13 +6,6 @@
  * This is for documentation and examples. It is not a valid json file.
  */
 texture:
-        [
-            [default=inherited|0] <u>,
-            [default=inherited|0] <v>,
-            [default=inherited|64] <w>,
-            [default=inherited|32] <h>
-        ]
-    or
         {
             [optional] [default=inherited|0] u: <number>
             [optional] [default=inherited|0] v: <number>
