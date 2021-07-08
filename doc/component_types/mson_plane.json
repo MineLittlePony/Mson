@@ -12,16 +12,11 @@ plane:
          */
         position: [array(3)]
         /**
-          * The XYZ size of this plane.
-          * How this is used depends on the axis of the plane's chosen face.
-          *
-          * [WEST|EAST]    -> [_____, height, depth]
-          * [NONE|UP|DOWN] -> [width, ______, depth]
-          * [NORTH|SOUTH]  -> [width, height, _____]
+          * The 2d size of this plane.
           */
-        size: [<width>, <height>, <depth>]
+        size: [<width>, <height>]
         [optional] texture: <texture>
-        [optional] mirror: [<mirror-x>, <mirror-y>, <mirror-z>]
+        [optional] mirror: [<mirror-horizontal>, <mirror-vertical>]
         [optional] dilate: [<x>, <y>, <z>]
         face: <facing>
     }

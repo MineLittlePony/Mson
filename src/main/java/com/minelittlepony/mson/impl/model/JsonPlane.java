@@ -26,13 +26,13 @@ public class JsonPlane implements JsonComponent<Cuboid> {
 
     private final Incomplete<Texture> texture;
 
-    private final boolean[] mirror = new boolean[3];
+    private final boolean[] mirror = new boolean[2];
 
     private final Face face;
 
     public JsonPlane(JsonContext context, String name, JsonObject json) {
         position = context.getLocals().get(json, "position", 3);
-        size = context.getLocals().get(json, "size", 3);
+        size = context.getLocals().get(json, "size", 2);
         texture = JsonTexture.incomplete(JsonUtil.accept(json, "texture"));
         JsonUtil.acceptBooleans(json, "mirror", mirror);
         if (json.has("stretch")) {
