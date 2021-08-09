@@ -1,0 +1,55 @@
+{
+	"parent": "mson:alex",
+	"data": {
+		"head": {
+			"cubes": [
+				{ "from": [-4, -9, -4], "size": [ 8,  8,  8] }
+			],
+			"children": {
+		    	"a_slot": {
+					"type": "mson:slot",
+					"name": "a_slot",
+					"implementation": "com.minelittlepony.mson.impl.Test$Slot",
+					"locals": {
+						"a_local": 2
+					},
+					"data": "mson_test:slot_test_slot"
+				}
+			}
+		},
+		"body": {
+			"texture": { "u": 16, "v": 16 },
+			"cubes": [
+				{ "from": [-4, 0, -2], "size": [ 8,  12,  4] }
+			]
+		},
+		"left_arm": {
+			"pivot": [6, 2.5, 0],
+			"texture": { "u": 32, "v": 48 },
+			"cubes": [
+				{ "from": [0, 6, -2], "size": [ 3,  4,  4] }
+			]
+		},
+		"left_leg": {
+			"pivot": [1.9, 12, 0],
+			"texture": { "u": 16, "v": 48 },
+			"cubes": [
+				{ "from": [-2, 8, -2], "size": [ 4,  4,  4] }
+			]
+		},
+		"right_arm": {
+			"pivot": [-6, 2.5, 0],
+			"texture": { "u": 40, "v": 16 },
+			"cubes": [
+				{ "from": [-3, 6, -2], "size": [ 3,  4,  4] }
+			]
+		},
+		"right_leg": {
+			"pivot": [-1.9, 12, 0],
+			"texture": { "u": 0, "v": 16 },
+			"cubes": [
+				{ "from": [-2, 8, -2], "size": [ 4,  4,  4] }
+			]
+		}
+	}
+}

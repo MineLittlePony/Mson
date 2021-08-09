@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.impl;
 
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.entity.CowEntityRenderer;
 import net.minecraft.client.render.entity.CreeperEntityRenderer;
 import net.minecraft.client.render.entity.EndermanEntityRenderer;
@@ -17,10 +18,13 @@ import net.minecraft.entity.passive.CowEntity;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.util.Identifier;
 
+import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.Mson;
+import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.model.biped.MsonPlayer;
 
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 final class Test {
@@ -30,11 +34,15 @@ final class Test {
         var ALEX = playerRendererFactor(Mson.getInstance().registerModel(new Identifier("mson", "alex"), MsonPlayer::new));
         MsonImpl.DEBUG = false;*/
 
-        var RAYMAN = playerRendererFactor(Mson.getInstance().registerModel(new Identifier("mson_test", "rayman"), MsonPlayer::new));
+        //var RAYMAN = playerRendererFactor(Mson.getInstance().registerModel(new Identifier("mson_test", "rayman"), MsonPlayer::new));
         //var PLANE = playerRendererFactor(Mson.getInstance().registerModel(new Identifier("mson_test", "plane"), MsonPlayer::new));
+
+        var RAYMAN = playerRendererFactor(Mson.getInstance().registerModel(new Identifier("mson_test", "slot_test"), MsonPlayer::new));
 
         Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("default", RAYMAN);
         Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("slim", RAYMAN);
+
+        if (true) return;
 
         ModelKey<CreeperEntityModel<CreeperEntity>> CREEPER = Mson.getInstance().registerModel(new Identifier("mson_test", "creeper"), CreeperEntityModel::new);
         Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(EntityType.CREEPER, r -> new CreeperEntityRenderer(r) {{
@@ -61,5 +69,21 @@ final class Test {
         return r -> new PlayerEntityRenderer(r, false) {{
             this.model = key.createModel();
         }};
+    }
+
+    public static class Slot implements MsonModel {
+
+        public Slot(ModelPart tree) {
+            System.out.println(tree.getChild("test"));
+        }
+
+        @Override
+        public void init(ModelContext context) {
+            try {
+                System.out.println(context.getLocals().getLocal("a_local").get());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

@@ -1,0 +1,12 @@
+{
+	"locals": {
+		"a_local": 1
+	},
+	"data": {
+	   "test": {
+		   	"cubes": [
+		       { "from": ["#a_local", 0, 0] }
+		   ]
+	   }
+	}
+}
