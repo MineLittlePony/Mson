@@ -52,6 +52,11 @@ final class EmptyJsonContext implements JsonContext, JsonLocalsImpl {
     }
 
     @Override
+    public <T> Optional<JsonComponent<T>> loadComponent(String name, JsonElement json, Identifier defaultAs) {
+        return Optional.empty();
+    }
+
+    @Override
     public ModelContext createContext(Model model, ModelContext.Locals locals) {
         return EmptyModelContext.INSTANCE;
     }

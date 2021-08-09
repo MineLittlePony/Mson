@@ -33,6 +33,13 @@ public interface JsonContext {
     <T> Optional<JsonComponent<T>> loadComponent(JsonElement json, Identifier defaultAs);
 
     /**
+     * Loads a json block into a component.
+     *
+     * Defers  to the component-types pipeline to return the corresponding instance to that of the passed in json.
+     */
+    <T> Optional<JsonComponent<T>> loadComponent(String name, JsonElement json, Identifier defaultAs);
+
+    /**
      * Creates a new model context for the supplied model instance.
      */
     ModelContext createContext(Model model, ModelContext.Locals locals);

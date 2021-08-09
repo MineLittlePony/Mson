@@ -50,7 +50,7 @@ public class JsonUtil {
         for (int i = 0; i < output.length && i < arr.size(); i++) {
             output[i] = arr.get(i).getAsFloat();
         }
-        if (arr.size() < output.length) {
+        if (arr.size() != output.length) {
             MsonImpl.LOGGER.warn("Flexible float arrays are deprecated and will be removed in 1.18. The given definition was {} Please replace with {}", json, Arrays.toString(output));
         }
         return output;
@@ -75,12 +75,15 @@ public class JsonUtil {
             return output;
         }
         JsonArray arr = json.getAsJsonArray();
+
         for (int i = 0; i < output.length && i < arr.size(); i++) {
             output[i] = arr.get(i).getAsBoolean();
         }
-        if (arr.size() < output.length) {
+
+        if (arr.size() != output.length) {
             MsonImpl.LOGGER.warn("Flexible boolean arrays are deprecated and will be removed in 1.18. The given definition was {} Please replace with {}", json, Arrays.toString(output));
         }
+
         return output;
     }
 }

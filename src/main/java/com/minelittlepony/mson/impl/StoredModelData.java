@@ -7,6 +7,7 @@ import net.minecraft.util.Identifier;
 import com.google.common.base.Strings;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.FutureSupplier;
 import com.minelittlepony.mson.api.Incomplete;
@@ -64,16 +65,22 @@ class StoredModelData implements JsonContext {
             });
         }
 
-        MsonImpl.LOGGER.warn("Model {} is using a flat definition! This will be removed in 1.18. All structural components now belong under a `data` property", getLocals().getModelId());
+        boolean[] warned = new boolean[1];
+
         return json.entrySet().stream().filter(entry -> {
             switch (entry.getKey()) {
                 case "scale":
+                case "dilate":
                 case "parent":
                 case "texture":
                 case "data":
                 case "locals":
                     return false;
                 default:
+                    if (!warned[0]) {
+                        warned[0] = true;
+                        MsonImpl.LOGGER.warn("Model {} is using a flat definition! This will be removed in 1.18. All structural components now belong under a `data` property", getLocals().getModelId());
+                    }
                     return entry.getValue().isJsonObject()
                        || (entry.getValue().isJsonPrimitive() && entry.getValue().getAsJsonPrimitive().isString());
             }
@@ -100,8 +107,9 @@ class StoredModelData implements JsonContext {
         return loadComponent("", json, defaultAs);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
-    private <T> Optional<JsonComponent<T>> loadComponent(String name, JsonElement json, Identifier defaultAs) {
+    public <T> Optional<JsonComponent<T>> loadComponent(String name, JsonElement json, Identifier defaultAs) {
         if (json.isJsonObject()) {
             JsonObject o = json.getAsJsonObject();
             final String fname = Strings.nullToEmpty(name).trim();
@@ -133,7 +141,14 @@ class StoredModelData implements JsonContext {
         Identifier id = getLocals().getModelId();
         Identifier autoGen = new Identifier(id.getNamespace(), id.getPath() + "_dynamic");
 
-        return CompletableFuture.completedFuture(new StoredModelData(foundry, autoGen, json.getAsJsonObject()));
+        if (json.getAsJsonObject().has("data")) {
+            throw new JsonParseException("Model model files should not have a nested data block");
+        }
+
+        JsonObject file = new JsonObject();
+        file.add("data", json.getAsJsonObject());
+
+        return CompletableFuture.completedFuture(new StoredModelData(foundry, autoGen, file));
     }
 
     @Override
