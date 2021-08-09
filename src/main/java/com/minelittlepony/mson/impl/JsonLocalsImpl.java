@@ -35,7 +35,6 @@ public interface JsonLocalsImpl extends JsonContext.Locals {
 
                 if (!js.isJsonArray()) {
                     Arrays.fill(output, Local.ref(js.getAsJsonPrimitive()));
-                    MsonImpl.LOGGER.warn("Model {} is using a flexible array in the `{}` property. These are deprecated and will be removed in 1.18 and should be replaced with the expanded form: float[{}]", getModelId(), member, len);
                 } else {
                     JsonArray arr = js.getAsJsonArray();
 
