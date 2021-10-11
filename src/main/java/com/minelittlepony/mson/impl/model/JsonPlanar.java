@@ -18,7 +18,6 @@ import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.FixtureImpl;
-import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.ArrayList;
@@ -34,16 +33,8 @@ public class JsonPlanar extends JsonCuboid {
 
     private final Map<Face, JsonFaceSet> faces = new EnumMap<>(Face.class);
 
-    protected final Incomplete<float[]> dilate;
-
     public JsonPlanar(JsonContext context, String name, JsonObject json) {
         super(context, name, json);
-        if (json.has("stretch")) {
-            MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getLocals().getModelId());
-            dilate = context.getLocals().get(json, "stretch", 3);
-        } else {
-            dilate = context.getLocals().get(json, "dilate", 3);
-        }
 
         Face.VALUES.forEach(face -> {
             JsonUtil.accept(json, face.name().toLowerCase())

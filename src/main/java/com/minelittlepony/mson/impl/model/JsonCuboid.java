@@ -32,10 +32,12 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
     public static final Identifier ID = new Identifier("mson", "compound");
     private static final float RADS_DEGS_FACTOR = (float)Math.PI / 180F;
 
-    private final Incomplete<float[]> pivot;
-
     @Deprecated
     private final Incomplete<float[]> offset;
+
+    private final Incomplete<float[]> pivot;
+
+    protected final Incomplete<float[]> dilate;
 
     private final Incomplete<float[]> rotate;
 
@@ -60,6 +62,13 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
             pivot = context.getLocals().get(json, "center", 3);
         } else {
             pivot = context.getLocals().get(json, "pivot", 3);
+        }
+
+        if (json.has("stretch")) {
+            MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getLocals().getModelId());
+            dilate = context.getLocals().get(json, "stretch", 3);
+        } else {
+            dilate = context.getLocals().get(json, "dilate", 3);
         }
 
         rotate = context.getLocals().get(json, "rotate", 3);
@@ -144,7 +153,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
 
         @Override
         public CompletableFuture<float[]> getDilation() {
-            return parent.getDilation();
+            return CompletableFuture.completedFuture(dilate.complete(parent));
         }
 
         @Override
