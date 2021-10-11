@@ -16,7 +16,7 @@ import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.impl.model.JsonCuboid;
+import com.minelittlepony.mson.impl.model.JsonCompound;
 import com.minelittlepony.mson.impl.model.JsonLink;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 import com.minelittlepony.mson.util.JsonUtil;
@@ -54,7 +54,7 @@ class StoredModelData implements JsonContext {
 
         elements.putAll(getChildren(json).collect(Collectors.toMap(
                 Map.Entry::getKey,
-                entry -> loadComponent(entry.getKey(), entry.getValue(), JsonCuboid.ID).orElseGet(null)
+                entry -> loadComponent(entry.getKey(), entry.getValue(), JsonCompound.ID).orElseGet(null)
         )));
     }
 

@@ -26,7 +26,7 @@ import com.minelittlepony.mson.impl.StoredModelData.RootContext;
 import com.minelittlepony.mson.impl.export.VanillaModelExportWriter;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.JsonBox;
-import com.minelittlepony.mson.impl.model.JsonCuboid;
+import com.minelittlepony.mson.impl.model.JsonCompound;
 import com.minelittlepony.mson.impl.model.JsonCone;
 import com.minelittlepony.mson.impl.model.JsonPlanar;
 import com.minelittlepony.mson.impl.model.JsonPlane;
@@ -60,7 +60,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     ModelFoundry foundry;
 
     private MsonImpl() {
-        componentTypes.put(JsonCuboid.ID, JsonCuboid::new);
+        componentTypes.put(JsonCompound.ID, JsonCompound::new);
         componentTypes.put(JsonBox.ID, JsonBox::new);
         componentTypes.put(JsonPlane.ID, JsonPlane::new);
         componentTypes.put(JsonPlanar.ID, JsonPlanar::new);

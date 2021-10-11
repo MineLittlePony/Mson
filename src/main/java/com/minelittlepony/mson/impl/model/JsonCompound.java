@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class JsonCuboid implements JsonComponent<ModelPart> {
+public class JsonCompound implements JsonComponent<ModelPart> {
     public static final Identifier ID = new Identifier("mson", "compound");
     private static final float RADS_DEGS_FACTOR = (float)Math.PI / 180F;
 
@@ -51,7 +51,7 @@ public class JsonCuboid implements JsonComponent<ModelPart> {
 
     private final String name;
 
-    public JsonCuboid(JsonContext context, String name, JsonObject json) {
+    public JsonCompound(JsonContext context, String name, JsonObject json) {
         if (json.has("offset")) {
             MsonImpl.LOGGER.warn("Model {} is using the `offset` property. This is deprecated and will be removed in 1.18.", context.getLocals().getModelId());
         }

@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
-public class JsonPlanar extends JsonCuboid {
+public class JsonPlanar extends JsonCompound {
     public static final Identifier ID = new Identifier("mson", "planar");
 
     private final Map<Face, JsonFaceSet> faces = new EnumMap<>(Face.class);
