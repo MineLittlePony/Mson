@@ -153,7 +153,14 @@ public class JsonCompound implements JsonComponent<ModelPart> {
 
         @Override
         public CompletableFuture<float[]> getDilation() {
-            return CompletableFuture.completedFuture(dilate.complete(parent));
+            return parent.getDilation().thenApply(inherited -> {
+                float[] dilation = dilate.complete(parent);
+                return new float[] {
+                    inherited[0] + dilation[0],
+                    inherited[1] + dilation[1],
+                    inherited[2] + dilation[2]
+                };
+            });
         }
 
         @Override
