@@ -25,7 +25,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
@@ -122,6 +121,8 @@ public class JsonPlanar extends JsonCuboid {
 
             private final Incomplete<Texture> texture;
 
+            private final boolean[] mirror;
+
             public JsonFace(JsonContext context, JsonArray json) {
                 position = context.getLocals().get(
                         json.get(0).getAsJsonPrimitive(),
@@ -133,18 +134,22 @@ public class JsonPlanar extends JsonCuboid {
                         json.get(4).getAsJsonPrimitive()
                 );
 
-                if (json.size() > 5) {
-                    JsonElement tex = json.get(5);
-                    if (tex.isJsonPrimitive()) {
-                        texture = createTexture(
-                                context.getLocals().get(json.get(5).getAsJsonPrimitive()),
-                                context.getLocals().get(json.get(6).getAsJsonPrimitive())
-                        );
-                    } else {
-                        texture = JsonTexture.incomplete(Optional.of(tex));
-                    }
+                if (json.size() > 6) {
+                    texture = createTexture(
+                            context.getLocals().get(json.get(5).getAsJsonPrimitive()),
+                            context.getLocals().get(json.get(6).getAsJsonPrimitive())
+                    );
                 } else {
                     texture = JsonTexture::fromParent;
+                }
+
+                if (json.size() > 8) {
+                    mirror = new boolean[] {
+                            json.get(7).getAsBoolean(),
+                            json.get(8).getAsBoolean()
+                    };
+                } else {
+                    mirror = new boolean[2];
                 }
             }
 
@@ -152,6 +157,7 @@ public class JsonPlanar extends JsonCuboid {
                 return new BoxBuilder(context)
                     .fix(fixtures)
                     .tex(texture.complete(context))
+                    .mirror(face.getAxis(), mirror)
                     .pos(position.complete(context))
                     .size(face.getAxis(), size.complete(context))
                     .build(QuadsBuilder.plane(face));

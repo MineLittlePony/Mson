@@ -24,8 +24,10 @@ planar:
                 <x>, <y>, <z>,
                 /* Next two are the size */
                 <width>, <height>,
-                /* Optional override for the inherited texture */
-                [optional] <texture>
+                /* Last two are an optional texture coordinate. If not given, the parent's texture will be used. */
+                [optional] <u>, <v>
+                /* Whether to flip the texture vertically and horizontally */
+                [optional] <mirror-x>, <mirror-y>
             ]
         ]
     }
