@@ -25,6 +25,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
@@ -132,17 +133,31 @@ public class JsonPlanar extends JsonCuboid {
                         json.get(4).getAsJsonPrimitive()
                 );
 
-                if (json.size() > 6) {
-                    texture = createTexture(
-                            context.getLocals().get(json.get(5).getAsJsonPrimitive()),
-                            context.getLocals().get(json.get(6).getAsJsonPrimitive())
-                    );
+                if (json.size() > 5) {
+                    JsonElement tex = json.get(5);
+                    if (tex.isJsonPrimitive()) {
+                        texture = createTexture(
+                                context.getLocals().get(json.get(5).getAsJsonPrimitive()),
+                                context.getLocals().get(json.get(6).getAsJsonPrimitive())
+                        );
+                    } else {
+                        texture = JsonTexture.incomplete(Optional.of(tex));
+                    }
                 } else {
                     texture = JsonTexture::fromParent;
                 }
             }
 
-            private Incomplete<Texture> createTexture(Incomplete<Float> u, Incomplete<Float> v) {
+            public Cuboid export(ModelContext context, Fixtures fixtures) throws FutureAwaitException {
+                return new BoxBuilder(context)
+                    .fix(fixtures)
+                    .tex(texture.complete(context))
+                    .pos(position.complete(context))
+                    .size(face.getAxis(), size.complete(context))
+                    .build(QuadsBuilder.plane(face));
+            }
+
+            private static Incomplete<Texture> createTexture(Incomplete<Float> u, Incomplete<Float> v) {
                 return locals -> {
                     try {
                         Texture parent = locals.getTexture().get();
@@ -157,17 +172,6 @@ public class JsonPlanar extends JsonCuboid {
                     }
                 };
             }
-
-            public Cuboid export(ModelContext context, Fixtures fixtures) throws FutureAwaitException {
-                return new BoxBuilder(context)
-                    .dilate(dilate.complete(context))
-                    .fix(fixtures)
-                    .tex(texture.complete(context))
-                    .pos(position.complete(context))
-                    .size(face.getAxis(), size.complete(context))
-                    .build(QuadsBuilder.plane(face));
-            }
-
         }
     }
 }

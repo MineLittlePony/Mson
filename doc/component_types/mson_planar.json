@@ -24,8 +24,8 @@ planar:
                 <x>, <y>, <z>,
                 /* Next two are the size */
                 <width>, <height>,
-                /* Last two are an optional texture coordinate. If not given, the parent's texture will be used. */
-                [optional] <u>, [optional] <v>
+                /* Optional override for the inherited texture */
+                [optional] <texture>
             ]
         ]
     }
