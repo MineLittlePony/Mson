@@ -64,27 +64,7 @@ class StoredModelData implements JsonContext {
                 return entry.getValue().isJsonObject() || (entry.getValue().isJsonPrimitive() && entry.getValue().getAsJsonPrimitive().isString());
             });
         }
-
-        boolean[] warned = new boolean[1];
-
-        return json.entrySet().stream().filter(entry -> {
-            switch (entry.getKey()) {
-                case "scale":
-                case "dilate":
-                case "parent":
-                case "texture":
-                case "data":
-                case "locals":
-                    return false;
-                default:
-                    if (!warned[0]) {
-                        warned[0] = true;
-                        MsonImpl.LOGGER.warn("Model {} is using a flat definition! This will be removed in 1.18. All structural components now belong under a `data` property", getLocals().getModelId());
-                    }
-                    return entry.getValue().isJsonObject()
-                       || (entry.getValue().isJsonPrimitive() && entry.getValue().getAsJsonPrimitive().isString());
-            }
-        });
+        return Stream.empty();
     }
 
     @Override
@@ -142,7 +122,7 @@ class StoredModelData implements JsonContext {
         Identifier autoGen = new Identifier(id.getNamespace(), id.getPath() + "_dynamic");
 
         if (json.getAsJsonObject().has("data")) {
-            throw new JsonParseException("Model model files should not have a nested data block");
+            throw new JsonParseException("Daynamic model files should not have a nested data block");
         }
 
         JsonObject file = new JsonObject();
@@ -174,12 +154,7 @@ class StoredModelData implements JsonContext {
             this.parent = parent;
             texture = JsonTexture.unlocalized(JsonUtil.accept(json, "texture"), parent.thenComposeAsync(Locals::getTexture));
             locals = Local.of(JsonUtil.accept(json, "locals"));
-
-            boolean legacy = json.has("scale");
-            if (legacy) {
-                MsonImpl.LOGGER.warn("Model {} is using the `scale` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", id);
-            }
-            dilate = JsonUtil.acceptFloats(json, legacy ? "scale" : "dilate", new float[3])
+            dilate = JsonUtil.acceptFloats(json, "dilate", new float[3])
                     .map(CompletableFuture::completedFuture)
                     .orElseGet(() -> parent.thenComposeAsync(JsonContext.Locals::getDilation));
         }

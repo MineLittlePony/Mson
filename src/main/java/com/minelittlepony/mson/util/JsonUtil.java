@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.minelittlepony.mson.impl.MsonImpl;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -47,25 +46,15 @@ public class JsonUtil {
             return output;
         }
         JsonArray arr = json.getAsJsonArray();
-        for (int i = 0; i < output.length && i < arr.size(); i++) {
+
+        if (arr.size() != output.length) {
+            throw new JsonParseException("Expected array of " + output.length + " elements. Instead got " + arr.size());
+        }
+
+        for (int i = 0; i < output.length; i++) {
             output[i] = arr.get(i).getAsFloat();
         }
-        if (arr.size() != output.length) {
-            MsonImpl.LOGGER.warn("Flexible float arrays are deprecated and will be removed in 1.18. The given definition was {} Please replace with {}", json, Arrays.toString(output));
-        }
-        return output;
-    }
 
-    @Deprecated
-    public static int[] getAsInts(JsonElement json, int[] output) {
-        if (!json.isJsonArray()) {
-            Arrays.fill(output, json.getAsInt());
-            return output;
-        }
-        JsonArray arr = json.getAsJsonArray();
-        for (int i = 0; i < output.length && i < arr.size(); i++) {
-            output[i] = arr.get(i).getAsInt();
-        }
         return output;
     }
 
@@ -76,14 +65,13 @@ public class JsonUtil {
         }
         JsonArray arr = json.getAsJsonArray();
 
-        for (int i = 0; i < output.length && i < arr.size(); i++) {
+        if (arr.size() != output.length) {
+            throw new JsonParseException("Expected array of " + output.length + " elements. Instead got " + arr.size());
+        }
+
+        for (int i = 0; i < output.length; i++) {
             output[i] = arr.get(i).getAsBoolean();
         }
-
-        if (arr.size() != output.length) {
-            MsonImpl.LOGGER.warn("Flexible boolean arrays are deprecated and will be removed in 1.18. The given definition was {} Please replace with {}", json, Arrays.toString(output));
-        }
-
         return output;
     }
 }

@@ -11,9 +11,6 @@ public class PartBuilder {
 
     Texture texture = Texture.EMPTY;
 
-    @Deprecated
-    float[] offset = new float[3];
-
     private float[] rotate = new float[3];
     private float[] pivot = new float[3];
 
@@ -62,15 +59,6 @@ public class PartBuilder {
      */
     public PartBuilder mirror(boolean... mirror) {
         this.mirror = mirror;
-        return this;
-    }
-
-    /**
-     * Sets an offset to be used on all shapes and children created through this renderer.
-     */
-    @Deprecated
-    public PartBuilder offset(float... offset) {
-        this.offset = offset;
         return this;
     }
 

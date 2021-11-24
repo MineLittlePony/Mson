@@ -6,8 +6,6 @@ import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.impl.MsonImpl;
-import com.minelittlepony.mson.util.JsonUtil;
 import net.minecraft.client.realms.util.JsonUtils;
 
 import java.util.Optional;
@@ -72,12 +70,6 @@ public class JsonTexture {
     }
 
     private static Texture of(JsonElement json, Texture inherited) {
-        if (json.isJsonArray()) {
-            MsonImpl.LOGGER.warn("Array-form textures do not support inheritance and will be removed in 1.18! Please replace with the expanded form.");
-            int[] parameters = JsonUtil.getAsInts(json.getAsJsonArray(), new int[4]);
-            return new Texture(parameters[0], parameters[1], parameters[2], parameters[3]);
-        }
-
         JsonObject tex = json.getAsJsonObject();
         return new Texture(
             JsonUtils.getIntOr("u", tex, inherited.u()),

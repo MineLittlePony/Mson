@@ -50,12 +50,10 @@ public final class BoxBuilder {
         return this;
     }
 
-    @SuppressWarnings("deprecation")
     public BoxBuilder pos(float... pos) {
-        // We retain the doubling to maintain backwards compatibility.
-        this.pos[0] = pos[0] + (parent.offset[0] * 2);
-        this.pos[1] = pos[1] + (parent.offset[1] * 2);
-        this.pos[2] = pos[2] + (parent.offset[2] * 2);
+        this.pos[0] = pos[0];
+        this.pos[1] = pos[1];
+        this.pos[2] = pos[2];
         return this;
     }
 

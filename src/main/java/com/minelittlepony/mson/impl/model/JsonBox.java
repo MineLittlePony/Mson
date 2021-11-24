@@ -10,7 +10,6 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -36,12 +35,7 @@ public class JsonBox implements JsonComponent<Cuboid> {
         size = context.getLocals().get(json, "size", 3);
         texture = JsonTexture.incomplete(JsonUtil.accept(json, "texture"));
         mirror = JsonUtil.acceptBoolean(json, "mirror");
-        if (json.has("stretch")) {
-            MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getLocals().getModelId());
-            dilate = context.getLocals().get(json, "stretch", 3);
-        } else {
-            dilate = context.getLocals().get(json, "dilate", 3);
-        }
+        dilate = context.getLocals().get(json, "dilate", 3);
     }
 
     @Override

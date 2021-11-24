@@ -5,7 +5,6 @@ import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.client.realms.util.JsonUtils;
 import net.minecraft.util.Identifier;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
@@ -15,11 +14,9 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,9 +28,6 @@ import java.util.stream.Stream;
 public class JsonCompound implements JsonComponent<ModelPart> {
     public static final Identifier ID = new Identifier("mson", "compound");
     private static final float RADS_DEGS_FACTOR = (float)Math.PI / 180F;
-
-    @Deprecated
-    private final Incomplete<float[]> offset;
 
     private final Incomplete<float[]> pivot;
 
@@ -52,24 +46,8 @@ public class JsonCompound implements JsonComponent<ModelPart> {
     private final String name;
 
     public JsonCompound(JsonContext context, String name, JsonObject json) {
-        if (json.has("offset")) {
-            MsonImpl.LOGGER.warn("Model {} is using the `offset` property. This is deprecated and will be removed in 1.18.", context.getLocals().getModelId());
-        }
-        offset = context.getLocals().get(json, "offset", 3);
-
-        if (json.has("center")) {
-            MsonImpl.LOGGER.warn("Model {} is using the `center` property. This is deprecated and will be removed in 1.18. Please replace with `pivot`", context.getLocals().getModelId());
-            pivot = context.getLocals().get(json, "center", 3);
-        } else {
-            pivot = context.getLocals().get(json, "pivot", 3);
-        }
-
-        if (json.has("stretch")) {
-            MsonImpl.LOGGER.warn("Model {} is using the `stretch` property. This is deprecated and will be removed in 1.18. Please use `dilate`.", context.getLocals().getModelId());
-            dilate = context.getLocals().get(json, "stretch", 3);
-        } else {
-            dilate = context.getLocals().get(json, "dilate", 3);
-        }
+        pivot = context.getLocals().get(json, "pivot", 3);
+        dilate = context.getLocals().get(json, "dilate", 3);
 
         rotate = context.getLocals().get(json, "rotate", 3);
         JsonUtil.acceptBooleans(json, "mirror", mirror);
@@ -96,15 +74,6 @@ public class JsonCompound implements JsonComponent<ModelPart> {
         if (json.isJsonObject()) {
             return json.getAsJsonObject().entrySet().stream();
         }
-        if (json.isJsonArray()) {
-            MsonImpl.LOGGER.warn("Model {} is using a children array. Versions in 1.18 will require this to be an object.", context.getLocals().getModelId());
-            JsonArray arr = json.getAsJsonArray();
-            Map<String, JsonElement> children = new HashMap<>();
-            for (int i = 0; i < arr.size(); i++) {
-                children.put("unnamed_element_" + i, arr.get(i));
-            }
-            return children.entrySet().stream();
-        }
         return Stream.empty();
     }
 
@@ -122,7 +91,6 @@ public class JsonCompound implements JsonComponent<ModelPart> {
         builder
                 .hidden(!visible)
                 .pivot(this.pivot.complete(context))
-                .offset(this.offset.complete(context))
                 .mirror(mirror)
                 .rotate(
                     rotate[0] * RADS_DEGS_FACTOR,

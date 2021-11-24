@@ -10,7 +10,6 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.ModelLocalsImpl;
-import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.impl.JsonLocalsImpl;
 import com.minelittlepony.mson.impl.Local;
 import com.minelittlepony.mson.impl.key.ReflectedModelKey;
@@ -46,12 +45,7 @@ public class JsonSlot<T> implements JsonComponent<T> {
 
     public JsonSlot(JsonContext context, String name, JsonObject json) {
         implementation = ReflectedModelKey.fromJson(json);
-        if (json.has("content")) {
-            MsonImpl.LOGGER.warn("Model {} is using a slot with the `content` property. This is deprecated and will be removed in 1.18. Use `data` instead", context.getLocals().getModelId());
-            data = context.resolve(json.get("content"));
-        } else {
-            data = context.resolve(json.get("data"));
-        }
+        data = context.resolve(json.get("data"));
         this.name = name.isEmpty() ? JsonUtil.require(json, "name", " required by mson:slot component in " + context.getLocals().getModelId()).getAsString() : name;
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
         context.addNamedComponent(this.name, this);
