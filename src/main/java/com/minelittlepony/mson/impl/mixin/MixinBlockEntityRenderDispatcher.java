@@ -33,7 +33,7 @@ abstract class MixinBlockEntityRenderDispatcher implements EntityRendererRegistr
     @Shadow
     private @Final EntityModelLoader entityModelLoader;
     @Shadow
-    private @Final Supplier<BlockRenderManager> field_27747;
+    private @Final Supplier<BlockRenderManager> blockRenderManager;
 
     @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
     private void onInit(CallbackInfo info) {
@@ -43,7 +43,7 @@ abstract class MixinBlockEntityRenderDispatcher implements EntityRendererRegistr
     @Override
     public <P extends BlockEntity, R extends BlockEntityRenderer<?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererFactory.Context, R> constructor) {
         try {
-            BlockEntityRendererFactory.Context context = new BlockEntityRendererFactory.Context((BlockEntityRenderDispatcher)(Object)this, field_27747.get(), entityModelLoader, textRenderer);
+            BlockEntityRendererFactory.Context context = new BlockEntityRendererFactory.Context((BlockEntityRenderDispatcher)(Object)this, blockRenderManager.get(), entityModelLoader, textRenderer);
             if (renderers instanceof ImmutableMap) {
                 renderers = new HashMap<>(renderers);
             }
