@@ -5,17 +5,51 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
 import com.minelittlepony.mson.api.model.Cube;
-import com.minelittlepony.mson.api.model.MsonPart;
 import com.minelittlepony.mson.api.model.Rect;
 import com.minelittlepony.mson.api.model.Vert;
+import com.minelittlepony.mson.impl.skeleton.PartSkeleton;
+import com.minelittlepony.mson.impl.skeleton.Skeleton;
+
+import java.util.List;
+import java.util.Map;
 
 import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.ModelPart.Cuboid;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3f;
 
-@SuppressWarnings("deprecation")
 @Mixin(ModelPart.class)
-abstract class MixinModelPart implements MsonPart {}
+abstract class MixinModelPart implements PartSkeleton {
+    @Shadow
+    private @Final List<Cuboid> cuboids;
+
+    @Override
+    @Accessor("children")
+    public abstract Map<String, ModelPart> getChildren();
+
+    @Override
+    public int getTotalDirectCubes() {
+        return cuboids.size();
+    }
+
+    @Override
+    public ModelPart getSelf() {
+        return (ModelPart)(Object)this;
+    }
+
+    @Inject(method = "renderCuboids", at = @At("HEAD"))
+    private void onRenderCuboids(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha, CallbackInfo info) {
+        if (vertexConsumer instanceof Skeleton.Visitor) {
+            ((Skeleton.Visitor)vertexConsumer).visit(getSelf());
+        }
+    }
+}
 
 @Mixin(ModelPart.Cuboid.class)
 abstract class MixinCuboid implements Cube {

@@ -9,6 +9,7 @@ import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.CommonLocals;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.impl.skeleton.JsonSkeleton;
 
 import java.util.Optional;
 import java.util.Set;
@@ -66,6 +67,13 @@ public interface JsonContext {
      * Gets the local variable resolver for this context.
      */
     Locals getLocals();
+
+    /**
+     * Gets the model's declared skeleton.
+     * <p>
+     * This is optional metadata that can be used by mods who need to know how to put the model together for animations.
+     */
+    Optional<JsonSkeleton> getSkeleton();
 
     /**
      * Interface for accessing contextual values.

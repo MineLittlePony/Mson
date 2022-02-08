@@ -19,6 +19,7 @@ import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.model.JsonCompound;
 import com.minelittlepony.mson.impl.model.JsonLink;
 import com.minelittlepony.mson.impl.model.JsonTexture;
+import com.minelittlepony.mson.impl.skeleton.JsonSkeleton;
 import com.minelittlepony.mson.util.JsonUtil;
 import com.minelittlepony.mson.util.Maps;
 
@@ -42,6 +43,8 @@ class StoredModelData implements JsonContext {
 
     private final JsonContext.Locals variables;
 
+    private final Optional<JsonSkeleton> skeleton;
+
     StoredModelData(ModelFoundry foundry, Identifier id, JsonObject json) {
         this.foundry = foundry;
         parent = JsonUtil.accept(json, "parent")
@@ -56,6 +59,10 @@ class StoredModelData implements JsonContext {
                 Map.Entry::getKey,
                 entry -> loadComponent(entry.getKey(), entry.getValue(), JsonCompound.ID).orElseGet(null)
         )));
+
+        skeleton = JsonUtil.accept(json, "skeleton")
+                .map(JsonElement::getAsJsonObject)
+                .map(JsonSkeleton::new);
     }
 
     private Stream<Map.Entry<String, JsonElement>> getChildren(JsonObject json) {
@@ -109,6 +116,11 @@ class StoredModelData implements JsonContext {
         }
 
         throw new UnsupportedOperationException("Json was not a js object and could not be resolved to a js link");
+    }
+
+    @Override
+    public Optional<JsonSkeleton> getSkeleton() {
+        return skeleton.or(() -> parent.getNow(EmptyJsonContext.INSTANCE).getSkeleton());
     }
 
     @Override

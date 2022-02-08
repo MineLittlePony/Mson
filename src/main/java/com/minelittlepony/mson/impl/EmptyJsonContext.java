@@ -10,6 +10,7 @@ import com.minelittlepony.mson.api.exception.EmptyContextException;
 import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.impl.skeleton.JsonSkeleton;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -53,6 +54,11 @@ final class EmptyJsonContext implements JsonContext, JsonLocalsImpl {
 
     @Override
     public <T> Optional<JsonComponent<T>> loadComponent(String name, JsonElement json, Identifier defaultAs) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<JsonSkeleton> getSkeleton() {
         return Optional.empty();
     }
 

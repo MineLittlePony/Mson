@@ -42,7 +42,7 @@ final class Test {
         Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("default", RAYMAN);
         Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("slim", RAYMAN);
 
-        if (true) return;
+        //if (true) return;
 
         ModelKey<CreeperEntityModel<CreeperEntity>> CREEPER = Mson.getInstance().registerModel(new Identifier("mson_test", "creeper"), CreeperEntityModel::new);
         Mson.getInstance().getEntityRendererRegistry().registerEntityRenderer(EntityType.CREEPER, r -> new CreeperEntityRenderer(r) {{

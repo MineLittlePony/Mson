@@ -2,6 +2,16 @@
 	"texture": {
 		"w": 64, "h": 32
 	},
+	"skeleton": {
+	    "head": {
+	       "body": {
+	           "left_hind_leg": {},
+	           "right_hind_leg": {},
+	           "left_front_leg": {},
+	           "right_front_leg": {}
+	       }
+	    }
+	},
 	"data": {
 		"head": {
 			"pivot": [0, 6, 0],

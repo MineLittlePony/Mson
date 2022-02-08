@@ -32,6 +32,8 @@ import com.minelittlepony.mson.impl.model.JsonPlanar;
 import com.minelittlepony.mson.impl.model.JsonPlane;
 import com.minelittlepony.mson.impl.model.JsonQuads;
 import com.minelittlepony.mson.impl.model.JsonSlot;
+import com.minelittlepony.mson.impl.skeleton.PartSkeleton;
+import com.minelittlepony.mson.impl.skeleton.SkeletonisedModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -182,7 +184,14 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
                 ModelContext ctx = context.createContext(null, locals);
                 ctx.getTree(tree);
 
-                V t = factory.create(new ModelPart(new ArrayList<>(), tree));
+                ModelPart root = new ModelPart(new ArrayList<>(), tree);
+                V t = factory.create(root);
+
+                if (t instanceof SkeletonisedModel) {
+                    ((SkeletonisedModel)t).setSkeleton(context.getSkeleton()
+                            .map(s -> s.getSkeleton(root))
+                            .orElseGet(() -> PartSkeleton.of(root)));
+                }
                 if (t instanceof MsonModel) {
                     if (ctx instanceof RootContext) {
                         ((RootContext)ctx).setModel(t);
