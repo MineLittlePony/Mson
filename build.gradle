@@ -35,6 +35,7 @@ sourceSets {
 }
 
 repositories {
+    mavenLocal()
     maven {
         name = 'modmenu'
         url = 'https://maven.terraformersmc.com/releases'
@@ -51,6 +52,8 @@ dependencies {
     modApi fabricApi.module("fabric-resource-loader-v0", project.fabric_version)
 
     modCompileOnly("com.terraformersmc:modmenu:${project.modmenu_version}")
+    // TODO: Maven?
+    modCompileOnly("net.diebuddies:physics-mod:2.6.7-mc-1.18-fabric")
 }
 
 processResources {

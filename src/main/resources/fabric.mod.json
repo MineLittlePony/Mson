@@ -16,6 +16,9 @@
   "entrypoints": {
     "client": [
       "com.minelittlepony.mson.impl.MsonMod"
+    ],
+    "mson:api/physicsmod": [
+      "com.minelittlepony.mson.compatibility.ragdoll.MsonRagdollHook"
     ]
   },
   "mixins": [
