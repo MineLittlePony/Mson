@@ -101,7 +101,8 @@ public interface QuadsBuilder {
             Vert eun = ctx.vert(xMax, yMax, zMax, 8, 8);
             Vert wun = ctx.vert(xMin, yMax, zMax, 8, 0);
 
-            Rect[] quads = new Rect[1];
+            Rect dummy = ctx.quad(ctx.u, ctx.v, 0, 0, Direction.UP, edn, edn, edn, edn);
+            Rect[] quads = new Rect[] { dummy, dummy, dummy, dummy, dummy, dummy };
 
             boolean mirror = ctx.mirror[0] || ctx.mirror[1] || ctx.mirror[2];
 
