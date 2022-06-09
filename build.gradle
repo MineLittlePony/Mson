@@ -1,6 +1,6 @@
 plugins {
     id 'java-library'
-    id 'fabric-loom' version '0.10-SNAPSHOT'
+    id 'fabric-loom' version '0.12-SNAPSHOT'
     id 'maven-publish'
     id 'org.ajoberstar.reckon' version '0.13.0'
 }
@@ -47,7 +47,7 @@ dependencies {
     modApi "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modApi fabricApi.module("fabric-api-base", project.fabric_version)
-    modApi fabricApi.module("fabric-events-lifecycle-v0", project.fabric_version)
+    modApi fabricApi.module("fabric-lifecycle-events-v1", project.fabric_version)
     modApi fabricApi.module("fabric-resource-loader-v0", project.fabric_version)
 
     modCompileOnly("com.terraformersmc:modmenu:${project.modmenu_version}")

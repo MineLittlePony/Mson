@@ -43,7 +43,13 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     private EntityRendererFactory.Context createContext() {
         MinecraftClient mc = MinecraftClient.getInstance();
         EntityRenderDispatcher self = (EntityRenderDispatcher)(Object)this;
-        return new EntityRendererFactory.Context(self, mc.getItemRenderer(), mc.getResourceManager(), modelLoader, mc.textRenderer);
+        return new EntityRendererFactory.Context(self,
+                mc.getItemRenderer(),
+                mc.getBlockRenderManager(),
+                mc.getEntityRenderDispatcher().getHeldItemRenderer(), mc.getResourceManager(),
+                modelLoader,
+                mc.textRenderer
+        );
     }
 
     @Override

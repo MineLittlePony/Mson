@@ -7,7 +7,10 @@ import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.model.EntityModelLoader;
+import net.minecraft.client.render.item.ItemRenderer;
+
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -34,6 +37,10 @@ abstract class MixinBlockEntityRenderDispatcher implements EntityRendererRegistr
     private @Final EntityModelLoader entityModelLoader;
     @Shadow
     private @Final Supplier<BlockRenderManager> blockRenderManager;
+    @Shadow
+    private @Final Supplier<ItemRenderer> itemRenderer;
+    @Shadow
+    private @Final Supplier<EntityRenderDispatcher> entityRenderDispatcher;
 
     @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
     private void onInit(CallbackInfo info) {
@@ -43,7 +50,11 @@ abstract class MixinBlockEntityRenderDispatcher implements EntityRendererRegistr
     @Override
     public <P extends BlockEntity, R extends BlockEntityRenderer<?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererFactory.Context, R> constructor) {
         try {
-            BlockEntityRendererFactory.Context context = new BlockEntityRendererFactory.Context((BlockEntityRenderDispatcher)(Object)this, blockRenderManager.get(), entityModelLoader, textRenderer);
+            BlockEntityRendererFactory.Context context = new BlockEntityRendererFactory.Context((BlockEntityRenderDispatcher)(Object)this,
+                    blockRenderManager.get(),
+                    itemRenderer.get(),
+                    entityRenderDispatcher.get(),
+                    entityModelLoader, textRenderer);
             if (renderers instanceof ImmutableMap) {
                 renderers = new HashMap<>(renderers);
             }

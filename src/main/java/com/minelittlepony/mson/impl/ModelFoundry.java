@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
@@ -13,7 +12,6 @@ import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.util.ThrowableUtils;
 
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -57,25 +55,26 @@ class ModelFoundry {
                 loadedFiles.put(id, CompletableFuture.supplyAsync(() -> {
                     serverProfiler.startTick();
                     clientProfiler.push("Loading MSON model - " + id);
-                    Identifier file = new Identifier(id.getNamespace(), "models/" + id.getPath() + ".json");
+                    try {
+                        Identifier file = new Identifier(id.getNamespace(), "models/" + id.getPath() + ".json");
 
-                    if (!manager.containsResource(file)) {
-                        if (failHard) {
-                            MsonImpl.LOGGER.error("Could not load model json for {}", file);
-                        }
-                        return EmptyJsonContext.INSTANCE;
-                    }
-                    try (Resource res = manager.getResource(file);
-                         Reader reader = new InputStreamReader(res.getInputStream(), Charsets.UTF_8)) {
-                        return new StoredModelData(this, id, GSON.fromJson(reader, JsonObject.class));
-                    } catch (Exception e) {
-                        MsonImpl.LOGGER.error("Could not load model json for {}", file, ThrowableUtils.getRootCause(e));
+                        return manager.getResource(file).map(resource -> {
+                            try (var reader = new InputStreamReader(resource.getInputStream(), Charsets.UTF_8)) {
+                                return (JsonContext)new StoredModelData(this, id, GSON.fromJson(reader, JsonObject.class));
+                            } catch (Exception e) {
+                                MsonImpl.LOGGER.error("Could not load model json for {}", file, ThrowableUtils.getRootCause(e));
+                            }
+                            return null;
+                        }).orElseGet(() -> {
+                            if (failHard) {
+                                MsonImpl.LOGGER.error("Could not load model json for {}", file);
+                            }
+                            return EmptyJsonContext.INSTANCE;
+                        });
                     } finally {
                         clientProfiler.pop();
                         serverProfiler.endTick();
                     }
-
-                    return EmptyJsonContext.INSTANCE;
                 }, executor));
             }
             return loadedFiles.get(id);

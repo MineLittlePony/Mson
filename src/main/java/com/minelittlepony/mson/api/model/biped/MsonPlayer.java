@@ -3,11 +3,10 @@ package com.minelittlepony.mson.api.model.biped;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.math.random.Random;
 
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.util.PartUtil;
-
-import java.util.Random;
 
 public class MsonPlayer<T extends LivingEntity>
     extends PlayerEntityModel<T>
