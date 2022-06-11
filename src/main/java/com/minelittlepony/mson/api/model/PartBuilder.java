@@ -66,6 +66,7 @@ public class PartBuilder {
         ModelPart part = new ModelPart(cubes, children);
         part.setAngles(rotate[0], rotate[1], rotate[2]);
         part.setPivot(pivot[0], pivot[1], pivot[2]);
+        part.setDefaultTransform(part.getTransform());
         part.visible = !hidden;
         return part;
     }
