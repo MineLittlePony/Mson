@@ -13,10 +13,18 @@ import com.minelittlepony.mson.api.model.QuadsBuilder;
 
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Specialisation of a cube with a tapered end.
+ *
+ * @author Sollace
+ */
 public class JsonCone extends JsonBox {
-
     public static final Identifier ID = new Identifier("mson", "cone");
 
+    /**
+     * The amount by which the box must taper.
+     * A value of 0 will produce the same result as a normal cube.
+     */
     private final Incomplete<Float> taper;
 
     public JsonCone(JsonContext context, String name, JsonObject json) {

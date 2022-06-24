@@ -21,6 +21,12 @@ import com.minelittlepony.mson.util.JsonUtil;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Represents a custom structure where the quads and vertices are manually defined.
+ *
+ * @author Sollace
+ * @apiNote Experimental. This feature may disappear in the future.
+ */
 public class JsonQuads implements JsonComponent<Cuboid>, QuadsBuilder {
 
     public static final Identifier ID = new Identifier("mson", "quads");

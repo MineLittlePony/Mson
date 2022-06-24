@@ -25,24 +25,69 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Represents a transformable node in a model.
+ * Compound may contain multiple cubes underneath it as well as other child parts.
+ *
+ * @author Sollace
+ */
 public class JsonCompound implements JsonComponent<ModelPart> {
     public static final Identifier ID = new Identifier("mson", "compound");
     private static final float RADS_DEGS_FACTOR = (float)Math.PI / 180F;
 
+    /**
+     * The 3D center of rotation of this part.
+     */
     private final Incomplete<float[]> pivot;
 
+    /**
+     * The 3D dilation of this part along each of the primary axis.
+     * These values are inherited by all of this part's children who's own dilation is then taken as an offset of this one.
+     */
     protected final Incomplete<float[]> dilate;
 
+    /**
+     * The 3D rotation of this part in degrees.
+     */
     private final Incomplete<float[]> rotate;
 
+    /**
+     * The 3D mirroring of this part's textures along each of the major axis.
+     * This value is inherited by  all of this part's children that do not define their own mirroring.
+     */
     private final boolean[] mirror = new boolean[3];
+
+    /**
+     * The visibility of this part.
+     */
     private final boolean visible;
 
+    /**
+     * The child components of this part.
+     * Can be any component that produces a ModelPart.
+     * The default type for a child component is mson:compound (same as the parent).
+     */
     private final Map<String, JsonComponent<?>> children = new TreeMap<>();
+
+    /**
+     * The cubes that form the visible structure of this part.
+     * Can be any component that produces a Cuboid.
+     * The default type for cubes is mson:box.
+     *
+     * @see JsonBox#ID
+     */
     private final List<JsonComponent<?>> cubes = new ArrayList<>();
 
+    /**
+     * The optional texture with parameters inherited from the slot's outer context.
+     * This texture is inherited by any children of this compound and their texture
+     * definitions are <b>combined</b> with this one's.
+     */
     protected final Incomplete<Texture> texture;
 
+    /**
+     * The name that this compound is to be exposed as.
+     */
     private final String name;
 
     public JsonCompound(JsonContext context, String name, JsonObject json) {

@@ -16,18 +16,40 @@ import com.minelittlepony.mson.util.JsonUtil;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Represents a simple 3D cube.
+ *
+ * @author Sollace
+ */
 public class JsonBox implements JsonComponent<Cuboid> {
-
     public static final Identifier ID = new Identifier("mson", "box");
 
+    /**
+     * The 3D coordinate of where the box should begin.
+     */
     protected final Incomplete<float[]> from;
 
+    /**
+     * The 3D size of the box.
+     */
     protected final Incomplete<float[]> size;
 
+    /**
+     * The 3D dilation of the box along all of the major axis.
+     * If not defined, will use what is inherited from the parent context.
+     */
     protected final Incomplete<float[]> dilate;
 
+    /**
+     * The optional texture mirroring of the box along the X axis (mojang behaviour).
+     * If not defined, will use what is inherited from the parent context.
+     */
     protected final Optional<Boolean> mirror;
 
+    /**
+     * The Optional texture overrides.
+     * If not defined, will use what is inherited from the parent context.
+     */
     protected final Incomplete<Texture> texture;
 
     public JsonBox(JsonContext context, String name, JsonObject json) {

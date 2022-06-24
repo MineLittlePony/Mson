@@ -15,18 +15,47 @@ import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.concurrent.ExecutionException;
 
+/**
+ * A single-face alternative to mson:box
+ *
+ * @author Sollace
+ */
 public class JsonPlane implements JsonComponent<Cuboid> {
 
     public static final Identifier ID = new Identifier("mson", "plane");
 
+    /**
+     * The 3D position where this plane will appear.
+     */
     private final Incomplete<float[]> position;
+
+    /**
+     * The 2D dimensions of the plane.
+     */
     private final Incomplete<float[]> size;
+
+    /**
+     * The 2D dilation of the place along the two major axis
+     */
     private final Incomplete<float[]> dilate;
 
+    /**
+     * The texturing to be applied to the plane.
+     * If defined, will combine this values with what was inherited,
+     * otherwise only the inherited texture is used.
+     */
     private final Incomplete<Texture> texture;
 
+    /**
+     * The 2D mirroring of this plane's texture along the two major axis.
+     */
     private final boolean[] mirror = new boolean[2];
 
+    /**
+     * The orientation of this plane.
+     * Can be either of the 6 faces of a cube, and will be used to inform which axis this
+     * plane runs perpendicular to in 3D space.
+     */
     private final Face face;
 
     public JsonPlane(JsonContext context, String name, JsonObject json) {

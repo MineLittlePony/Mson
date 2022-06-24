@@ -15,25 +15,45 @@ import com.minelittlepony.mson.impl.Local;
 import com.minelittlepony.mson.impl.key.ReflectedModelKey;
 import com.minelittlepony.mson.util.JsonUtil;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Represents an in-place insertion of another model file's contents
+ * with the option to instantiate it to a custom type.
+ *
+ * @param <T> The type of the part produced.
+ *              If the part is compatible with either ModelPart or Cuboid it may appear in the model's structure
+ *              as a normal part, otherwise it has to be retrieved via ModelContext#findByName.
+ *
+ * @author Sollace
+ */
 public class JsonSlot<T> implements JsonComponent<T> {
     public static final Identifier ID = new Identifier("mson", "slot");
 
     private final ReflectedModelKey<T> implementation;
 
+    /**
+     * The contents of this slot either expressed at a map of child elements, or a string pointing to a file.
+     */
     private final CompletableFuture<JsonContext> data;
 
+    /**
+     * The optional locals block.
+     */
     private final Local.Block locals;
 
+    /**
+     * The optional texture with parameters inherited from the slot's outer context.
+     * This texture is applied <b>instead of</b> the texture defined in the imported file.
+     */
     private final Optional<Texture> texture;
 
-    @Nullable
-    private String name;
+    /**
+     * The name that this slot is to be exposed as.
+     */
+    private final String name;
 
     @Override
     public <K> Optional<K> tryExportTreeNodes(ModelContext context, Class<K> type) {

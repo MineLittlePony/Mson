@@ -28,6 +28,13 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
+/**
+ * A specialisation of a compound that allows for adding
+ * separate planes to it's list of cubes in a compact manner.
+ *
+ * @author Sollace
+ * @credit killjoy for the suggestion
+ */
 public class JsonPlanar extends JsonCompound {
     public static final Identifier ID = new Identifier("mson", "planar");
 
