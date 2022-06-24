@@ -6,8 +6,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 @FunctionalInterface
-public
-interface FutureSupplier<T> extends Function<String, T> {
+public interface FutureSupplier<T> extends Function<String, T> {
     @Override
     default T apply(String key) throws FutureAwaitException {
         try {

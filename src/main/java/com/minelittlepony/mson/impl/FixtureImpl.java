@@ -3,6 +3,9 @@ package com.minelittlepony.mson.impl;
 import com.minelittlepony.mson.api.model.CoordinateFixture;
 import com.minelittlepony.mson.api.model.Face.Axis;
 
+/**
+ * An implementation of {@link CoordinateFixture} that dilates all coordinates equally.
+ */
 public class FixtureImpl implements CoordinateFixture {
 
     public static final CoordinateFixture NULL = new FixtureImpl();

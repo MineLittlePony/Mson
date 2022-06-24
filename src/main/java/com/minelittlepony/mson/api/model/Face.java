@@ -44,10 +44,22 @@ public enum Face {
         return (getAxis() == Axis.Y ? -1 : 1) * stretch;
     }
 
+    /**
+     * The perpendicular axis of the plane parallel to this face.
+     */
     public Axis getAxis() {
         return axis;
     }
 
+    /**
+     * Determines whether a vertex intersects with a bounded plane oriented parallel to this face.
+     *
+     * @param position   The 3D position of the plane
+     * @param dimensions The 2D dimensions (width + height) of the plane
+     * @param vertex     The vertex to check.
+     *
+     * @return True if the vertex is within the plane's bounds.
+     */
     public boolean isInside(float[] position, float[] dimensions, Vec3d vertex) {
         float x = position[0];
         float y = position[1];
@@ -66,7 +78,18 @@ public enum Face {
         return value >= min && value <= max;
     }
 
-    public Stream<Corner> getVertices(float[] position, float[] dimensions, Axis axis, float stretch) {
+    /**
+     * Generates the corner vertices that make up a square plane aligned with this face.
+     * Can apply an optional dilation along any one of the primary axis.
+     *
+     * @param position   The 3D position of the plane.
+     * @param dimensions The 2D dimensions (width + height) of the plane.
+     * @param axis       The axis of dilation
+     * @param dilate     The amount of dilation to be applied
+     *
+     * @return A corner holding both the original and post-dilation vectors of the vertex.
+     */
+    public Stream<Corner> getVertices(float[] position, float[] dimensions, Axis axis, float dilate) {
 
         Vec3d min = new Vec3d(position[0], position[1], position[2]);
         Vec3d max = new Vec3d(
@@ -75,17 +98,17 @@ public enum Face {
                 getAxis().getDepth().getFloat(dimensions)
         );
 
-        Vec3d str = stretch == 0 ? Vec3d.ZERO : new Vec3d(
-                (axis == Axis.X ? stretch : 0),
-                (axis == Axis.Y ? stretch : 0),
-                (axis == Axis.Z ? stretch : 0)
+        Vec3d str = dilate == 0 ? Vec3d.ZERO : new Vec3d(
+                (axis == Axis.X ? dilate : 0),
+                (axis == Axis.Y ? dilate : 0),
+                (axis == Axis.Z ? dilate : 0)
         );
-        Vec3d stretchedMin = stretch == 0 ? min : min.subtract(str);
-        Vec3d stretchedMax = stretch == 0 ? max : max.add(str.multiply(2));
+        Vec3d stretchedMin = dilate == 0 ? min : min.subtract(str);
+        Vec3d stretchedMax = dilate == 0 ? max : max.add(str.multiply(2));
 
         return Arrays.stream(Corner.CORNERS).map(corner -> {
             Vec3d cornerVec = min.add(max.multiply(corner));
-            Vec3d stretched = stretch == 0 ? cornerVec : stretchedMin.add(stretchedMax.multiply(corner));
+            Vec3d stretched = dilate == 0 ? cornerVec : stretchedMin.add(stretchedMax.multiply(corner));
             return new Corner(cornerVec, stretched);
         }).distinct();
     }
@@ -99,9 +122,9 @@ public enum Face {
         Y( 0, -1,  1),
         Z( 0,  1, -1);
 
-        private Parameter widthIndex;
-        private Parameter heightIndex;
-        private Parameter depthIndex;
+        private final Parameter widthIndex;
+        private final Parameter heightIndex;
+        private final Parameter depthIndex;
 
         Axis(int w, int h, int d) {
             widthIndex = new Parameter(w);

@@ -95,13 +95,13 @@ public class JsonPlanar extends JsonCompound {
 
                                 List<Vec3d> locked = getLockedVectors(axis);
 
-                                if (locked.contains(vertex.normal)) {
+                                if (locked.contains(vertex.normal())) {
                                     return;
                                 }
 
                                 for (JsonFace f : elements) {
-                                    if (f != i && face.isInside(f.position.complete(context), f.size.complete(context), vertex.stretched)) {
-                                        locked.add(vertex.normal);
+                                    if (f != i && face.isInside(f.position.complete(context), f.size.complete(context), vertex.stretched())) {
+                                        locked.add(vertex.normal());
                                         break;
                                     }
                                 }
