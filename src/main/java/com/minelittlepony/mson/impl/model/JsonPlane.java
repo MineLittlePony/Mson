@@ -64,7 +64,7 @@ public class JsonPlane implements JsonComponent<Cuboid> {
         texture = JsonTexture.incomplete(JsonUtil.accept(json, "texture"));
         JsonUtil.acceptBooleans(json, "mirror", mirror);
         dilate = context.getLocals().get(json, "dilate", 3);
-        face = Face.valueOf(JsonUtil.require(json, "face", " required by mson:plane component in " + context.getLocals().getModelId()).getAsString().toUpperCase());
+        face = Face.valueOf(JsonUtil.require(json, "face", ID, context.getLocals().getModelId()).getAsString().toUpperCase());
     }
 
     @Override

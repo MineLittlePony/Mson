@@ -66,7 +66,7 @@ public class JsonSlot<T> implements JsonComponent<T> {
     public JsonSlot(JsonContext context, String name, JsonObject json) {
         implementation = ReflectedModelKey.fromJson(json);
         data = context.resolve(json.get("data"));
-        this.name = name.isEmpty() ? JsonUtil.require(json, "name", " required by mson:slot component in " + context.getLocals().getModelId()).getAsString() : name;
+        this.name = name.isEmpty() ? JsonUtil.require(json, "name", ID, context.getLocals().getModelId()).getAsString() : name;
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
         context.addNamedComponent(this.name, this);
 

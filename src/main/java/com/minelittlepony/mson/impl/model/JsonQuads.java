@@ -37,16 +37,15 @@ public class JsonQuads implements JsonComponent<Cuboid>, QuadsBuilder {
     private final int texV;
 
     public JsonQuads(JsonContext context, String name, JsonObject json) {
-        String caller = " required by mson:quads component in " + context.getLocals().getModelId();
-        texU = JsonUtil.require(json, "u", caller).getAsInt();
-        texV = JsonUtil.require(json, "v", caller).getAsInt();
+        texU = JsonUtil.require(json, "u", ID, context.getLocals().getModelId()).getAsInt();
+        texV = JsonUtil.require(json, "v", ID, context.getLocals().getModelId()).getAsInt();
 
-        List<JsonVertex> vertices = Streams.stream(JsonUtil.require(json, "vertices", caller)
+        List<JsonVertex> vertices = Streams.stream(JsonUtil.require(json, "vertices", ID, context.getLocals().getModelId())
                 .getAsJsonArray())
                 .map(JsonVertex::new)
                 .collect(Collectors.toList());
 
-        quads = Streams.stream(JsonUtil.require(json, "faces", caller).getAsJsonArray())
+        quads = Streams.stream(JsonUtil.require(json, "faces", ID, context.getLocals().getModelId()).getAsJsonArray())
             .map(v -> new JsonQuad(context, vertices, v))
             .collect(Collectors.toList());
     }
@@ -80,8 +79,7 @@ public class JsonQuads implements JsonComponent<Cuboid>, QuadsBuilder {
             y = JsonUtils.getIntOr("y", o, 0);
             w = JsonUtils.getIntOr("w", o, 0);
             h = JsonUtils.getIntOr("h", o, 0);
-            String caller = " required by quads block in mson:quads component in " + context.getLocals().getModelId();
-            verts = Streams.stream(JsonUtil.require(o, "vertices", caller).getAsJsonArray())
+            verts = Streams.stream(JsonUtil.require(o, "vertices", ID, context.getLocals().getModelId()).getAsJsonArray())
                 .map(JsonElement::getAsInt)
                 .map(vertices::get)
                 .collect(Collectors.toList());

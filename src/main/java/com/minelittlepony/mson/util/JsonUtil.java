@@ -13,8 +13,9 @@ public class JsonUtil {
         return Optional.ofNullable(json.get(member)).filter(j -> !j.isJsonNull());
     }
 
-    public static JsonElement require(JsonObject json, String member, String caller) {
+    public static JsonElement require(JsonObject json, String member, Object... callerStack) {
         if (!json.has(member)) {
+            String caller = String.join(" in ", Arrays.stream(callerStack).map(Object::toString).toArray(String[]::new));
             throw new JsonParseException(String.format("Missing required member `%s` in %s", member, caller));
         }
         return json.get(member);

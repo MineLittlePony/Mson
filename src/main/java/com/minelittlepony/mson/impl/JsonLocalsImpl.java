@@ -49,21 +49,21 @@ public interface JsonLocalsImpl extends JsonContext.Locals {
             }).orElseGet(() -> zeros(len)));
     }
 
-    private Incomplete<Float>[] zeros(int len) {
-        @SuppressWarnings("unchecked")
-        Incomplete<Float>[] output = new Incomplete[len];
-        Arrays.fill(output, Incomplete.ZERO);
-        return output;
-    }
-
     @Override
     default Incomplete<Float> get(JsonObject json, String member) {
-        JsonElement js = JsonUtil.require(json, member, " required by " + getModelId());
+        JsonElement js = JsonUtil.require(json, member, "Locals", getModelId());
 
         if (!js.isJsonPrimitive()) {
             throw new JsonParseException(String.format("Non-primitive type found in member %s for model %s. Can only be values (Number) or variable references (#variable). %s", member, getModelId(), js));
         }
         return Local.ref(js.getAsJsonPrimitive());
+    }
+
+    private static Incomplete<Float>[] zeros(int len) {
+        @SuppressWarnings("unchecked")
+        Incomplete<Float>[] output = new Incomplete[len];
+        Arrays.fill(output, Incomplete.ZERO);
+        return output;
     }
 
     private static Incomplete<float[]> toFloats(Incomplete<Float>[] input) {
