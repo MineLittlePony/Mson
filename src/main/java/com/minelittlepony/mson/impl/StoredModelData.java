@@ -134,7 +134,7 @@ class StoredModelData implements JsonContext {
         Identifier autoGen = new Identifier(id.getNamespace(), id.getPath() + "_dynamic");
 
         if (json.getAsJsonObject().has("data")) {
-            throw new JsonParseException("Daynamic model files should not have a nested data block");
+            throw new JsonParseException("Dynamic model files should not have a nested data block");
         }
 
         JsonObject file = new JsonObject();
