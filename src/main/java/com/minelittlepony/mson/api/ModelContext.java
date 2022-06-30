@@ -89,6 +89,8 @@ public interface ModelContext {
      * Resolves this context against the given object.
      * Returns a new sub-context as a child of this one where the result of `getContext()` returns the passed in object.
      *
+     * @param child The object instance to serve as the new immediate context.
+     *
      * @throws NullPointerException if the passed in object is null.
      */
     default ModelContext resolve(Object child) {
@@ -98,6 +100,9 @@ public interface ModelContext {
     /**
      * Resolves this context against the given object and local variables.
      * Returns a new sub-context as a child of this one where the result of `getContext()` returns the passed in object.
+     *
+     * @param child The object instance to serve as the new immediate context.
+     * @param locals The new local variables.
      *
      * @throws NullPointerException if the passed in object is null.
      */

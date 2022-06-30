@@ -23,6 +23,9 @@ import java.util.concurrent.CompletableFuture;
 public interface JsonContext {
     /**
      * Registers a component with a name to the enclosing scope.
+     *
+     * @param The name of the component to make available
+     * @param The component instance (often this)
      */
     <T> void addNamedComponent(String name, JsonComponent<T> component);
 
@@ -30,6 +33,9 @@ public interface JsonContext {
      * Loads a json block into a component.
      *
      * Defers  to the component-types pipeline to return the corresponding instance to that of the passed in json.
+     *
+     * @param json The json element to parse
+     * @param defaultAs The default type to assume when the supplied json structure does not define one.
      */
     <T> Optional<JsonComponent<T>> loadComponent(JsonElement json, Identifier defaultAs);
 
@@ -37,11 +43,18 @@ public interface JsonContext {
      * Loads a json block into a component.
      *
      * Defers  to the component-types pipeline to return the corresponding instance to that of the passed in json.
+     *
+     * @param name The name to assign to the loaded component.
+     * @param json The json element to parse
+     * @param defaultAs The default type to assume when the supplied json structure does not define one.
      */
     <T> Optional<JsonComponent<T>> loadComponent(String name, JsonElement json, Identifier defaultAs);
 
     /**
-     * Creates a new model context for the supplied model instance.
+     * Creates a new model context for the supplied model instance and local variables.
+     *
+     * @param model The model being instantiated with this context.
+     * @param locals The relevant local variables and inherited references.
      */
     ModelContext createContext(Model model, ModelContext.Locals locals);
 
@@ -60,6 +73,8 @@ public interface JsonContext {
      *
      * If the json contains an id referencing another file, that file will be loaded asynchronously alongside this one.
      * Otherwise the json tree itself serves as the contents, and the new context is resolved immediately upon return.
+     *
+     * @param json The json structure to parse
      */
     CompletableFuture<JsonContext> resolve(JsonElement json);
 

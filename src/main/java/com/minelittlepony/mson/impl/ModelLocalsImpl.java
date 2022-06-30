@@ -14,19 +14,17 @@ import java.util.concurrent.CompletableFuture;
 
 public final class ModelLocalsImpl implements ModelContext.Locals {
 
-    private final Identifier id;
     private final JsonContext.Locals context;
 
     private final Map<String, CompletableFuture<Float>> precalculatedValues = new HashMap<>();
 
-    public ModelLocalsImpl(Identifier id, JsonContext.Locals context) {
-        this.id = id;
+    public ModelLocalsImpl(JsonContext.Locals context) {
         this.context = context;
     }
 
     @Override
     public Identifier getModelId() {
-        return id;
+        return context.getModelId();
     }
 
     @Override
@@ -55,7 +53,7 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
 
     @Override
     public String toString() {
-        return "[ModelLocalsImpl id=" + id.toString() + "]";
+        return "[ModelLocalsImpl id=" + context.getModelId().toString() + "]";
     }
 
     private static final class StackFrame implements ModelContext.Locals {

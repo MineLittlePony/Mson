@@ -1,0 +1,41 @@
+/**
+ * Below is a simple definition of the structure of a Mson file
+ * for anyone with a technical mind.
+ * This file contains the structure of the root file, sans any sub-components.
+ * For those parts see their like-named files adjacent to this one.
+ * This is for documentation and examples. It is not a valid json file.
+ */
+
+ /**
+  * Imports are an easy way to use structures that are
+  * commonly repeated in the same or multiple files.
+  * Rather than having to write the same structure over
+  * and over, one can place it into a file and referenced
+  * that file using an import such as this.
+  *
+  * Parent File is the file where the import is defined.
+  * Imported file is the file the import is referencing.
+  *
+  * texture  : parent_file --------------------> output
+  * dilation : parent_file --------------------> output
+  * locals   : parent_file + imported_file ----> output
+  */
+slot:
+  Full definition:
+    {
+        /**
+          * The components (as per a model file) or a link to an existing file
+          */
+        file: <model-file-path>
+        /**
+          * A block of local variables that may be references by components within the data block.
+          * Values defined in here are applied over what is inherited from the referenced file.
+          *
+          * They are NOT available for use by the parent's components.
+          */
+        locals: {
+            <variable-name>: <expression>
+        }
+    }
+  Short definition:
+    "<model-file-path"

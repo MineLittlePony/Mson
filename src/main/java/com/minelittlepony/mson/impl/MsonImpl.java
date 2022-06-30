@@ -28,6 +28,7 @@ import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.JsonBox;
 import com.minelittlepony.mson.impl.model.JsonCompound;
 import com.minelittlepony.mson.impl.model.JsonCone;
+import com.minelittlepony.mson.impl.model.JsonImport;
 import com.minelittlepony.mson.impl.model.JsonPlanar;
 import com.minelittlepony.mson.impl.model.JsonPlane;
 import com.minelittlepony.mson.impl.model.JsonQuads;
@@ -69,6 +70,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         componentTypes.put(JsonSlot.ID, JsonSlot::new);
         componentTypes.put(JsonCone.ID, JsonCone::new);
         componentTypes.put(JsonQuads.ID, JsonQuads::new);
+        componentTypes.put(JsonImport.ID, JsonImport::new);
     }
 
     public void registerVanillaModels(Map<EntityModelLayer, TexturedModelData> modelParts) {
@@ -164,7 +166,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         @Override
         public Optional<ModelPart> createTree() {
             return getModelData().map(context -> {
-                ModelContext.Locals locals = new ModelLocalsImpl(getId(), context.getLocals());
+                ModelContext.Locals locals = new ModelLocalsImpl(context.getLocals());
 
                 Map<String, ModelPart> tree = new HashMap<>();
                 context.createContext(null, locals).getTree(tree);
@@ -178,7 +180,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             Preconditions.checkNotNull(factory, "Factory should not be null");
 
             return getModelData().map(context -> {
-                ModelContext.Locals locals = new ModelLocalsImpl(getId(), context.getLocals());
+                ModelContext.Locals locals = new ModelLocalsImpl(context.getLocals());
 
                 Map<String, ModelPart> tree = new HashMap<>();
                 ModelContext ctx = context.createContext(null, locals);

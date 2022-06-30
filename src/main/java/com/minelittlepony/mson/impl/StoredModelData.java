@@ -17,6 +17,7 @@ import com.minelittlepony.mson.api.json.JsonComponent;
 import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.model.JsonCompound;
+import com.minelittlepony.mson.impl.model.JsonImport;
 import com.minelittlepony.mson.impl.model.JsonLink;
 import com.minelittlepony.mson.impl.model.JsonTexture;
 import com.minelittlepony.mson.impl.skeleton.JsonSkeleton;
@@ -111,11 +112,17 @@ class StoredModelData implements JsonContext {
         if (json.isJsonPrimitive()) {
             JsonPrimitive prim = json.getAsJsonPrimitive();
             if (prim.isString()) {
-                return Optional.of((JsonComponent<T>)new JsonLink(prim.getAsString()));
+                String s = prim.getAsString();
+
+                if (s.startsWith("#")) {
+                    return Optional.of((JsonComponent<T>)new JsonLink(s));
+                }
+
+                return Optional.of((JsonComponent<T>)new JsonImport(this, name, prim));
             }
         }
 
-        throw new UnsupportedOperationException("Json was not a js object and could not be resolved to a js link");
+        throw new UnsupportedOperationException("Json was not a js object and could not be resolved to a #link or model reference");
     }
 
     @Override

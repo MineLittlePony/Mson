@@ -55,14 +55,6 @@ public class JsonSlot<T> implements JsonComponent<T> {
      */
     private final String name;
 
-    @Override
-    public <K> Optional<K> tryExportTreeNodes(ModelContext context, Class<K> type) {
-        if (!implementation.isCompatible(type)) {
-            return Optional.empty();
-        }
-        return tryExport(context, type);
-    }
-
     public JsonSlot(JsonContext context, String name, JsonObject json) {
         implementation = ReflectedModelKey.fromJson(json);
         data = context.resolve(json.get("data"));
@@ -74,10 +66,18 @@ public class JsonSlot<T> implements JsonComponent<T> {
     }
 
     @Override
+    public <K> Optional<K> tryExportTreeNodes(ModelContext context, Class<K> type) {
+        if (!implementation.isCompatible(type)) {
+            return Optional.empty();
+        }
+        return tryExport(context, type);
+    }
+
+    @Override
     public T export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
             JsonContext jsContext = data.get();
-            ModelContext subContext = jsContext.createContext(context.getModel(), new ModelLocalsImpl(implementation.getId(), new Locals(jsContext)));
+            ModelContext subContext = jsContext.createContext(context.getModel(), new ModelLocalsImpl(new Locals(jsContext)));
 
             T inst = implementation.createModel(subContext);
             if (inst instanceof MsonModel) {
@@ -97,7 +97,7 @@ public class JsonSlot<T> implements JsonComponent<T> {
 
         @Override
         public Identifier getModelId() {
-            return parent.getModelId();
+            return implementation.getId();
         }
 
         @Override
