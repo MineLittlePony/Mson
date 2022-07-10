@@ -64,7 +64,7 @@ public class JsonImport implements JsonComponent<ModelPart> {
             Map<String, ModelPart> tree = new HashMap<>();
             modelContext.getTree(tree);
 
-            if (tree.size() > 0) {
+            if (tree.size() != 0) {
                 throw new JsonParseException("Imported file must define exactly one part.");
             }
 
