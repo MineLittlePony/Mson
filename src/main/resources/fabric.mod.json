@@ -8,9 +8,12 @@
     "Sollace"
   ],
   "contact": {
+    "homepage": "https://minelittlepony-mod.com/",
+    "sources": "https://github.com/MineLittlePony/Mson",
+    "issues": "https://github.com/MineLittlePony/Mson/issues"
   },
   "license": "MIT",
-  "icon": "newmod_logo.png",
+  "icon": "mson_logo.png",
   "accessWidener": "mson.aw",
   "environment": "client",
   "entrypoints": {
@@ -29,7 +32,11 @@
     "fabric-resource-loader-v0": ">=0.1.0"
   },
   "custom": {
-    "modmenu:clientsideOnly": true,
-    "modmenu:api": true
+    "modmenu": {
+      "badges": [ "library" ],
+      "links": {
+        "modmenu.discord": "https://discord.gg/zKSZ8Mg"
+      }
+    }
   }
 }
