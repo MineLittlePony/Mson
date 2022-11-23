@@ -1,9 +1,9 @@
 package com.minelittlepony.mson.api.model;
 
-import net.minecraft.util.math.Vec3f;
+import org.joml.Vector3f;
 
 public interface Vert {
-    Vec3f getPos();
+    Vector3f getPos();
 
     float getU();
 

@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.impl.mixin;
 
+import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -22,7 +23,6 @@ import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Vec3f;
 
 @Mixin(ModelPart.class)
 abstract class MixinModelPart implements PartSkeleton {
@@ -80,7 +80,7 @@ abstract class MixinQuad implements Rect {
     private @Final ModelPart.Vertex[] vertices;
 
     @Override
-    public Vec3f getNormal() {
+    public Vector3f getNormal() {
         return ((ModelPart.Quad)(Object)this).direction;
     }
     @Override
@@ -116,7 +116,7 @@ abstract class MixinQuad implements Rect {
 @Mixin(ModelPart.Vertex.class)
 abstract class MixinVertex implements Vert {
     @Accessor("pos") @Override
-    public abstract Vec3f getPos();
+    public abstract Vector3f getPos();
     @Accessor("u") @Override
     public abstract float getU();
     @Accessor("v") @Override
