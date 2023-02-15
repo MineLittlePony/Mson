@@ -89,8 +89,13 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             Executor serverExecutor, Executor clientExecutor) {
         foundry = new ModelFoundry(sender, serverExecutor, serverProfiler, clientProfiler);
         return MinecraftClient.getInstance().getEntityModelLoader().reload(sync, sender, serverProfiler, clientProfiler, serverExecutor, clientExecutor).thenCompose(v -> {
-            return CompletableFuture.allOf(registeredModels.values().stream()
-                    .map(key -> foundry.loadJsonModel(key.getId(), !(key instanceof VanillaKey)))
+            return CompletableFuture.allOf(sender.findResources("models", id -> id.getPath().endsWith(".json"))
+                    .entrySet()
+                    .stream()
+                    .map(entry -> {
+                        Identifier id = entry.getKey().withPath(p -> p.replace("models/", "").replace(".json", ""));
+                        return foundry.loadJsonModel(id, entry.getKey(), entry.getValue(), registeredModels.containsKey(id));
+                    })
                     .toArray(CompletableFuture[]::new))
                     .thenCompose(sync::whenPrepared)
                     .thenRunAsync(renderers::initialize, clientExecutor);
