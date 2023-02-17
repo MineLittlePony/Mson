@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.minelittlepony.mson.api.model.Cube;
 import com.minelittlepony.mson.api.model.Rect;
 import com.minelittlepony.mson.api.model.Vert;
+import com.minelittlepony.mson.impl.MsonModifyable;
 import com.minelittlepony.mson.impl.skeleton.PartSkeleton;
 import com.minelittlepony.mson.impl.skeleton.Skeleton;
 
@@ -24,10 +25,12 @@ import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
 
-@Mixin(ModelPart.class)
-abstract class MixinModelPart implements PartSkeleton {
+@Mixin(value = ModelPart.class, priority = 999)
+abstract class MixinModelPart implements PartSkeleton, MsonModifyable {
     @Shadow
     private @Final List<Cuboid> cuboids;
+
+    private boolean mson$Modified;
 
     @Override
     @Accessor("children")
@@ -43,10 +46,23 @@ abstract class MixinModelPart implements PartSkeleton {
         return (ModelPart)(Object)this;
     }
 
-    @Inject(method = "renderCuboids", at = @At("HEAD"))
+    @Override
+    public void setMsonModified() {
+        mson$Modified = true;
+    }
+
+    @Inject(method = "renderCuboids", at = @At("HEAD"), cancellable = true)
     private void onRenderCuboids(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha, CallbackInfo info) {
         if (vertexConsumer instanceof Skeleton.Visitor) {
             ((Skeleton.Visitor)vertexConsumer).visit(getSelf());
+        }
+
+        // https://github.com/CaffeineMC/sodium-fabric/issues/1627
+        if (mson$Modified) {
+            for (Cuboid cuboid : cuboids) {
+                cuboid.renderCuboid(entry, vertexConsumer, light, overlay, red, green, blue, alpha);
+            }
+            info.cancel();
         }
     }
 }

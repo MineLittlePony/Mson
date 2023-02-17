@@ -1,6 +1,9 @@
 package com.minelittlepony.mson.api.model;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.model.ModelPart;
+
+import com.minelittlepony.mson.impl.MsonModifyable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,6 +71,9 @@ public class PartBuilder {
         part.setPivot(pivot[0], pivot[1], pivot[2]);
         part.setDefaultTransform(part.getTransform());
         part.visible = !hidden;
+        if (FabricLoader.getInstance().isModLoaded("sodium")) {
+            ((MsonModifyable)(Object)part).setMsonModified();
+        }
         return part;
     }
 
