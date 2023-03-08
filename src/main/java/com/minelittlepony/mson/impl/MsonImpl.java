@@ -20,6 +20,7 @@ import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
+import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.model.traversal.PartSkeleton;
 import com.minelittlepony.mson.api.model.traversal.SkeletonisedModel;
 import com.minelittlepony.mson.api.parser.ModelFormat;
@@ -56,6 +57,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     final Map<Identifier, ModelFormat<?>> formatHandlers = new HashMap<>();
     final Map<String, Set<ModelFormat<?>>> handlersByExtension = new HashMap<>();
 
+    private final Object locker = new Object();
     @Nullable
     ModelFoundry foundry;
 
@@ -64,10 +66,13 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     }
 
     public void registerVanillaModels(Map<EntityModelLayer, TexturedModelData> modelParts) {
+        clearData();
         modelParts.forEach((layer, vanilla) -> {
             Identifier id = new Identifier(layer.getId().getNamespace(), String.format("mson/%s", layer.getId().getPath()));
             ((MsonImpl.KeyHolder)vanilla).setKey(registeredModels.computeIfAbsent(id, VanillaKey::new));
+            getOrCreateFoundry().loadModel(id, getDefaultFormatHandler());
         });
+
         if (DEBUG) {
             new VanillaModelExportWriter().exportAll(FabricLoader.getInstance().getGameDir().resolve("debug_model_export").normalize());
         }
@@ -81,12 +86,13 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     public CompletableFuture<Void> reload(Synchronizer sync, ResourceManager sender,
             Profiler serverProfiler, Profiler clientProfiler,
             Executor serverExecutor, Executor clientExecutor) {
-        foundry = new ModelFoundry(sender, serverExecutor, serverProfiler, clientProfiler, this);
+        clearData();
         return MinecraftClient.getInstance().getEntityModelLoader()
                 .reload(sync, sender, serverProfiler, clientProfiler, serverExecutor, clientExecutor)
-                .thenCompose(v -> foundry.load()
+                .thenCompose(v -> getOrCreateFoundry().setWorker(LoadWorker.async(serverExecutor, serverProfiler, clientProfiler)).load()
                 .thenCompose(sync::whenPrepared)
-                .thenRunAsync(renderers::initialize, clientExecutor));
+                .thenRunAsync(renderers::initialize, clientExecutor))
+                .thenRunAsync(() -> getOrCreateFoundry().setWorker(LoadWorker.sync()));
     }
 
     @Override
@@ -142,6 +148,21 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     @Override
     public <Data> Optional<ModelFormat<Data>> getFormatHandler(Identifier id) {
         return Optional.ofNullable((ModelFormat<Data>)formatHandlers.get(id));
+    }
+
+    private ModelFoundry getOrCreateFoundry() {
+        synchronized (locker) {
+            if (foundry == null) {
+                foundry = new ModelFoundry(MinecraftClient.getInstance().getResourceManager(), this);
+            }
+            return foundry;
+        }
+    }
+
+    private void clearData() {
+        synchronized (locker) {
+            foundry = null;
+        }
     }
 
     public interface KeyHolder {
@@ -208,10 +229,9 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
         @Override
         public Optional<FileContent<?>> getModelData() {
-            Preconditions.checkState(foundry != null, "You're too early. Wait for Mson to load first.");
             try {
-                return foundry.getModelData(this);
-            } catch (InterruptedException | ExecutionException e) {
+                return getOrCreateFoundry().getOrLoadModelData(this);
+            } catch (InterruptedException | ExecutionException | FutureAwaitException e) {
                 throw new RuntimeException("Could not create model", e);
             }
         }

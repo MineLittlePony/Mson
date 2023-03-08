@@ -4,7 +4,7 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
-import com.minelittlepony.mson.api.FutureSupplier;
+import com.minelittlepony.mson.api.FutureFunction;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.exception.EmptyContextException;
@@ -36,7 +36,7 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
     }
 
     @Override
-    public <T> T computeIfAbsent(String name, FutureSupplier<T> supplier) {
+    public <T> T computeIfAbsent(String name, FutureFunction<T> supplier) {
         return supplier.apply(name);
     }
 

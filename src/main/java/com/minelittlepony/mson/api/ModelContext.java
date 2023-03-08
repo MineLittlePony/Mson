@@ -69,7 +69,7 @@ public interface ModelContext {
      *
      * Will always return a new instance if the name is empty or null.
      */
-    <T> T computeIfAbsent(@Nullable String name, FutureSupplier<T> supplier);
+    <T> T computeIfAbsent(@Nullable String name, FutureFunction<T> supplier);
 
     /**
      * Gets the named element and returns an instance of the requested type.

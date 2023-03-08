@@ -3,18 +3,18 @@ package com.minelittlepony.mson.api;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 
 import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 @FunctionalInterface
-public interface FutureSupplier<T> extends Supplier<T> {
+public interface FutureFunction<T> extends Function<String, T> {
     @Override
-    default T get() throws FutureAwaitException {
+    default T apply(String key) throws FutureAwaitException {
         try {
-            return supply();
+            return get(key);
         } catch (InterruptedException | ExecutionException e) {
             throw new FutureAwaitException(e);
         }
     }
 
-    T supply() throws InterruptedException, ExecutionException;
+    T get(String key) throws InterruptedException, ExecutionException;
 }

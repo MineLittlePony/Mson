@@ -4,7 +4,7 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 
 import com.google.common.base.Strings;
-import com.minelittlepony.mson.api.FutureSupplier;
+import com.minelittlepony.mson.api.FutureFunction;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
@@ -111,7 +111,7 @@ public class RootContext implements ModelContextImpl {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T computeIfAbsent(String name, FutureSupplier<T> supplier) {
+    public <T> T computeIfAbsent(String name, FutureFunction<T> supplier) {
         Objects.requireNonNull(supplier);
 
         if (Strings.isNullOrEmpty(name)) {
