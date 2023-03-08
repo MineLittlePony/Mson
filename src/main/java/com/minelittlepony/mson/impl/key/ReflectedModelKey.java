@@ -9,7 +9,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.MsonModel;
-import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.api.parser.FileContent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@Deprecated
 public final class ReflectedModelKey<T> extends AbstractModelKeyImpl<T> {
 
     private static final Map<String, ReflectedModelKey<?>> keyCache = new HashMap<>();
@@ -90,7 +91,7 @@ public final class ReflectedModelKey<T> extends AbstractModelKeyImpl<T> {
     }
 
     @Override
-    public Optional<JsonContext> getModelData() {
+    public Optional<FileContent<?>> getModelData() {
         throw new NotImplementedException("getModelData");
     }
 

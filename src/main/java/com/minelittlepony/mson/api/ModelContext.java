@@ -5,7 +5,12 @@ import net.minecraft.client.model.ModelPart;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.minelittlepony.mson.api.parser.ModelComponent;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -14,7 +19,6 @@ import java.util.concurrent.CompletableFuture;
  * This allows access to getting out named elements from the model json.
  */
 public interface ModelContext {
-
     /**
      * Gets the root context.
      * Returns `this` when called on the root context.
@@ -46,6 +50,20 @@ public interface ModelContext {
     Locals getLocals();
 
     /**
+     * Converts the entire model tree into native objects and returns in a root ModelPart.
+     */
+    default ModelPart toTree() {
+        Map<String, ModelPart> tree = new HashMap<>();
+        getTree(tree);
+        return new ModelPart(new ArrayList<>(), tree);
+    }
+
+    /**
+     * Converts the entire model tree into native objects, outputting into the provided output object.
+     */
+    void getTree(Map<String, ModelPart> tree);
+
+    /**
      * Checks if a value has been stored for the given name.
      * If one was not found, computes one using the supplied method and returns that.
      *
@@ -54,18 +72,15 @@ public interface ModelContext {
     <T> T computeIfAbsent(@Nullable String name, FutureSupplier<T> supplier);
 
     /**
-     * Converts the entire model tree into native objects, outputting into the provided output object.
-     */
-    default void getTree(Map<String, ModelPart> tree) {
-        getTree(this, tree);
-    }
-
-    /**
-     * Converts the entire model tree into native objects, outputting into the provided output object.
+     * Gets the named element and returns an instance of the requested type.
      *
-     * @param context The context where this call originated.
+     * @throws ClassCastException if the requested named element does not use the requested implementation.
+     * @throws InvalidInputException if the named element does not exist.
+     *
+     * @deprecated Callers should pass a function to convert from a ModelPart to the expected type.
      */
-    void getTree(ModelContext context, Map<String, ModelPart> tree);
+    @Deprecated
+    <T> T findByName(String name);
 
     /**
      * Gets the named element and returns an instance of the requested type.
@@ -73,17 +88,12 @@ public interface ModelContext {
      * @throws ClassCastException if the requested named element does not use the requested implementation.
      * @throws InvalidInputException if the named element does not exist.
      */
-    default <T> T findByName(String name) {
-        return findByName(this, name);
-    }
+    <T> T findByName(String name, MsonModel.Factory<T> factory);
 
     /**
-     * Gets the named element and returns an instance of the requested type.
-     *
-     * @throws ClassCastException if the requested named element does not use the requested implementation.
-     * @throws InvalidInputException if the named element does not exist.
+     * Finds a component with the matching name.
      */
-    <T> T findByName(ModelContext context, String name);
+    Optional<ModelComponent<?>> findComponent(String name);
 
     /**
      * Resolves this context against the given object.

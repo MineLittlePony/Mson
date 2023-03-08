@@ -3,13 +3,18 @@ package com.minelittlepony.mson.api;
 import net.minecraft.client.model.Model;
 import net.minecraft.util.Identifier;
 
+import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.json.JsonComponent;
+import com.minelittlepony.mson.api.parser.ModelFormat;
 import com.minelittlepony.mson.impl.MsonImpl;
+
+import java.util.Optional;
 
 /**
  * The main Mson class.
  *
  */
+@SuppressWarnings("removal")
 public interface Mson {
 
     /**
@@ -39,8 +44,33 @@ public interface Mson {
      *
      * @param id            Identifier for the component type.
      * @param constructor   The component constructor.
+     *
+     * @deprecated Call Mson.getInstance().getDefaultFormatHandler().registerComponentType(id, constructor) instead.
      */
-    void registerComponentType(Identifier id, JsonComponent.Factory<?> constructor);
+    @Deprecated(forRemoval = true)
+    default void registerComponentType(Identifier id, JsonComponent.Factory<?> constructor) {
+        getDefaultFormatHandler().registerComponentType(id, constructor);
+    }
+
+    /**
+     * Gets the format handler responsible for loading MSON json models.
+     */
+    ModelFormat<JsonElement> getDefaultFormatHandler();
+
+    /**
+     * Registers a format handler for loading custom models.
+     * @param format The model format handler to register.
+     *
+     * @return The supplied format handler.
+     */
+    <Data, T extends ModelFormat<Data>> T registerModelFormatHandler(Identifier id, T format);
+
+    /**
+     * Gets a format handler registered with a particular id.
+     *
+     * For a list of built-in formats, see ModelFormat
+     */
+    <Data> Optional<ModelFormat<Data>> getFormatHandler(Identifier id);
 
     /**
      * Gets the registry for adding entity renderers to the game.

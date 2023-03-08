@@ -21,6 +21,8 @@ public interface MsonModel {
      * Constructor to create a new mson model.
      */
     public interface Factory<T> {
+        Factory<ModelPart> IDENTITY = tree -> tree;
+
         T create(ModelPart tree);
     }
 }

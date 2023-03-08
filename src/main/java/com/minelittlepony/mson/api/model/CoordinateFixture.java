@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.api.model;
 
 import com.minelittlepony.mson.api.model.Face.Axis;
-import com.minelittlepony.mson.impl.FixtureImpl;
+import com.minelittlepony.mson.impl.model.FixtureImpl;
 
 /**
  * Used for stitching multiple planes together, the CoordinateFixuter

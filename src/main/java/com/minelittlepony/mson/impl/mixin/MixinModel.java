@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import com.minelittlepony.mson.api.model.BoxBuilder.RenderLayerSetter;
-import com.minelittlepony.mson.impl.skeleton.Skeleton;
-import com.minelittlepony.mson.impl.skeleton.SkeletonisedModel;
+import com.minelittlepony.mson.api.model.traversal.SkeletonisedModel;
+import com.minelittlepony.mson.api.model.traversal.Traversable;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -22,7 +22,7 @@ import java.util.function.Function;
 @Mixin(Model.class)
 abstract class MixinModel implements Consumer<ModelPart>, RenderLayerSetter, SkeletonisedModel {
     @Nullable
-    private Skeleton mson_skeleton;
+    private Traversable<ModelPart> mson_skeleton;
 
     @Shadow @Mutable
     protected @Final Function<Identifier, RenderLayer> layerFactory;
@@ -33,11 +33,11 @@ abstract class MixinModel implements Consumer<ModelPart>, RenderLayerSetter, Ske
         layerFactory = supplier;
     }
     @Override
-    public Skeleton getSkeleton() {
+    public Traversable<ModelPart> getSkeleton() {
         return mson_skeleton;
     }
     @Override
-    public void setSkeleton(Skeleton skeleton) {
+    public void setSkeleton(Traversable<ModelPart> skeleton) {
         this.mson_skeleton = skeleton;
     }
 }

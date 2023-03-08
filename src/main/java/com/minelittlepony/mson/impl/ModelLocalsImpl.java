@@ -3,8 +3,8 @@ package com.minelittlepony.mson.impl;
 import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.json.JsonContext;
 import com.minelittlepony.mson.api.model.Texture;
+import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.Maps;
 
 import java.util.HashMap;
@@ -14,11 +14,11 @@ import java.util.concurrent.CompletableFuture;
 
 public final class ModelLocalsImpl implements ModelContext.Locals {
 
-    private final JsonContext.Locals context;
+    private final FileContent.Locals context;
 
     private final Map<String, CompletableFuture<Float>> precalculatedValues = new HashMap<>();
 
-    public ModelLocalsImpl(JsonContext.Locals context) {
+    public ModelLocalsImpl(FileContent.Locals context) {
         this.context = context;
     }
 

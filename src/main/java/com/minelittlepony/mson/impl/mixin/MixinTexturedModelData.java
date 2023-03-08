@@ -39,7 +39,7 @@ abstract class MixinTexturedModelData implements MsonImpl.KeyHolder, VanillaMode
         this.key = Optional.of(key);
     }
 
-    @Inject(method = "createModel", at = @At("HEAD"))
+    @Inject(method = "createModel", at = @At("HEAD"), cancellable = true)
     public void createModel(CallbackInfoReturnable<ModelPart> info) {
         key.flatMap(ModelKey::createTree).ifPresent(info::setReturnValue);
     }

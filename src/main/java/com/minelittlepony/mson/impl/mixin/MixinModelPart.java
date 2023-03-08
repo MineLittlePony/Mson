@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.minelittlepony.mson.api.model.Cube;
 import com.minelittlepony.mson.api.model.Rect;
 import com.minelittlepony.mson.api.model.Vert;
+import com.minelittlepony.mson.api.model.traversal.PartSkeleton;
+import com.minelittlepony.mson.api.model.traversal.Traversable;
 import com.minelittlepony.mson.impl.MsonModifyable;
-import com.minelittlepony.mson.impl.skeleton.PartSkeleton;
-import com.minelittlepony.mson.impl.skeleton.Skeleton;
 
 import java.util.List;
 import java.util.Map;
@@ -51,10 +51,11 @@ abstract class MixinModelPart implements PartSkeleton, MsonModifyable {
         mson$Modified = true;
     }
 
+    @SuppressWarnings("unchecked")
     @Inject(method = "renderCuboids", at = @At("HEAD"), cancellable = true)
     private void onRenderCuboids(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha, CallbackInfo info) {
-        if (vertexConsumer instanceof Skeleton.Visitor) {
-            ((Skeleton.Visitor)vertexConsumer).visit(getSelf());
+        if (vertexConsumer instanceof Traversable.Visitor) {
+            ((Traversable.Visitor<ModelPart>)vertexConsumer).visit(getSelf());
         }
 
         // https://github.com/CaffeineMC/sodium-fabric/issues/1627

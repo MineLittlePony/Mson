@@ -3,7 +3,7 @@ package com.minelittlepony.mson.api;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
-import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.api.parser.FileContent;
 
 import java.util.Optional;
 
@@ -29,7 +29,7 @@ public interface ModelKey<T> {
      *
      * @throws IllegalStateException if called before resource loading (aka client startup) has completed.
      */
-    <V extends T> V createModel(MsonModel.Factory<V> supplier);
+    <V extends T> V createModel(MsonModel.Factory<V> factory);
 
     /**
      * Creates a model part using the contents of this model's file.
@@ -43,5 +43,5 @@ public interface ModelKey<T> {
      *
      * @throws IllegalStateException if called before resource loading (aka client startup) has completed.
      */
-    Optional<JsonContext> getModelData();
+    Optional<FileContent<?>> getModelData();
 }

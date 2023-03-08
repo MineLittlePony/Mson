@@ -16,34 +16,30 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Preconditions;
+import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
-import com.minelittlepony.mson.api.json.JsonComponent;
-import com.minelittlepony.mson.api.json.JsonContext;
+import com.minelittlepony.mson.api.model.traversal.PartSkeleton;
+import com.minelittlepony.mson.api.model.traversal.SkeletonisedModel;
+import com.minelittlepony.mson.api.parser.ModelFormat;
+import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.Mson;
-import com.minelittlepony.mson.impl.StoredModelData.RootContext;
 import com.minelittlepony.mson.impl.export.VanillaModelExportWriter;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
-import com.minelittlepony.mson.impl.model.JsonBox;
-import com.minelittlepony.mson.impl.model.JsonCompound;
-import com.minelittlepony.mson.impl.model.JsonCone;
-import com.minelittlepony.mson.impl.model.JsonImport;
-import com.minelittlepony.mson.impl.model.JsonPlanar;
-import com.minelittlepony.mson.impl.model.JsonPlane;
-import com.minelittlepony.mson.impl.model.JsonQuads;
-import com.minelittlepony.mson.impl.model.JsonSlot;
-import com.minelittlepony.mson.impl.skeleton.PartSkeleton;
-import com.minelittlepony.mson.impl.skeleton.SkeletonisedModel;
+import com.minelittlepony.mson.impl.model.RootContext;
+import com.minelittlepony.mson.impl.model.json.MsonModelFormat;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.stream.Stream;
 
 public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     public static final Logger LOGGER = LogManager.getLogger("Mson");
@@ -51,26 +47,20 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     private static final Identifier ID = new Identifier("mson", "models");
 
-    static boolean DEBUG = false;
+    public static boolean DEBUG = false;
 
     private final PendingEntityRendererRegistry renderers = new PendingEntityRendererRegistry();
 
     private final Map<Identifier, Key<?>> registeredModels = new HashMap<>();
 
-    final Map<Identifier, JsonComponent.Factory<?>> componentTypes = new HashMap<>();
+    final Map<Identifier, ModelFormat<?>> formatHandlers = new HashMap<>();
+    final Map<String, Set<ModelFormat<?>>> handlersByExtension = new HashMap<>();
 
     @Nullable
     ModelFoundry foundry;
 
     private MsonImpl() {
-        componentTypes.put(JsonCompound.ID, JsonCompound::new);
-        componentTypes.put(JsonBox.ID, JsonBox::new);
-        componentTypes.put(JsonPlane.ID, JsonPlane::new);
-        componentTypes.put(JsonPlanar.ID, JsonPlanar::new);
-        componentTypes.put(JsonSlot.ID, JsonSlot::new);
-        componentTypes.put(JsonCone.ID, JsonCone::new);
-        componentTypes.put(JsonQuads.ID, JsonQuads::new);
-        componentTypes.put(JsonImport.ID, JsonImport::new);
+        registerModelFormatHandler(ModelFormat.MSON, MsonModelFormat.INSTANCE);
     }
 
     public void registerVanillaModels(Map<EntityModelLayer, TexturedModelData> modelParts) {
@@ -83,23 +73,20 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         }
     }
 
+    public Stream<ModelFormat<?>> getHandlers(String extension) {
+        return handlersByExtension.getOrDefault(extension, Set.of()).stream();
+    }
+
     @Override
     public CompletableFuture<Void> reload(Synchronizer sync, ResourceManager sender,
             Profiler serverProfiler, Profiler clientProfiler,
             Executor serverExecutor, Executor clientExecutor) {
-        foundry = new ModelFoundry(sender, serverExecutor, serverProfiler, clientProfiler);
-        return MinecraftClient.getInstance().getEntityModelLoader().reload(sync, sender, serverProfiler, clientProfiler, serverExecutor, clientExecutor).thenCompose(v -> {
-            return CompletableFuture.allOf(sender.findResources("models", id -> id.getPath().endsWith(".json"))
-                    .entrySet()
-                    .stream()
-                    .map(entry -> {
-                        Identifier id = entry.getKey().withPath(p -> p.replace("models/", "").replace(".json", ""));
-                        return foundry.loadJsonModel(id, entry.getKey(), entry.getValue(), registeredModels.containsKey(id));
-                    })
-                    .toArray(CompletableFuture[]::new))
-                    .thenCompose(sync::whenPrepared)
-                    .thenRunAsync(renderers::initialize, clientExecutor);
-        });
+        foundry = new ModelFoundry(sender, serverExecutor, serverProfiler, clientProfiler, this);
+        return MinecraftClient.getInstance().getEntityModelLoader()
+                .reload(sync, sender, serverProfiler, clientProfiler, serverExecutor, clientExecutor)
+                .thenCompose(v -> foundry.load()
+                .thenCompose(sync::whenPrepared)
+                .thenRunAsync(renderers::initialize, clientExecutor));
     }
 
     @Override
@@ -123,20 +110,38 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         return (ModelKey<T>)registeredModels.computeIfAbsent(id, i -> new Key<>(id, constructor));
     }
 
-    @Override
-    public void registerComponentType(Identifier id, JsonComponent.Factory<?> constructor) {
-        Objects.requireNonNull(id, "Id must not be null");
-        Objects.requireNonNull(constructor, "Constructor must not be null");
-        checkNamespace(id.getNamespace());
-        Preconditions.checkArgument(!componentTypes.containsKey(id), "A component with the id `%s` was already registered", id);
-
-        componentTypes.put(id, constructor);
-    }
-
-    private void checkNamespace(String namespace) {
+    public static void checkNamespace(String namespace) {
         Preconditions.checkArgument(!"minecraft".equalsIgnoreCase(namespace), "Id must have a namespace other than `minecraft`.");
         Preconditions.checkArgument(DEBUG || !"mson".equalsIgnoreCase(namespace), "`mson` is a reserved namespace.");
         Preconditions.checkArgument(!"dynamic".equalsIgnoreCase(namespace), "`dynamic` is a reserved namespace.");
+    }
+
+    @Override
+    public ModelFormat<JsonElement> getDefaultFormatHandler() {
+        return MsonModelFormat.INSTANCE;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <Data, T extends ModelFormat<Data>> T registerModelFormatHandler(Identifier id, T format) {
+        Objects.requireNonNull(id, "Id must not be null");
+        Objects.requireNonNull(format, "Format must not be null");
+        Objects.requireNonNull(format.getFileExtension(), "Format must have a valid, non-null, non-empty file extension");
+        Preconditions.checkArgument(!format.getFileExtension().isEmpty(), "Format must have a valid, non-null, non-empty file extension");
+        Preconditions.checkArgument(!format.getFileExtension().startsWith("."), "Extension must not have a leading decimal (.)");
+        if (formatHandlers.containsKey(id)) {
+            LOGGER.warn("A format handler with id `{}`and extension {} and has already been registered.", id, formatHandlers.get(id).getFileExtension());
+            return (T)formatHandlers.get(id);
+        }
+        formatHandlers.put(id, format);
+        handlersByExtension.computeIfAbsent(format.getFileExtension(), e -> new HashSet<>()).add(format);
+        return format;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <Data> Optional<ModelFormat<Data>> getFormatHandler(Identifier id) {
+        return Optional.ofNullable((ModelFormat<Data>)formatHandlers.get(id));
     }
 
     public interface KeyHolder {
@@ -171,12 +176,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         @Override
         public Optional<ModelPart> createTree() {
             return getModelData().map(context -> {
-                ModelContext.Locals locals = new ModelLocalsImpl(context.getLocals());
-
-                Map<String, ModelPart> tree = new HashMap<>();
-                context.createContext(null, locals).getTree(tree);
-
-                return new ModelPart(new ArrayList<>(), tree);
+                return context.createContext(null, context.getLocals().bake()).toTree();
             });
         }
 
@@ -185,18 +185,14 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             Preconditions.checkNotNull(factory, "Factory should not be null");
 
             return getModelData().map(context -> {
-                ModelContext.Locals locals = new ModelLocalsImpl(context.getLocals());
+                ModelContext ctx = context.createContext(null, context.getLocals().bake());
 
-                Map<String, ModelPart> tree = new HashMap<>();
-                ModelContext ctx = context.createContext(null, locals);
-                ctx.getTree(tree);
-
-                ModelPart root = new ModelPart(new ArrayList<>(), tree);
+                ModelPart root = ctx.toTree();
                 V t = factory.create(root);
 
                 if (t instanceof SkeletonisedModel) {
                     ((SkeletonisedModel)t).setSkeleton(context.getSkeleton()
-                            .map(s -> s.getSkeleton(root))
+                            .map(s -> PartSkeleton.of(root, s))
                             .orElseGet(() -> PartSkeleton.of(root)));
                 }
                 if (t instanceof MsonModel) {
@@ -211,7 +207,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         }
 
         @Override
-        public Optional<JsonContext> getModelData() {
+        public Optional<FileContent<?>> getModelData() {
             Preconditions.checkState(foundry != null, "You're too early. Wait for Mson to load first.");
             try {
                 return foundry.getModelData(this);

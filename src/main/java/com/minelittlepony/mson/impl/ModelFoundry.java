@@ -5,24 +5,23 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
 
-import com.google.common.base.Charsets;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.minelittlepony.mson.api.ModelKey;
-import com.minelittlepony.mson.api.json.JsonContext;
-import com.minelittlepony.mson.util.ThrowableUtils;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.InputStreamReader;
+import com.google.common.io.Files;
+import com.minelittlepony.mson.api.ModelKey;
+import com.minelittlepony.mson.api.parser.FileContent;
+import com.minelittlepony.mson.api.parser.ModelFormat;
+import com.minelittlepony.mson.api.parser.ModelLoader;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
-class ModelFoundry {
-    private static final Gson GSON = new Gson();
-
+class ModelFoundry implements ModelLoader {
     private final ResourceManager manager;
 
     private final Executor executor;
@@ -30,42 +29,55 @@ class ModelFoundry {
     private final Profiler serverProfiler;
     private final Profiler clientProfiler;
 
-    private final Map<Identifier, CompletableFuture<JsonContext>> loadedFiles = new HashMap<>();
+    private final Map<Identifier, CompletableFuture<FileContent<?>>> loadedFiles = new HashMap<>();
 
-    public ModelFoundry(ResourceManager manager, Executor executor, Profiler serverProfiler, Profiler clientProfiler) {
+    private final MsonImpl mson;
+
+    public ModelFoundry(ResourceManager manager, Executor executor, Profiler serverProfiler, Profiler clientProfiler, MsonImpl mson) {
         this.manager = manager;
         this.executor = executor;
         this.serverProfiler = serverProfiler;
         this.clientProfiler = clientProfiler;
+        this.mson = mson;
     }
 
-    public Optional<JsonContext> getModelData(ModelKey<?> key) throws InterruptedException, ExecutionException {
+    @Override
+    public ResourceManager getResourceManager() {
+        return manager;
+    }
+
+    CompletableFuture<Void> load() {
+        Set<String> extensions = mson.handlersByExtension.keySet();
+
+        return CompletableFuture.allOf(manager.findResources("models", id -> {
+            String path = id.getPath();
+            return extensions.stream().anyMatch(extension -> path.endsWith("." + extension));
+        }).entrySet().stream().map(this::loadModel).toArray(CompletableFuture[]::new));
+    }
+
+    @SuppressWarnings("unchecked")
+    public Optional<FileContent<?>> getModelData(ModelKey<?> key) throws InterruptedException, ExecutionException {
         if (!loadedFiles.containsKey(key.getId())) {
             return Optional.empty();
         }
-        return Optional.ofNullable(loadedFiles.get(key.getId()).get()).filter(m -> m != EmptyJsonContext.INSTANCE);
+        return (Optional<FileContent<?>>)(Object)Optional.ofNullable((loadedFiles.get(key.getId()).get()))
+                .filter(m -> m != FileContent.empty());
     }
 
-    public CompletableFuture<JsonContext> loadJsonModel(Identifier id) {
+    public CompletableFuture<FileContent<?>> loadModel(Identifier id, Identifier file, Resource resource) {
         synchronized (loadedFiles) {
             if (!loadedFiles.containsKey(id)) {
                 loadedFiles.put(id, CompletableFuture.supplyAsync(() -> {
                     serverProfiler.startTick();
                     clientProfiler.push("Loading MSON model - " + id);
                     try {
-                        Identifier file = new Identifier(id.getNamespace(), "models/" + id.getPath() + ".json");
-
-                        return manager.getResource(file).map(resource -> {
-                            try (var reader = new InputStreamReader(resource.getInputStream(), Charsets.UTF_8)) {
-                                return (JsonContext)new StoredModelData(this, id, GSON.fromJson(reader, JsonObject.class));
-                            } catch (Exception e) {
-                                MsonImpl.LOGGER.error("Could not load model json for {}", file, ThrowableUtils.getRootCause(e));
-                            }
-                            return null;
-                        }).orElseGet(() -> {
-                            MsonImpl.LOGGER.error("Could not load model json for {}", file);
-                            return EmptyJsonContext.INSTANCE;
-                        });
+                        return mson.getHandlers(Files.getFileExtension(file.getPath()))
+                                .flatMap(handler -> handler.loadModel(id, file, resource, true, this).stream())
+                                .findFirst()
+                                .orElseGet(() -> {
+                                    MsonImpl.LOGGER.error("Could not load model for {}", file);
+                                    return FileContent.empty();
+                                });
                     } finally {
                         clientProfiler.pop();
                         serverProfiler.endTick();
@@ -76,25 +88,35 @@ class ModelFoundry {
         }
     }
 
-    public CompletableFuture<JsonContext> loadJsonModel(Identifier id, Identifier file, Resource resource, boolean failHard) {
-        synchronized (loadedFiles) {
-            if (!loadedFiles.containsKey(id)) {
-                loadedFiles.put(id, CompletableFuture.supplyAsync(() -> {
-                    serverProfiler.startTick();
-                    clientProfiler.push("Loading MSON model - " + id);
-                    try (var reader = new InputStreamReader(resource.getInputStream(), Charsets.UTF_8)) {
-                        return (JsonContext)new StoredModelData(this, id, GSON.fromJson(reader, JsonObject.class));
-                    } catch (Exception e) {
-                        MsonImpl.LOGGER.error("Could not load model json for {}", file, ThrowableUtils.getRootCause(e));
-                    } finally {
-                        clientProfiler.pop();
-                        serverProfiler.endTick();
-                    }
+    public CompletableFuture<FileContent<?>> loadModel(Map.Entry<Identifier, Resource> entry) {
+        String extension = Files.getFileExtension(entry.getKey().getPath());
+        return loadModel(
+                entry.getKey().withPath(p -> p.replace("models/", "").replace("." + extension, "")),
+                entry.getKey(),
+                entry.getValue()
+        );
+    }
 
-                    return EmptyJsonContext.INSTANCE;
-                }, executor));
-            }
-            return loadedFiles.get(id);
+    @Override
+    public CompletableFuture<FileContent<?>> loadModel(Identifier modelId, @Nullable ModelFormat<?> preferredFormat) {
+        Identifier file = new Identifier(modelId.getNamespace(), "models/" + modelId.getPath());
+
+        Map<Identifier, Resource> resources = manager.findResources("models", id -> {
+            return id.getNamespace().equals(file.getNamespace()) && id.getPath().startsWith(file.getPath());
+        });
+        if (resources.size() > 1) {
+            MsonImpl.LOGGER.warn("Ambiguous reference: {} could refer to [{}]", file, String.join(",", resources.keySet().stream().map(Identifier::toString).toArray(String[]::new)));
         }
+        if (resources.isEmpty()) {
+            return CompletableFuture.completedFuture(FileContent.empty());
+        }
+        Identifier first = resources.keySet().stream().sorted().toList().get(0);
+        if (preferredFormat != null) {
+            Identifier preferredFile = file.withPath(p -> p + "." + preferredFormat.getFileExtension());
+            if (resources.containsKey(preferredFile)) {
+                return loadModel(modelId, preferredFile, resources.get(preferredFile));
+            }
+        }
+        return loadModel(modelId, first, resources.get(first));
     }
 }
