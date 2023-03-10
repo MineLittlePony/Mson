@@ -27,8 +27,11 @@ public interface Mson {
     /**
      * Registers a model to be loaded by mson.
      *
-     * The returned key can be used to create instances of the registered model <i>after</i> a resource manager reload.
-     * See {@link MsonModelsReadyCallback} to receive events for when it is safe to do so.
+     * The returned key can be used to create instances of the registered model.
+     *
+     * It's recommended to only create models <i>after</i> client resources have been loaded.
+     * Attempting to do so earlier may cause that model and any files it indirectly references
+     * to be loaded synchronously which may cause delays during early game startup.
      *
      * @param id             The model identifier.
      * @param implementation The class to instantiate.
@@ -68,7 +71,10 @@ public interface Mson {
     /**
      * Gets a format handler registered with a particular id.
      *
-     * For a list of built-in formats, see ModelFormat
+     * For a list of built-in formats, see {@link ModelFormat}
+     *
+     * @see {@link ModelFormat#MSON}
+     * @see {@link ModelFormat#BBMODEL}
      */
     <Data> Optional<ModelFormat<Data>> getFormatHandler(Identifier id);
 
