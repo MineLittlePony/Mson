@@ -29,6 +29,7 @@ import com.minelittlepony.mson.api.Mson;
 import com.minelittlepony.mson.impl.export.VanillaModelExportWriter;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.RootContext;
+import com.minelittlepony.mson.impl.model.bbmodel.BBModelFormat;
 import com.minelittlepony.mson.impl.model.json.MsonModelFormat;
 
 import java.util.HashMap;
@@ -63,6 +64,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     private MsonImpl() {
         registerModelFormatHandler(ModelFormat.MSON, MsonModelFormat.INSTANCE);
+        registerModelFormatHandler(ModelFormat.BBMODEL, BBModelFormat.INSTANCE);
     }
 
     public void registerVanillaModels(Map<EntityModelLayer, TexturedModelData> modelParts) {

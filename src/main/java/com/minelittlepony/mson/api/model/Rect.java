@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.api.model;
 
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public interface Rect {
@@ -12,4 +13,15 @@ public interface Rect {
     Rect setVertices(boolean reflect, Vert...vertices);
 
     int vertexCount();
+
+    default Rect rotate(float x, float y, float z) {
+        return rotate(new Quaternionf().rotateXYZ(x, y, z));
+    }
+
+    default Rect rotate(Quaternionf rotation) {
+        for (int i = 0; i < vertexCount(); i++) {
+            getVertex(i).getPos().rotate(rotation);
+        }
+        return this;
+    }
 }

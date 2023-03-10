@@ -5,10 +5,12 @@ import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.Mson;
 import com.minelittlepony.mson.api.exception.EmptyContextException;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.model.traversal.Traversable;
 import com.minelittlepony.mson.api.parser.ModelComponent;
+import com.minelittlepony.mson.api.parser.ModelFormat;
 import com.minelittlepony.mson.api.parser.FileContent;
 
 import java.util.HashSet;
@@ -21,6 +23,11 @@ public final class EmptyFileContent implements FileContent<Object>, FileContentL
     public static FileContent<?> INSTANCE = new EmptyFileContent();
 
     private EmptyFileContent() {}
+
+    @Override
+    public ModelFormat<Object> getFormat() {
+        return Mson.getInstance().getFormatHandler(ModelFormat.MSON).get();
+    }
 
     @Override
     public Locals getLocals() {

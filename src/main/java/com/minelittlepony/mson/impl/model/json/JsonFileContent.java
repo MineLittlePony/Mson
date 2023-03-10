@@ -77,6 +77,11 @@ public class JsonFileContent implements JsonContext {
     }
 
     @Override
+    public ModelFormat<JsonElement> getFormat() {
+        return format;
+    }
+
+    @Override
     public CompletableFuture<Set<String>> getComponentNames() {
         return parent.thenComposeAsync(p -> p.getComponentNames()).thenApply(output -> {
             output.addAll(elements.keySet());

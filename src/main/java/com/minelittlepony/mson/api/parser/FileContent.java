@@ -25,6 +25,8 @@ public interface FileContent<Data> {
         return (FileContent<T>)EmptyFileContent.INSTANCE;
     }
 
+    ModelFormat<Data> getFormat();
+
     /**
      * Registers a component with a name to the enclosing scope.
      *
@@ -54,7 +56,9 @@ public interface FileContent<Data> {
      * @param json The json element to parse
      * @param defaultAs The default type to assume when the supplied json structure does not define one.
      */
-    <T> Optional<ModelComponent<T>> loadComponent(String name, Data data, Identifier defaultAs);
+    default <T> Optional<ModelComponent<T>> loadComponent(String name, Data data, Identifier defaultAs) {
+        return getFormat().loadComponent(name, data, defaultAs, this);
+    }
 
     /**
      * Creates a new model context for the supplied model instance and local variables.
@@ -94,7 +98,9 @@ public interface FileContent<Data> {
      * <p>
      * This is optional metadata that can be used by mods who need to know how to put the model together for animations.
      */
-    Optional<Traversable<String>> getSkeleton();
+    default Optional<Traversable<String>> getSkeleton() {
+        return Optional.empty();
+    }
 
     /**
      * Interface for accessing contextual values.
