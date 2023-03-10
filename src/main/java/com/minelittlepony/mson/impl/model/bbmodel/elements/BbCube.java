@@ -26,6 +26,31 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+
+/**
+ * Parses a "cube" as defined by blockbench's bbmodel format;
+ *
+ * {
+ *   "name": "body",
+ *   "rescale": false,
+ *   "locked": false,
+ *   "from": [ -4, 4, -4 ],
+ *   "to": [ 4, 11, 1 ],
+ *   "autouv": 0,
+ *   "color": 1,
+ *   "origin": [ 0, -2, 0 ],
+ *   "uv_offset": [ 0, 13 ],
+ *   "faces": {
+ *      "north": { "uv": [ 5, 18, 13, 25 ], "texture": 0 },
+ *      "east": { "uv": [ 0, 18, 5, 25 ], "texture": 0 },
+ *      "south": { "uv": [ 18, 18, 26, 25 ], "texture": 0 },
+ *      "west": { "uv": [ 13, 18, 18, 25 ], "texture": 0 },
+ *      "up": { "uv": [ 13, 18, 5, 13 ], "texture": 0 },
+ *      "down": { "uv": [ 21, 13, 13, 18 ], "texture": 0 }
+ *   },
+ *   "uuid": "b38e15fc-748d-c7fa-fa9d-2ac7b265d63e"
+ * }
+ */
 public class BbCube implements ModelComponent<Cuboid> {
     public static final Identifier ID = new Identifier("blockbench", "cube");
 
@@ -51,20 +76,19 @@ public class BbCube implements ModelComponent<Cuboid> {
         JsonUtil.acceptFloats(json, "to", to);
         JsonUtil.acceptFloats(json, "origin", origin);
 
+        float[] uvOffset = new float[2];
+        JsonUtil.acceptFloats(json, "uv_offset", uvOffset);
+
         uuid = JsonUtil.accept(json, "uuid").map(JsonElement::getAsString).map(UUID::fromString);
 
         JsonObject faces = JsonHelper.getObject(json, "faces", new JsonObject());
-        float[] minUv = { 1, 1 };
         this.faces = Face.VALUES.stream()
                 .filter(face -> face != Face.NONE)
                 .collect(Collectors.toMap(Function.identity(), face -> {
-                    CubeFace f = new CubeFace(face, JsonHelper.getObject(faces, face.name().toLowerCase(Locale.ROOT)));
-                    minUv[0] = Math.min(minUv[1], f.uv()[0]);
-                    minUv[1] = Math.min(minUv[1], f.uv()[1]);
-                    return f;
+                    return new CubeFace(face, JsonHelper.getObject(faces, face.name().toLowerCase(Locale.ROOT)));
                 }, (a, b) -> b, () -> new EnumMap<>(Face.class)));
 
-        texture = new Texture((int)minUv[0], (int)minUv[1], 0, 0);
+        texture = new Texture((int)uvOffset[0], (int)uvOffset[1], 0, 0);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.minelittlepony.mson.impl.model.bbmodel;
 
 import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
@@ -19,15 +20,22 @@ import com.minelittlepony.mson.impl.model.bbmodel.elements.BbPart;
 
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
+/**
+ * Implementation of ModelFormat that reads a bbmodel file.
+ */
 public class BBModelFormat implements ModelFormat<JsonElement> {
     public static final ModelFormat<JsonElement> INSTANCE = new BBModelFormat();
     private static final Gson GSON = new Gson();
 
     private final Map<Identifier, ModelComponent.Factory<?, JsonElement>> componentTypes = new HashMap<>();
+
+    private final Set<String> acceptableModelFormats = Set.of("modded_entity", "java_block");
 
     private BBModelFormat() {
         registerComponentType(BbCube.ID, BbCube::new);
@@ -50,7 +58,15 @@ public class BBModelFormat implements ModelFormat<JsonElement> {
     @Override
     public Optional<FileContent<JsonElement>> loadModel(Identifier modelId, Identifier file, Resource resource, boolean failHard, ModelLoader loader) {
         try (var reader = new InputStreamReader(resource.getInputStream(), Charsets.UTF_8)) {
-            return Optional.of(new BlockBenchFileContent(loader, this, modelId, GSON.fromJson(reader, JsonObject.class)));
+            JsonObject json = GSON.fromJson(reader, JsonObject.class);
+            JsonObject meta = JsonHelper.getObject(json, "meta", new JsonObject());
+            String modelFormat = JsonHelper.getString(meta, "model_format", "").toLowerCase(Locale.ROOT);
+
+            if (!acceptableModelFormats.contains(modelFormat)) {
+                return Optional.empty();
+            }
+
+            return Optional.of(new BlockBenchFileContent(modelFormat, this, modelId, json));
         } catch (Exception e) {}
         return Optional.empty();
     }
@@ -83,5 +99,4 @@ public class BBModelFormat implements ModelFormat<JsonElement> {
 
         return Optional.ofNullable(componentTypes.get(id)).map(c -> (ModelComponent<T>)c.load(context, fname, json));
     }
-
 }

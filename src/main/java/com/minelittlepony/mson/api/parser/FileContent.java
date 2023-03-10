@@ -14,21 +14,32 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * The json loading context.
+ * The intermediately parsed contents of model file.
  *
- * Allows for components to read and write contextual information during parsing.
+ * This class provides contextual information to model components when they are being parsed
+ * so they can see values available in the file that they come from, and load additional components
+ * as children.
  */
-@SuppressWarnings("unchecked")
 public interface FileContent<Data> {
 
+    /**
+     * Retrieves a file content representing an empty file.
+     */
+    @SuppressWarnings("unchecked")
     static <T> FileContent<T> empty() {
         return (FileContent<T>)EmptyFileContent.INSTANCE;
     }
 
+    /**
+     * The data format of this file.
+     */
     ModelFormat<Data> getFormat();
 
     /**
-     * Registers a component with a name to the enclosing scope.
+     * Exposes a component to the parent scope so they can be retrieved using ModelContext#findByName
+     *
+     * If a model has a name, it's recommended that they call this method to ensure they are
+     * available to downstream consumers.
      *
      * @param The name of the component to make available
      * @param The component instance (often this)
@@ -36,21 +47,17 @@ public interface FileContent<Data> {
     <T> void addNamedComponent(String name, ModelComponent<T> component);
 
     /**
-     * Loads a json block into a component.
+     * Loads a component from a data fragment.
      *
-     * Defers  to the component-types pipeline to return the corresponding instance to that of the passed in json.
-     *
-     * @param json The json element to parse
-     * @param defaultAs The default type to assume when the supplied json structure does not define one.
+     * @param data The data fragment to parse
+     * @param defaultAs The default type to assume when the supplied data cannot be used to infer a correct type.
      */
     default <T> Optional<ModelComponent<T>> loadComponent(Data data, Identifier defaultAs) {
         return loadComponent("", data, defaultAs);
     }
 
     /**
-     * Loads a json block into a component.
-     *
-     * Defers  to the component-types pipeline to return the corresponding instance to that of the passed in json.
+     * Loads a component from a data fragment.
      *
      * @param name The name to assign to the loaded component.
      * @param json The json element to parse
@@ -76,15 +83,15 @@ public interface FileContent<Data> {
     CompletableFuture<Set<String>> getComponentNames();
 
     /**
-     * Resolves a new json context against the passed in json block.
+     * Resolves a new context against the passed in data fragment.
      *
      * The new context is independent of this one, with all named components
      * and variables referenced to its own root context.
      *
-     * If the json contains an id referencing another file, that file will be loaded asynchronously alongside this one.
-     * Otherwise the json tree itself serves as the contents, and the new context is resolved immediately upon return.
+     * If the data fragment contains an id referencing another file, that file will be loaded asynchronously alongside this one.
+     * Otherwise the data itself serves as the contents, and the new context is resolved immediately upon return.
      *
-     * @param json The json structure to parse
+     * @param data The data structure to parse
      */
     CompletableFuture<FileContent<?>> resolve(Data data);
 

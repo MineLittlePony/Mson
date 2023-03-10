@@ -7,7 +7,6 @@ import net.minecraft.util.JsonHelper;
 import com.google.common.base.Strings;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.json.JsonContext;
@@ -15,10 +14,8 @@ import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.ModelFormat;
-import com.minelittlepony.mson.api.parser.ModelLoader;
 import com.minelittlepony.mson.impl.ModelContextImpl;
 import com.minelittlepony.mson.impl.ModelLocalsImpl;
-import com.minelittlepony.mson.impl.model.EmptyFileContent;
 import com.minelittlepony.mson.impl.model.RootContext;
 import com.minelittlepony.mson.impl.model.bbmodel.elements.BbCube;
 import com.minelittlepony.mson.impl.model.bbmodel.elements.BbPart;
@@ -32,18 +29,54 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class BlockBenchFileContent implements JsonContext {
+/**
+ * Parses a blockbench .bbmodel file.
+ *
+ * {
+ *  "meta": {                         // file metadata. Only used to check if the file is valid
+ *    "format_version": "4.0",
+ *    "creation_time": 1638295209,
+ *    "model_format": "modded_entity",
+ *    "box_uv": true
+ *  },
+ *  "name": "Copper Golem",           // ignored
+ *  "geometry_name": "",              // ignored
+ *  "visible_box": [ 1, 1, 0 ],       // ignored
+ *  "variable_placeholders": "",      // ignored
+ *  "resolution": {                   // texture
+ *    "width": 64, "height": 64
+ *  },
+ *  "elements": [ ... ],              // list of model cubes (BbCube)
+ *  "outliner": [ ... ],              // a tree of model parts (BbPart)
+ *  "textures": [                     // ignored
+ *    {
+ *     "path": "...",
+ *     "name": "xxx.png",
+ *     "folder": "block",
+ *     "namespace": "",
+ *     "id": "0",
+ *     "particle": false,
+ *     "render_mode": "normal",
+ *     "visible": true,
+ *     "mode": "bitmap",
+ *     "saved": false,
+ *     "uuid": "d1ee668a-2985-cc55-7dd6-be6afb1ef330",
+ *      "source": "...",
+ *      "relative_path": "..."
+ *    }
+ *  ]
+ * }
+ */
+class BlockBenchFileContent implements JsonContext {
 
-    private final ModelLoader loader;
     private final ModelFormat<JsonElement> format;
 
-    public final Map<UUID, BbCube> cubes = new HashMap<>();
+    public final Map<UUID, ModelComponent<?>> cubes = new HashMap<>();
     private final Map<String, ModelComponent<?>> elements = new HashMap<>();
 
     private final FileContent.Locals locals;
 
-    public BlockBenchFileContent(ModelLoader loader, ModelFormat<JsonElement> format, Identifier id, JsonObject json) {
-        this.loader = loader;
+    public BlockBenchFileContent(String formatVariant, ModelFormat<JsonElement> format, Identifier id, JsonObject json) {
         this.format = format;
         this.locals = new RootVariables(id, json);
 
@@ -62,7 +95,20 @@ public class BlockBenchFileContent implements JsonContext {
             .stream()
             .flatMap(e -> e.asList().stream())
             .map(JsonElement::getAsJsonObject)
-            .forEach(element -> loadComponent(element, BbPart.ID));
+            .forEach(element -> {
+                loadComponent(element, BbPart.ID).ifPresent(component -> {
+                    // Since bbmodel uses lists for everything, we can't use the name property+selfpublish model that mson does.
+                    // Instead the parent has to collect models.
+                    if (((ModelComponent<?>)component) instanceof BbPart part) {
+                        elements.put(part.name, part);
+                    }
+                });
+            });
+
+        // The java_block model type might (very likely will) not have an outliner
+        if ("java_block".equalsIgnoreCase(formatVariant) && elements.isEmpty()) {
+            elements.put("root", new BbPart(cubes.values(), "root"));
+        }
     }
 
     @Override
@@ -100,27 +146,12 @@ public class BlockBenchFileContent implements JsonContext {
 
     @Override
     public CompletableFuture<FileContent<?>> resolve(JsonElement json) {
-
-        if (json.isJsonPrimitive()) {
-            return loader.loadModel(new Identifier(json.getAsString()), format);
-        }
-
-        Identifier id = getLocals().getModelId();
-        Identifier autoGen = new Identifier(id.getNamespace(), id.getPath() + "_dynamic");
-
-        if (json.getAsJsonObject().has("data")) {
-            throw new JsonParseException("Dynamic model files should not have a nested data block");
-        }
-
-        JsonObject file = new JsonObject();
-        file.add("data", json.getAsJsonObject());
-
-        return CompletableFuture.completedFuture(new BlockBenchFileContent(loader, format, autoGen, file));
+        return CompletableFuture.completedFuture(FileContent.empty());
     }
 
     @Override
     public ModelContext createContext(Model model, ModelContext.Locals locals) {
-        return new RootContext(model, (ModelContextImpl)EmptyFileContent.INSTANCE.createContext(model, locals), elements, locals);
+        return new RootContext(model, (ModelContextImpl)FileContent.empty().createContext(model, locals), elements, locals);
     }
 
     @Override

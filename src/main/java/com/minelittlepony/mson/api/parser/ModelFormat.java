@@ -5,15 +5,50 @@ import net.minecraft.util.Identifier;
 
 import java.util.Optional;
 
+/**
+ * Represents a distinct model format.
+ *
+ * Objects of this type serves as a translation layer that can turn a block of raw data into a FileContent instance.
+ *
+ * @param <Data> The type of data that this format consumes (typically json).
+ */
 public interface ModelFormat<Data> {
     Identifier MSON_V2 = new Identifier("mson", "json");
+
+    /**
+     * Mson *.json files
+     */
     Identifier MSON = MSON_V2;
+
+    /**
+     * BlockBench *.bbmodel files
+     */
     Identifier BBMODEL = new Identifier("blockbench", "bbmodel");
 
+    /**
+     * The file extension that this format is capable of parsing.
+     */
     String getFileExtension();
 
-    Optional<FileContent<Data>> loadModel(Identifier modelId, ModelLoader loader);
+    /**
+     * Loads a model for the requested model id using the provided asset loader.
+     *
+     * @param id The identifier of the model to load.
+     * @param loader  A model loader
+     * @return The new FileContent instance if parsing succeeded, otherwise an empty optional.
+     */
+    Optional<FileContent<Data>> loadModel(Identifier id, ModelLoader loader);
 
+    /**
+     * Loads a model from a provided filepath and resource.
+     *
+     *
+     * @param id The identifer of the model to load.
+     * @param file The direct filepath of the model to load
+     * @param source A resource corresponding to the requested file
+     * @param loader  A model loader
+     * @return The new FileContent instance if parsing succeeded, otherwise an empty optional.
+     */
     Optional<FileContent<Data>> loadModel(Identifier id, Identifier file, Resource resource, boolean failHard, ModelLoader loader);
 
     /**
@@ -29,9 +64,15 @@ public interface ModelFormat<Data> {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Loads a component from a provided data fragment.
+     */
     default <T> Optional<ModelComponent<T>> loadComponent(Data data, Identifier defaultAs, FileContent<Data> context) {
         return loadComponent("", data, defaultAs, context);
     }
 
+    /**
+     * Loads a component from a provided data fragment.
+     */
     <T> Optional<ModelComponent<T>> loadComponent(String name, Data data, Identifier defaultAs, FileContent<Data> context);
 }
