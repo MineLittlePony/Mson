@@ -1,102 +1,103 @@
 package com.minelittlepony.mson.impl.key;
 
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.Nullable;
 
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.MsonModel;
-import com.minelittlepony.mson.api.parser.FileContent;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Deprecated
-public final class ReflectedModelKey<T> extends AbstractModelKeyImpl<T> {
+public record ReflectedModelKey<T> (
+        @Nullable Function<ModelContext, T> contextFactory,
+        @Nullable Function<ModelPart, T> partFactory,
+        Class<T> type) implements InstanceCreator<T> {
+    private static final Function<String, InstanceCreator<?>> NAME_LOOKUP = Util.memoize(className -> {
+        if (className.endsWith("ModelPart")) {
+            return InstanceCreator.ofPart();
+        }
+        try {
+            return byType(Class.forName(className, false, ReflectedModelKey.class.getClassLoader()));
+        } catch (Exception e) {
+            throw new JsonParseException("Exception getting handle for implementation " + className, e);
+        }
+    });
+    private static final Function<Class<Object>, InstanceCreator<Object>> TYPE_LOOKUP = Util.memoize(type -> {
+        if (ModelPart.class.equals(type)) {
+            return InstanceCreator.ofPart();
+        }
 
-    private static final Map<String, ReflectedModelKey<?>> keyCache = new HashMap<>();
+        Supplier<Object> supplier = null;
+
+        Function<ModelPart, Object> treeFactory = null;
+        Function<ModelContext, Object> contextFactory = null;
+
+        try {
+            supplier = MethodHandles.createInstanceSupplier(type);
+        } catch (Error | Exception ignored) { }
+
+        try {
+            treeFactory = MethodHandles.createInstanceFactory(type, ModelPart.class);
+        } catch (Error | Exception ignored) { }
+
+        try {
+            contextFactory = MethodHandles.createInstanceFactory(type, ModelContext.class);
+        } catch (Error | Exception ignored) { }
+
+        final Supplier<Object> supplierCopy = supplier;
+        var key = new ReflectedModelKey<Object>(
+                contextFactory == null ? supplierCopy == null ? null : ctx -> supplierCopy.get() : contextFactory,
+                treeFactory == null ? supplierCopy == null ? null : tree -> supplierCopy.get() : treeFactory,
+                type
+        );
+        if (key.contextFactory == null && key.partFactory == null) {
+            throw new RuntimeException("Could not locate constructors for type " + type);
+        }
+        return key;
+    });
 
     @SuppressWarnings("unchecked")
-    public static <T> ReflectedModelKey<T> fromJson(JsonObject json) {
-        if (!json.has("implementation")) {
-            throw new JsonParseException("Slot requires an implementation");
-        }
-
-        synchronized (keyCache) {
-            return (ReflectedModelKey<T>)keyCache.computeIfAbsent(json.get("implementation").getAsString(), ReflectedModelKey::new);
-        }
+    public static <T> InstanceCreator<T> byName(String className) {
+        return (InstanceCreator<T>)NAME_LOOKUP.apply(className);
     }
 
-    private final Function<ModelContext, T> factory;
-    private Class<T> type;
-
-    private ReflectedModelKey(String className) {
-        id = new Identifier("dynamic", className.replaceAll("[\\.\\$]", "/").toLowerCase());
-        factory = lookupFactory(className);
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceCreator<T> byType(Class<T> type) {
+        return (InstanceCreator<T>)TYPE_LOOKUP.apply((Class<Object>)type);
     }
 
+    @Override
     public boolean isCompatible(Class<?> toType) {
         return type != null && toType != null && toType.isAssignableFrom(type);
     }
 
-    @SuppressWarnings("unchecked")
-    private Function<ModelContext, T> lookupFactory(String className) {
-        try {
-            type = (Class<T>)Class.forName(className, false, ReflectedModelKey.class.getClassLoader());
-
-            if (!MsonModel.class.isAssignableFrom(type)) {
-                throw new JsonParseException("Slot implementation does not implement MsonModel");
-            }
-
-            try {
-                final Function<ModelPart, T> function = MethodHandles.createInstanceFactory(type, ModelPart.class);
-                return ctx -> {
-                    Map<String, ModelPart> tree = new HashMap<>();
-                    ctx.getTree(tree);
-                    return function.apply(new ModelPart(new ArrayList<>(), tree));
-                };
-            } catch (Error | Exception e) {
-                try {
-                    return MethodHandles.createInstanceFactory(type, ModelContext.class);
-                } catch (Error | Exception ee) {
-                    final Supplier<T> supplier = MethodHandles.createInstanceSupplier(type);
-                    return ctx -> supplier.get();
-                }
-            }
-        } catch (Exception e) {
-            throw new JsonParseException("Exception getting handle for implementation " + className, e);
+    @Override
+    public T createInstance(ModelContext context) {
+        if (contextFactory == null) {
+            throw new NotImplementedException("The generated lamba cannot be used with a model context");
         }
-    }
-
-    public T createModel(ModelContext context) {
-        return factory.apply(context);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <V extends T> V createModel() {
-        return (V)createModel((ModelContext)null);
+        return contextFactory.apply(context);
     }
 
     @Override
-    public <V extends T> V createModel(MsonModel.Factory<V> supplier) {
-        return null;
+    public T createInstance(ModelPart tree) {
+        if (partFactory == null) {
+            throw new NotImplementedException("The generated lamba does not support conversion from a pre-imported model tree");
+        }
+        return partFactory.apply(tree);
     }
 
     @Override
-    public Optional<FileContent<?>> getModelData() {
-        throw new NotImplementedException("getModelData");
-    }
-
-    @Override
-    public Optional<ModelPart> createTree() {
-        throw new NotImplementedException("createTree");
+    public T createInstance(ModelContext context, Function<ModelContext, ModelPart> converter) {
+        if (partFactory != null) {
+            return createInstance(converter.apply(context));
+        }
+        return createInstance(context);
     }
 }

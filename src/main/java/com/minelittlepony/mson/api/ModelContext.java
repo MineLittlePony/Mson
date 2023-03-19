@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.api;
 
-import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 
 import org.jetbrains.annotations.Nullable;
@@ -18,19 +17,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * This allows access to getting out named elements from the model json.
  */
-public interface ModelContext {
-    /**
-     * Gets the root context.
-     * Returns `this` when called on the root context.
-     */
-    ModelContext getRoot();
-
-    /**
-     * Gets the currently-active model instance.
-     */
-    @Nullable
-    <T extends Model> T getModel();
-
+public interface ModelContext extends ModelView {
     /**
      * Gets the immediate object in this context.
      * May be the same as the model if called on the root context.
@@ -65,30 +52,11 @@ public interface ModelContext {
 
     /**
      * Checks if a value has been stored for the given name.
-     * If one was not found, computes one using the supplied method and returns that.
+     * If one was not found, creates one using the provided factory function.
      *
      * Will always return a new instance if the name is empty or null.
      */
-    <T> T computeIfAbsent(@Nullable String name, FutureFunction<T> supplier);
-
-    /**
-     * Gets the named element and returns an instance of the requested type.
-     *
-     * @throws ClassCastException if the requested named element does not use the requested implementation.
-     * @throws InvalidInputException if the named element does not exist.
-     *
-     * @deprecated Callers should pass a function to convert from a ModelPart to the expected type.
-     */
-    @Deprecated
-    <T> T findByName(String name);
-
-    /**
-     * Gets the named element and returns an instance of the requested type.
-     *
-     * @throws ClassCastException if the requested named element does not use the requested implementation.
-     * @throws InvalidInputException if the named element does not exist.
-     */
-    <T> T findByName(String name, MsonModel.Factory<T> factory);
+    <T> T computeIfAbsent(@Nullable String name, FutureFunction<T> factory);
 
     /**
      * Finds a component with the matching name.
@@ -128,6 +96,10 @@ public interface ModelContext {
         /**
          * Gets a completed local variable.
          */
-        CompletableFuture<Float> getLocal(String name);
+        CompletableFuture<Float> getLocal(String name, float defaultValue);
+
+        default CompletableFuture<Float> getLocal(String name) {
+            return getLocal(name, 0F);
+        }
     }
 }

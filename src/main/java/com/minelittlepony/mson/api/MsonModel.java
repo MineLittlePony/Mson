@@ -2,6 +2,8 @@ package com.minelittlepony.mson.api;
 
 import net.minecraft.client.model.ModelPart;
 
+import java.util.function.Function;
+
 /**
  * Special instance of a model that directly handle's Mson-supplied values.
  *
@@ -13,16 +15,21 @@ public interface MsonModel {
     /**
      * Called to initialise this model with all of its contents.
      *
-     * @param context The current loading context.
+     * @param view A view into the model contents this component was created from.
      */
-    default void init(ModelContext context) {}
+    default void init(ModelView view) {}
 
     /**
      * Constructor to create a new mson model.
      */
-    public interface Factory<T> {
+    public interface Factory<T> extends Function<ModelPart, T> {
         Factory<ModelPart> IDENTITY = tree -> tree;
 
         T create(ModelPart tree);
+
+        @Override
+        default T apply(ModelPart tree) {
+            return create(tree);
+        }
     }
 }

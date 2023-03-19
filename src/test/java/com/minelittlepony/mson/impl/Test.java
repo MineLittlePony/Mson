@@ -20,6 +20,7 @@ import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
+import com.minelittlepony.mson.api.ModelView;
 import com.minelittlepony.mson.api.Mson;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.model.biped.MsonPlayer;
@@ -78,12 +79,8 @@ final class Test {
         }
 
         @Override
-        public void init(ModelContext context) {
-            try {
-                System.out.println(context.getLocals().getLocal("a_local").get());
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
+        public void init(ModelView context) {
+            System.out.println(context.getLocalValue("a_local", 0));
         }
     }
 }

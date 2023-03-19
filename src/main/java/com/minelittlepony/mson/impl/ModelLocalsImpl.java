@@ -38,9 +38,9 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
     }
 
     @Override
-    public CompletableFuture<Float> getLocal(String name) {
+    public CompletableFuture<Float> getLocal(String name, float defaultValue) {
         return Maps.computeIfAbsent(precalculatedValues, name, n -> {
-            return context.getLocal(n).thenApplyAsync(value -> {
+            return context.getLocal(n, defaultValue).thenApplyAsync(value -> {
                 return value.complete(new StackFrame(this, n));
             });
         });
@@ -82,11 +82,11 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
         }
 
         @Override
-        public CompletableFuture<Float> getLocal(String name) {
+        public CompletableFuture<Float> getLocal(String name, float defaultValue) {
             if (currentVariableRef.equalsIgnoreCase(name)) {
                 throw new RuntimeException("Cyclical reference. " + toString());
             }
-            return parent.getLocal(name);
+            return parent.getLocal(name, defaultValue);
         }
 
         @Override

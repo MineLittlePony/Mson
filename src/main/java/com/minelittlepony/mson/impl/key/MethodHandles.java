@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.lang.invoke.MethodHandles.Lookup;
 
+@Deprecated
 final class MethodHandles {
     private static final Lookup LOOKUP = java.lang.invoke.MethodHandles.lookup();
 

@@ -170,8 +170,8 @@ public class JsonFileContent implements JsonContext {
         }
 
         @Override
-        public CompletableFuture<Incomplete<Float>> getLocal(String name) {
-            return locals.get(name).orElseGet(() -> parent.thenComposeAsync(p -> p.getLocal(name)));
+        public CompletableFuture<Incomplete<Float>> getLocal(String name, float defaultValue) {
+            return locals.get(name).orElseGet(() -> parent.thenComposeAsync(p -> p.getLocal(name, defaultValue)));
         }
 
         @Override

@@ -79,6 +79,10 @@ public class MsonModelFormat implements ModelFormat<JsonElement> {
             JsonObject o = json.getAsJsonObject();
             final String fname = Strings.nullToEmpty(name).trim();
 
+            if (!o.has("type") && o.has("data")) {
+                return Optional.of(new JsonSlot<>(context, name, o));
+            }
+
             return Optional.ofNullable(componentTypes.get(JsonUtil.accept(o, "type")
                         .map(JsonElement::getAsString)
                         .map(Identifier::new)

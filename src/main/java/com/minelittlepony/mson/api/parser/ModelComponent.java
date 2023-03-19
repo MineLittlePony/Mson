@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.api.parser;
 
+import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.MsonModel;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -49,7 +49,7 @@ public interface ModelComponent<T> {
      * Creates an instance of a custom type from the data stored in this components.
      * Returns an empty Optional if this component does not support conversion to the requested type.
      */
-    default <K> Optional<K> exportToType(ModelContext context, MsonModel.Factory<K> customType) throws InterruptedException, ExecutionException {
+    default <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
         return Optional.empty();
     }
 

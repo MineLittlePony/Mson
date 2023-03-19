@@ -4,8 +4,10 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 
 import com.minelittlepony.mson.api.FutureFunction;
+import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.MsonModel;
+import com.minelittlepony.mson.api.ModelMetadata;
+import com.minelittlepony.mson.api.ModelView;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.impl.ModelContextImpl;
 
@@ -19,13 +21,13 @@ class SubContext implements ModelContextImpl {
 
     private final ModelContextImpl parent;
 
-    private final Locals locals;
+    private final ModelMetadataImpl metadata;
 
     private final Object context;
 
     public SubContext(ModelContextImpl parent, Locals locals, Object context) {
         this.parent = Objects.requireNonNull(parent, "Parent context is required");
-        this.locals = Objects.requireNonNull(locals, "Locals is required");
+        this.metadata = new ModelMetadataImpl(Objects.requireNonNull(locals, "Locals is required"));
         this.context = Objects.requireNonNull(context, "Sub-context element is required");
     }
 
@@ -47,14 +49,8 @@ class SubContext implements ModelContextImpl {
         parent.getTree(context, tree);
     }
 
-    @Deprecated
     @Override
-    public <T> T findByName(ModelContext context, String name) {
-        return parent.findByName(context, name);
-    }
-
-    @Override
-    public <T> T findByName(ModelContext context, String name, MsonModel.Factory<T> factory) {
+    public <T> T findByName(ModelContext context, String name, @Nullable InstanceCreator<T> factory) {
         return parent.findByName(context, name, factory);
     }
 
@@ -77,12 +73,17 @@ class SubContext implements ModelContextImpl {
     }
 
     @Override
-    public ModelContext getRoot() {
+    public ModelView getRoot() {
         return parent.getRoot();
     }
 
     @Override
     public Locals getLocals() {
-        return locals;
+        return metadata.getUnchecked();
+    }
+
+    @Override
+    public ModelMetadata getMetadata() {
+        return metadata;
     }
 }

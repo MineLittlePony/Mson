@@ -194,8 +194,8 @@ class BlockBenchFileContent implements JsonContext {
         }
 
         @Override
-        public CompletableFuture<Incomplete<Float>> getLocal(String name) {
-            return CompletableFuture.completedFuture(Incomplete.ZERO);
+        public CompletableFuture<Incomplete<Float>> getLocal(String name, float defaultValue) {
+            return CompletableFuture.completedFuture(Incomplete.completed(defaultValue));
         }
 
         @Override

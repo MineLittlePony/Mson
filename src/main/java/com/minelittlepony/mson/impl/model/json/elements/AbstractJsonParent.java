@@ -7,8 +7,8 @@ import net.minecraft.util.Identifier;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
+import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.model.Texture;
@@ -94,11 +94,11 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
     }
 
     @Override
-    public <K> Optional<K> exportToType(ModelContext context, MsonModel.Factory<K> customType) throws InterruptedException, ExecutionException {
+    public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
         return Optional.of(context.computeIfAbsent(name, key -> {
             final PartBuilder builder = new PartBuilder();
             final ModelContext subContext = context.resolve(builder, new Locals(context.getLocals()));
-            return customType.create(export(subContext, builder).build());
+            return customType.createInstance(subContext, ctx -> export(ctx, builder).build());
         }));
     }
 
@@ -147,8 +147,8 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
         }
 
         @Override
-        public CompletableFuture<Float> getLocal(String name) {
-            return parent.getLocal(name);
+        public CompletableFuture<Float> getLocal(String name, float defaultValue) {
+            return parent.getLocal(name, defaultValue);
         }
 
         @Override

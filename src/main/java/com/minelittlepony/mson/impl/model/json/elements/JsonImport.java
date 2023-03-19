@@ -7,8 +7,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.Incomplete;
+import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.LocalBlock;
@@ -56,24 +56,26 @@ public class JsonImport implements ModelComponent<ModelPart> {
 
     @Override
     public ModelPart export(ModelContext context) {
-        return context.computeIfAbsent(name, key -> toTree(context));
+        return context.computeIfAbsent(name, key -> convertContextToTree(createSubContext(context)));
     }
 
     @Override
-    public <K> Optional<K> exportToType(ModelContext context, MsonModel.Factory<K> customType) throws InterruptedException, ExecutionException {
+    public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
         return Optional.of(context.computeIfAbsent(name, key -> {
-            return customType.create(toTree(context));
+            return customType.createInstance(createSubContext(context), this::convertContextToTree);
         }));
     }
 
-    private ModelPart toTree(ModelContext context) throws InterruptedException, ExecutionException {
+    private ModelContext createSubContext(ModelContext context) throws InterruptedException, ExecutionException {
         FileContent<?> jsContext = file.get();
-        ModelContext modelContext = jsContext.createContext(context.getModel(),
+        return jsContext.createContext(context.getModel(),
             new Locals(jsContext.getLocals()).bake()
         );
+    }
 
+    private ModelPart convertContextToTree(ModelContext context) {
         Map<String, ModelPart> tree = new HashMap<>();
-        modelContext.getTree(tree);
+        context.getTree(tree);
 
         if (tree.size() != 1) {
             throw new JsonParseException("Imported file must define exactly one part.");
@@ -105,8 +107,8 @@ public class JsonImport implements ModelComponent<ModelPart> {
         }
 
         @Override
-        public CompletableFuture<Incomplete<Float>> getLocal(String name) {
-            return locals.flatMap(locals -> locals.get(name)).orElseGet(() -> parent.getLocal(name));
+        public CompletableFuture<Incomplete<Float>> getLocal(String name, float defaultValue) {
+            return locals.flatMap(locals -> locals.get(name)).orElseGet(() -> parent.getLocal(name, defaultValue));
         }
 
         @Override

@@ -1,8 +1,8 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
 import com.google.gson.JsonParseException;
+import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 
@@ -66,7 +66,7 @@ public class JsonLink implements ModelComponent<Object> {
     }
 
     @Override
-    public <K> Optional<K> exportToType(ModelContext context, MsonModel.Factory<K> customType) throws InterruptedException, ExecutionException {
+    public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
         return context.findComponent(linkName).flatMap(component -> {
             try {
                 return component.exportToType(context, customType);

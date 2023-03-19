@@ -4,9 +4,12 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.minelittlepony.mson.api.FutureFunction;
+import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.MsonModel;
+import com.minelittlepony.mson.api.ModelMetadata;
 import com.minelittlepony.mson.api.exception.EmptyContextException;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
@@ -22,6 +25,9 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
 
     static ModelContextImpl INSTANCE = new EmptyModelContext();
     static Identifier ID = new Identifier("mson", "null");
+
+
+    private final ModelMetadataImpl metadata = new ModelMetadataImpl(this);
 
     private EmptyModelContext() {}
 
@@ -44,14 +50,8 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
     public void getTree(ModelContext context, Map<String, ModelPart> tree) {
     }
 
-    @Deprecated
     @Override
-    public <T> T findByName(ModelContext context, String name) {
-        throw new IllegalArgumentException(String.format("Key not found `%s`", name));
-    }
-
-    @Override
-    public <T> T findByName(ModelContext context, String name, MsonModel.Factory<T> factory) {
+    public <T> T findByName(ModelContext context, String name, @Nullable InstanceCreator<T> factory) {
         throw new IllegalArgumentException(String.format("Key not found `%s`", name));
     }
 
@@ -86,8 +86,8 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
     }
 
     @Override
-    public CompletableFuture<Float> getLocal(String name) {
-        return CompletableFuture.completedFuture(0F);
+    public CompletableFuture<Float> getLocal(String name, float defaultValue) {
+        return CompletableFuture.completedFuture(defaultValue);
     }
 
     @Override
@@ -98,5 +98,10 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
     @Override
     public ModelContext.Locals getLocals() {
         return this;
+    }
+
+    @Override
+    public ModelMetadata getMetadata() {
+        return metadata;
     }
 }

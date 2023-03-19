@@ -121,7 +121,11 @@ public interface FileContent<Data> {
         /**
          * Gets a local variable as an incomplete float.
          */
-        CompletableFuture<Incomplete<Float>> getLocal(String name);
+        CompletableFuture<Incomplete<Float>> getLocal(String name, float defaultValue);
+
+        default CompletableFuture<Incomplete<Float>> getLocal(String name) {
+            return getLocal(name, 0F);
+        }
 
         /**
          * Creates a frozen copy of this file's locals

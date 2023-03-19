@@ -5,15 +5,17 @@ import net.minecraft.util.Identifier;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
+import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.LocalBlock;
 import com.minelittlepony.mson.api.parser.FileContent;
-import com.minelittlepony.mson.impl.key.ReflectedModelKey;
 import com.minelittlepony.mson.impl.model.FileContentLocalsImpl;
 import com.minelittlepony.mson.util.JsonUtil;
+
+import javax.annotation.Nullable;
 
 import java.util.Optional;
 import java.util.Set;
@@ -33,8 +35,8 @@ import java.util.concurrent.ExecutionException;
 public class JsonSlot<T> implements ModelComponent<T> {
     public static final Identifier ID = new Identifier("mson", "slot");
 
-    @Deprecated
-    private final ReflectedModelKey<T> implementation;
+    @Nullable
+    private final InstanceCreator<T> implementation;
 
     /**
      * The contents of this slot either expressed at a map of child elements, or a string pointing to a file.
@@ -57,17 +59,19 @@ public class JsonSlot<T> implements ModelComponent<T> {
      */
     private final String name;
 
+    private final Identifier id;
+
     public JsonSlot(FileContent<JsonElement> context, String name, JsonElement json) {
         this(context, name, json.getAsJsonObject());
     }
 
     public JsonSlot(FileContent<JsonElement> context, String name, JsonObject json) {
-        implementation = ReflectedModelKey.fromJson(json);
+        implementation = json.has("implementation") ? InstanceCreator.byName(json.get("implementation").getAsString()) : InstanceCreator.ofPart();
         data = context.resolve(json.get("data"));
         this.name = name.isEmpty() ? JsonUtil.require(json, "name", ID, context.getLocals().getModelId()).getAsString() : name;
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
         context.addNamedComponent(this.name, this);
-
+        id = new Identifier("dynamic", context.getLocals().getModelId().getPath() + "/" + this.name);
         locals = LocalBlock.of(JsonUtil.accept(json, "locals"));
     }
 
@@ -85,7 +89,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
             FileContent<?> jsContext = data.get();
             ModelContext subContext = jsContext.createContext(context.getModel(), new Locals(jsContext).bake());
 
-            T inst = implementation.createModel(subContext);
+            T inst = implementation.createInstance(subContext);
             if (inst instanceof MsonModel) {
                 ((MsonModel)inst).init(subContext.resolve(context.getContext()));
             }
@@ -94,12 +98,18 @@ public class JsonSlot<T> implements ModelComponent<T> {
         });
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public <K> Optional<K> exportToType(ModelContext context, MsonModel.Factory<K> customType) throws InterruptedException, ExecutionException {
+    public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
         return Optional.of(context.computeIfAbsent(name, key -> {
             FileContent<?> jsContext = data.get();
             ModelContext subContext = jsContext.createContext(context.getModel(), new Locals(jsContext).bake());
-            return customType.create(subContext.toTree());
+
+            if (implementation.isCompatible(customType)) {
+                return (K)implementation.createInstance(subContext);
+            }
+
+            return customType.createInstance(subContext);
         }));
     }
 
@@ -112,7 +122,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
 
         @Override
         public Identifier getModelId() {
-            return implementation.getId();
+            return id;
         }
 
         @Override
@@ -128,8 +138,8 @@ public class JsonSlot<T> implements ModelComponent<T> {
         }
 
         @Override
-        public CompletableFuture<Incomplete<Float>> getLocal(String name) {
-            return locals.get(name).orElseGet(() -> parent.getLocal(name));
+        public CompletableFuture<Incomplete<Float>> getLocal(String name, float defaultValue) {
+            return locals.get(name).orElseGet(() -> parent.getLocal(name, defaultValue));
         }
 
         @Override

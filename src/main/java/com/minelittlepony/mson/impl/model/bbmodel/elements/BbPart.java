@@ -8,8 +8,8 @@ import net.minecraft.util.math.MathHelper;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.parser.FileContent;
@@ -118,11 +118,17 @@ public class BbPart implements ModelComponent<ModelPart> {
     }
 
     @Override
-    public <K> Optional<K> exportToType(ModelContext context, MsonModel.Factory<K> customType) throws InterruptedException, ExecutionException {
+    public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
         return Optional.of(context.computeIfAbsent(name, key -> {
             final PartBuilder builder = new PartBuilder();
             final ModelContext subContext = context.resolve(builder, context.getLocals());
-            return customType.create(export(subContext, builder).build());
+            return customType.createInstance(subContext, ctx -> {
+                try {
+                    return export(ctx, builder).build();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new FutureAwaitException(e);
+                }
+            });
         }));
     }
 

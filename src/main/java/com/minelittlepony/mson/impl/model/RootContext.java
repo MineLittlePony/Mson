@@ -3,9 +3,13 @@ package com.minelittlepony.mson.impl.model;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.base.Strings;
 import com.minelittlepony.mson.api.FutureFunction;
+import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.ModelMetadata;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.parser.ModelComponent;
@@ -25,14 +29,14 @@ public class RootContext implements ModelContextImpl {
     private final Map<String, Object> objectCache = new HashMap<>();
 
     private final ModelContextImpl inherited;
-    private final Locals locals;
+    private final ModelMetadataImpl metadata;
 
     private final Map<String, ModelComponent<?>> elements;
 
     public RootContext(Model model, ModelContextImpl inherited, Map<String, ModelComponent<?>> elements, Locals locals) {
         this.model = model;
         this.inherited = inherited;
-        this.locals = locals;
+        this.metadata = new ModelMetadataImpl(locals);
         this.elements = elements;
     }
 
@@ -54,7 +58,12 @@ public class RootContext implements ModelContextImpl {
 
     @Override
     public Locals getLocals() {
-        return locals;
+        return metadata.getUnchecked();
+    }
+
+    @Override
+    public ModelMetadata getMetadata() {
+        return metadata;
     }
 
     @Override
@@ -70,30 +79,23 @@ public class RootContext implements ModelContextImpl {
     }
 
     @SuppressWarnings("unchecked")
-    @Deprecated
     @Override
-    public <T> T findByName(ModelContext context, String name) {
+    public <T> T findByName(ModelContext context, String name, @Nullable InstanceCreator<T> customType) {
         if (elements.containsKey(name)) {
-            try {
-                return (T)elements.get(name).export(context);
-            } catch (InterruptedException | ExecutionException e) {
-                throw new FutureAwaitException(e);
-            }
-        }
-        return inherited.findByName(context, name);
-    }
 
-    @Override
-    public <T> T findByName(ModelContext context, String name, MsonModel.Factory<T> customType) {
-        if (elements.containsKey(name)) {
             try {
-                return elements.get(name).exportToType(context, tree -> {
-                    T inst = customType.create(tree);
-                    if (inst instanceof MsonModel model) {
-                        model.init(context);
-                    }
-                    return inst;
-                }).orElseThrow(() -> new ClassCastException("Element " + name + " does not support conversion to the requested type."));
+                if (customType == null) {
+                    return (T)elements.get(name).export(context);
+                } else {
+                    return elements.get(name).exportToType(context, customType)
+                            .map(instance -> {
+                                if (instance instanceof MsonModel model) {
+                                    model.init(context);
+                                }
+                                return instance;
+                            })
+                            .orElseThrow(() -> new ClassCastException("Element " + name + " does not support conversion to the requested type."));
+                }
             } catch (InterruptedException | ExecutionException e) {
                 throw new FutureAwaitException(e);
             }
