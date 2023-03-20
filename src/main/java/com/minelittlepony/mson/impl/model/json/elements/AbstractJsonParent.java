@@ -76,9 +76,10 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
         JsonUtil.acceptBooleans(json, "mirror", mirror);
         visible = JsonUtils.getBooleanOr("visible", json, true);
         texture = JsonTexture.incomplete(JsonUtil.accept(json, "texture"));
-        this.name = name.isEmpty() ? JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("") : name;
-
-        context.addNamedComponent(this.name, this);
+        this.name = JsonUtil.accept(json, "name").map(JsonElement::getAsString).map(n -> {
+            context.addNamedComponent(n, this);
+            return n;
+        }).orElse("");
     }
 
     @Override

@@ -68,9 +68,10 @@ public class JsonSlot<T> implements ModelComponent<T> {
         data = context.resolve(json.get("data"));
         this.name = name.isEmpty() ? JsonUtil.require(json, "name", ID, context.getLocals().getModelId()).getAsString() : name;
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
-        context.addNamedComponent(this.name, this);
         id = new Identifier("dynamic", context.getLocals().getModelId().getPath() + "/" + this.name);
         locals = LocalBlock.of(JsonUtil.accept(json, "locals"));
+
+        context.addNamedComponent(this.name, this);
     }
 
     @Override

@@ -54,7 +54,7 @@ public class JsonCompound extends AbstractJsonParent {
         JsonUtil.accept(json, "children").ifPresent(el -> {
             children.putAll(parseChildren(context, el).collect(Collectors.toMap(
                 Map.Entry::getKey,
-                i -> context.loadComponent(i.getValue(), ID).orElse(null))
+                i -> context.loadComponent(i.getKey(), i.getValue(), ID).orElse(null))
             ));
         });
         JsonUtil.accept(json, "cubes").ifPresent(el -> {
