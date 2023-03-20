@@ -9,7 +9,9 @@ import net.minecraft.util.math.Direction;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
 
+import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -18,6 +20,7 @@ import java.util.function.Function;
  * Holds all the parameters so we don't have to shove them into a Box sub-class.
  */
 public final class BoxBuilder {
+    private static final Set<Direction> ALL_DIRECTIONS = EnumSet.allOf(Direction.class);
 
     public final PartBuilder parent;
 
@@ -137,17 +140,23 @@ public final class BoxBuilder {
     }
 
     public Cuboid build() {
+        return build(ALL_DIRECTIONS);
+    }
+
+    public Cuboid build(Set<Direction> enabledSides) {
         return new Cuboid(
                 u, v,
                 pos[0], pos[1], pos[2],
                 size[0], size[1], size[2],
                 dilate[0], dilate[1], dilate[2],
                 mirror[0],
-                parent.texture.width(), parent.texture.height());
+                parent.texture.width(), parent.texture.height(),
+                enabledSides
+        );
     }
 
     public Cuboid build(QuadsBuilder builder) {
-        Cuboid box = build();
+        Cuboid box = build(Set.of());
         ((Cube)box).setSides(builder.build(this));
         return box;
     }

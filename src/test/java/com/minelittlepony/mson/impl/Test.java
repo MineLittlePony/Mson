@@ -18,14 +18,12 @@ import net.minecraft.entity.passive.CowEntity;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.util.Identifier;
 
-import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.ModelView;
 import com.minelittlepony.mson.api.Mson;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.model.biped.MsonPlayer;
 
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 final class Test {
