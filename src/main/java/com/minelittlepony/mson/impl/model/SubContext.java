@@ -4,18 +4,15 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 
 import com.minelittlepony.mson.api.FutureFunction;
-import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelMetadata;
 import com.minelittlepony.mson.api.ModelView;
-import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.impl.ModelContextImpl;
 
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 class SubContext implements ModelContextImpl {
 
@@ -50,13 +47,8 @@ class SubContext implements ModelContextImpl {
     }
 
     @Override
-    public <T> T findByName(ModelContext context, String name, @Nullable InstanceCreator<T> factory) {
-        return parent.findByName(context, name, factory);
-    }
-
-    @Override
-    public Optional<ModelComponent<?>> findComponent(ModelContext context, String name) {
-        return parent.findComponent(context, name);
+    public <T> T findByName(ModelContext context, String name) {
+        return parent.findByName(context, name);
     }
 
     @Override

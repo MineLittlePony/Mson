@@ -4,20 +4,15 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.minelittlepony.mson.api.FutureFunction;
-import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelMetadata;
 import com.minelittlepony.mson.api.exception.EmptyContextException;
 import com.minelittlepony.mson.api.model.Texture;
-import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.impl.ModelContextImpl;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -51,13 +46,8 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
     }
 
     @Override
-    public <T> T findByName(ModelContext context, String name, @Nullable InstanceCreator<T> factory) {
+    public <T> T findByName(ModelContext context, String name) {
         throw new IllegalArgumentException(String.format("Key not found `%s`", name));
-    }
-
-    @Override
-    public Optional<ModelComponent<?>> findComponent(ModelContext context, String name) {
-        return Optional.empty();
     }
 
     @Override

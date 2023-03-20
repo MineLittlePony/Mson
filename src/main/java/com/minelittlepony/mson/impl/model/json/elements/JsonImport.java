@@ -7,7 +7,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.Incomplete;
-import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
@@ -21,7 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Represents a model part who's contents are loaded from another file.
@@ -57,11 +55,6 @@ public class JsonImport implements ModelComponent<ModelPart> {
     @Override
     public ModelPart export(ModelContext context) {
         return context.computeIfAbsent(name, key -> convertContextToTree(context.extendWith(file.get(), Locals::new)));
-    }
-
-    @Override
-    public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
-        return Optional.of(customType.createInstance(context.extendWith(file.get(), Locals::new), this::convertContextToTree));
     }
 
     private ModelPart convertContextToTree(ModelContext context) {

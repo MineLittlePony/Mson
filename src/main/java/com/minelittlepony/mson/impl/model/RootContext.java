@@ -3,11 +3,8 @@ package com.minelittlepony.mson.impl.model;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.google.common.base.Strings;
 import com.minelittlepony.mson.api.FutureFunction;
-import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelMetadata;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
@@ -18,7 +15,6 @@ import com.minelittlepony.mson.util.Maps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class RootContext implements ModelContextImpl {
@@ -81,28 +77,16 @@ public class RootContext implements ModelContextImpl {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T findByName(ModelContext context, String name, @Nullable InstanceCreator<T> customType) {
+    public <T> T findByName(ModelContext context, String name) {
         if (elements.containsKey(name)) {
 
             try {
-                if (customType == null) {
-                    return (T)elements.get(name).export(context);
-                } else {
-                    return elements.get(name).exportToType(context, customType).orElseThrow(() -> new ClassCastException("Element " + name + " does not support conversion to the requested type."));
-                }
+                return (T)elements.get(name).export(context);
             } catch (InterruptedException | ExecutionException e) {
                 throw new FutureAwaitException(e);
             }
         }
-        return inherited.findByName(context, name, customType);
-    }
-
-    @Override
-    public Optional<ModelComponent<?>> findComponent(ModelContext context, String name) {
-        if (elements.containsKey(name)) {
-            return Optional.of(elements.get(name));
-        }
-        return inherited.findComponent(context, name);
+        return inherited.findByName(context, name);
     }
 
     @SuppressWarnings("unchecked")

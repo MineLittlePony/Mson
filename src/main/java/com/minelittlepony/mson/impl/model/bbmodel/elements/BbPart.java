@@ -8,7 +8,6 @@ import net.minecraft.util.math.MathHelper;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.model.PartBuilder;
@@ -20,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 
@@ -114,18 +112,6 @@ public class BbPart implements ModelComponent<ModelPart> {
             final PartBuilder builder = new PartBuilder();
             return export(context.bind(builder), builder).build();
         });
-    }
-
-    @Override
-    public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
-        final PartBuilder builder = new PartBuilder();
-        return Optional.of(customType.createInstance(context.bind(builder), ctx -> {
-            try {
-                return export(ctx, builder).build();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new FutureAwaitException(e);
-            }
-        }));
     }
 
     protected PartBuilder export(ModelContext context, PartBuilder builder) throws FutureAwaitException, InterruptedException, ExecutionException {

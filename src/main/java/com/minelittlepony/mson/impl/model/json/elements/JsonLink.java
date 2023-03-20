@@ -1,12 +1,9 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
 import com.google.gson.JsonParseException;
-import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -59,20 +56,8 @@ public class JsonLink implements ModelComponent<Object> {
         linkName = name.substring(1);
     }
 
-    @Deprecated
     @Override
     public Object export(ModelContext context) throws InterruptedException, ExecutionException {
         return context.computeIfAbsent(linkName, context::findByName);
-    }
-
-    @Override
-    public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
-        return context.findComponent(linkName).flatMap(component -> {
-            try {
-                return component.exportToType(context, customType);
-            } catch (InterruptedException | ExecutionException e) {
-                throw new FutureAwaitException(e);
-            }
-        });
     }
 }

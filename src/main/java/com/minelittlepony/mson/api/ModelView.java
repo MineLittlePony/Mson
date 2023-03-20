@@ -48,31 +48,6 @@ public interface ModelView {
      *
      * @throws ClassCastException if the requested named element does not use the requested implementation.
      * @throws InvalidInputException if the named element does not exist.
-     *
-     * @deprecated Callers should pass a function to convert from a ModelPart to the expected type.
      */
-    @Deprecated
-    default <T> T findByName(String name) {
-        return findByName(name, null, null);
-    }
-
-    /**
-     * Gets the named element and returns an instance of the requested type.
-     *
-     * @throws ClassCastException if the requested named element does not use the requested implementation.
-     * @throws InvalidInputException if the named element does not exist.
-     */
-    default <T> T findByName(String name, MsonModel.Factory<T> factory) {
-        return findByName(name, factory, null);
-    }
-
-    /**
-     * Gets the named element and returns an instance of the requested type.
-     *
-     * Unlike {@link #findByName(String, com.minelittlepony.mson.api.MsonModel.Factory)} this method will also allow
-     * returning sub-types of the requested class.
-     *
-     * @throws InvalidInputException if the named element does not exist.
-     */
-    <T> T findByName(String name, MsonModel.Factory<T> factory, Class<T> type);
+    <T> T findByName(String name);
 }

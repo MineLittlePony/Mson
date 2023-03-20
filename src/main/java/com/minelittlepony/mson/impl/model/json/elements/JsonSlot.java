@@ -19,7 +19,6 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Represents an in-place insertion of another model file's contents
@@ -65,7 +64,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
     }
 
     public JsonSlot(FileContent<JsonElement> context, String name, JsonObject json) {
-        implementation = json.has("implementation") ? InstanceCreator.byName(json.get("implementation").getAsString()) : null;
+        implementation = InstanceCreator.byName(JsonUtil.require(json, "implementation", ID, context.getLocals().getModelId()).getAsString());
         data = context.resolve(json.get("data"));
         this.name = name.isEmpty() ? JsonUtil.require(json, "name", ID, context.getLocals().getModelId()).getAsString() : name;
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
@@ -91,20 +90,6 @@ public class JsonSlot<T> implements ModelComponent<T> {
 
             return inst;
         });
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
-        ModelContext subContext = context.extendWith(data.get(), Locals::new);
-
-        InstanceCreator<T> implementation = (this.implementation == null ? InstanceCreator.<T>ofPart() : this.implementation);
-
-        if (implementation.isCompatible(customType)) {
-            return Optional.of((K)implementation.createInstance(subContext));
-        }
-
-        return Optional.of(customType.createInstance(subContext));
     }
 
     private class Locals implements FileContentLocalsImpl {

@@ -7,7 +7,6 @@ import net.minecraft.util.Identifier;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
-import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.model.PartBuilder;
@@ -17,10 +16,8 @@ import com.minelittlepony.mson.api.parser.locals.Local;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.JsonUtil;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Contains the common properties for parsing a ModelPart.
@@ -90,12 +87,6 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
             final PartBuilder builder = new PartBuilder();
             return export(context.bind(builder, Locals::new), builder).build();
         });
-    }
-
-    @Override
-    public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
-        final PartBuilder builder = new PartBuilder();
-        return Optional.of(customType.createInstance(context.bind(builder, Locals::new), ctx -> export(ctx, builder).build()));
     }
 
     protected PartBuilder export(ModelContext context, PartBuilder builder) throws FutureAwaitException {

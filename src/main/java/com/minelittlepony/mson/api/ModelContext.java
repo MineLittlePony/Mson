@@ -5,12 +5,10 @@ import net.minecraft.client.model.ModelPart;
 import org.jetbrains.annotations.Nullable;
 
 import com.minelittlepony.mson.api.parser.FileContent;
-import com.minelittlepony.mson.api.parser.ModelComponent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -48,11 +46,6 @@ public interface ModelContext extends ModelView {
      * Will always return a new instance if the name is empty or null.
      */
     <T> T computeIfAbsent(@Nullable String name, FutureFunction<T> factory);
-
-    /**
-     * Finds a component with the matching name.
-     */
-    Optional<ModelComponent<?>> findComponent(String name);
 
     /**
      * Binds this model context to a new object.
