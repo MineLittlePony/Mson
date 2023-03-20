@@ -11,6 +11,17 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface ModelView {
     /**
+     * Gets the immediate object in this context.
+     * May be the same as the model if called on the root context.
+     *
+     * Otherwise it is the object this context was resolved against.
+     *
+     * @throws ClassCastException if the context doesn't match the requested type.
+     */
+    @Nullable
+    <T> T getThis() throws ClassCastException;
+
+    /**
      * Gets the root context.
      * Returns `this` when called on the root context.
      */

@@ -64,7 +64,7 @@ public class Local implements Incomplete<Float> {
                 String name = variableName.substring(1);
                 return local -> {
                     try {
-                        return local.getLocal(name).get();
+                        return local.getLocal(name, 0F).get();
                     } catch (InterruptedException | ExecutionException e) {
                         throw new FutureAwaitException(e);
                     }

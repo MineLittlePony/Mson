@@ -34,10 +34,11 @@ public final class BoxBuilder {
     public BoxBuilder(PartBuilder parent) {
         this.parent = parent;
     }
-    public BoxBuilder(ModelContext context) {
-        this((PartBuilder)context.getContext());
 
-        dilate(context.getLocals().getDilation().getNow(new float[3]));
+    public BoxBuilder(ModelContext context) {
+        this.parent = context.<PartBuilder>getThis();
+
+        dilate(context.getMetadata().getDilation());
 
         u = parent.texture.u();
         v = parent.texture.v();

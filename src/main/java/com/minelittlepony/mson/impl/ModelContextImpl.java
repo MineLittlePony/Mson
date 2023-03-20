@@ -12,6 +12,7 @@ import com.minelittlepony.mson.api.parser.ModelComponent;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 
 public interface ModelContextImpl extends ModelContext {
     @Override
@@ -43,4 +44,11 @@ public interface ModelContextImpl extends ModelContext {
     }
 
     Optional<ModelComponent<?>> findComponent(ModelContext context, String name);
+
+    @Override
+    default ModelContext bind(Object thisObj, Function<Locals, Locals> inheritedLocals) {
+        return bind(thisObj, inheritedLocals.apply(getLocals()));
+    }
+
+    ModelContext bind(Object thisObj, Locals locals);
 }

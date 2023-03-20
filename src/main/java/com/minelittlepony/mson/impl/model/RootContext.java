@@ -52,7 +52,7 @@ public class RootContext implements ModelContextImpl {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T getContext() {
+    public <T> T getThis() {
         return (T)model;
     }
 
@@ -124,11 +124,11 @@ public class RootContext implements ModelContextImpl {
     }
 
     @Override
-    public ModelContext resolve(Object child, Locals locals) {
-        if (child == getContext() && locals == getLocals()) {
+    public ModelContext bind(Object thisObj, Locals locals) {
+        if (thisObj == getThis() && locals == getLocals()) {
             return this;
         }
-        return new SubContext(this, locals, child);
+        return new SubContext(this, locals, thisObj);
     }
 
     @Override

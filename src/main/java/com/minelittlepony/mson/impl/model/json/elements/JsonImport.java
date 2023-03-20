@@ -56,21 +56,14 @@ public class JsonImport implements ModelComponent<ModelPart> {
 
     @Override
     public ModelPart export(ModelContext context) {
-        return context.computeIfAbsent(name, key -> convertContextToTree(createSubContext(context)));
+        return context.computeIfAbsent(name, key -> convertContextToTree(context.extendWith(file.get(), Locals::new)));
     }
 
     @Override
     public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
         return Optional.of(context.computeIfAbsent(name, key -> {
-            return customType.createInstance(createSubContext(context), this::convertContextToTree);
+            return customType.createInstance(context.extendWith(file.get(), Locals::new), this::convertContextToTree);
         }));
-    }
-
-    private ModelContext createSubContext(ModelContext context) throws InterruptedException, ExecutionException {
-        FileContent<?> jsContext = file.get();
-        return jsContext.createContext(context.getModel(),
-            new Locals(jsContext.getLocals()).bake()
-        );
     }
 
     private ModelPart convertContextToTree(ModelContext context) {

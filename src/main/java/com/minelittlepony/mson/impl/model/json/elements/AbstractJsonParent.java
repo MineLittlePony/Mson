@@ -88,8 +88,7 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
     public ModelPart export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
             final PartBuilder builder = new PartBuilder();
-            final ModelContext subContext = context.resolve(builder, new Locals(context.getLocals()));
-            return export(subContext, builder).build();
+            return export(context.bind(builder, Locals::new), builder).build();
         });
     }
 
@@ -97,8 +96,7 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
     public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
         return Optional.of(context.computeIfAbsent(name, key -> {
             final PartBuilder builder = new PartBuilder();
-            final ModelContext subContext = context.resolve(builder, new Locals(context.getLocals()));
-            return customType.createInstance(subContext, ctx -> export(ctx, builder).build());
+            return customType.createInstance(context.bind(builder, Locals::new), ctx -> export(ctx, builder).build());
         }));
     }
 

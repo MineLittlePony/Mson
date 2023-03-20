@@ -37,8 +37,8 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
     }
 
     @Override
-    public <T> T getContext() {
-        throw new EmptyContextException("getContext");
+    public <T> T getThis() {
+        throw new EmptyContextException("getThis");
     }
 
     @Override
@@ -66,7 +66,7 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
     }
 
     @Override
-    public ModelContext resolve(Object child, ModelContext.Locals locals) {
+    public ModelContext bind(Object thisObj, ModelContext.Locals locals) {
         return this;
     }
 

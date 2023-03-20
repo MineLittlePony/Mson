@@ -4,6 +4,7 @@ import net.minecraft.client.model.ModelPart;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 /**
  * The loading context for when a model is first created.
@@ -18,17 +20,6 @@ import java.util.concurrent.CompletableFuture;
  * This allows access to getting out named elements from the model json.
  */
 public interface ModelContext extends ModelView {
-    /**
-     * Gets the immediate object in this context.
-     * May be the same as the model if called on the root context.
-     *
-     * Otherwise it is the object this context was resolved against.
-     *
-     * @throws ClassCastException if the context doesn't match the requested type.
-     */
-    @Nullable
-    <T> T getContext() throws ClassCastException;
-
     /**
      * Provides access to the contextual information for the current context.
      * <p>
@@ -64,27 +55,39 @@ public interface ModelContext extends ModelView {
     Optional<ModelComponent<?>> findComponent(String name);
 
     /**
-     * Resolves this context against the given object.
-     * Returns a new sub-context as a child of this one where the result of `getContext()` returns the passed in object.
+     * Binds this model context to a new object.
+     * <p>
+     * Effectively changes the value returned by {@link #getThis()} to that of the value passed in as {thisObj}.
+     * The returned context will have the same locals as this one.
      *
-     * @param child The object instance to serve as the new immediate context.
+     * @param thisObj The new this value.
      *
-     * @throws NullPointerException if the passed in object is null.
+     * @throws NullPointerException if the passed in this value is null.
      */
-    default ModelContext resolve(Object child) {
-        return resolve(child, getLocals());
+    default ModelContext bind(Object thisObj) {
+        return bind(thisObj, Function.identity());
     }
 
     /**
-     * Resolves this context against the given object and local variables.
-     * Returns a new sub-context as a child of this one where the result of `getContext()` returns the passed in object.
+     * Binds this model context to a new object and locals pool.
+     * <p>
+     * Effectively changes the value returned by {@link #getThis()} to that of the value passed in as {thisObj}.
+     * The returned context will inherit the locals computed by the passed in {inheritedLocals} function.
      *
-     * @param child The object instance to serve as the new immediate context.
-     * @param locals The new local variables.
+     * @param thisObj The new this value.
+     * @param inheritedLocals A function to compute the new context's locals blocks.
      *
-     * @throws NullPointerException if the passed in object is null.
+     * @throws NullPointerException if the passed in this value is null.
      */
-    ModelContext resolve(Object child, Locals locals);
+    ModelContext bind(Object thisObj, Function<Locals, Locals> inheritedLocals);
+
+    /**
+     * Creates a new model context from the passed in content that uses the current model context as its parent and inherits
+     * the locals as computed by the supplied {inheritLocals} function.
+     */
+    default ModelContext extendWith(FileContent<?> content, Function<FileContent.Locals, FileContent.Locals> inheritedLocals) {
+        return content.createContext(getModel(), inheritedLocals.apply(content.getLocals()).bake());
+    }
 
     /**
      * Interface for accessing contextual values.

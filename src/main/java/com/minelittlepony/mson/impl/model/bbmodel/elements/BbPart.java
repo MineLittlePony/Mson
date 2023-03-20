@@ -112,8 +112,7 @@ public class BbPart implements ModelComponent<ModelPart> {
     public ModelPart export(ModelContext context) throws InterruptedException, ExecutionException {
         return context.computeIfAbsent(name, key -> {
             final PartBuilder builder = new PartBuilder();
-            final ModelContext subContext = context.resolve(builder, context.getLocals());
-            return export(subContext, builder).build();
+            return export(context.bind(builder), builder).build();
         });
     }
 
@@ -121,8 +120,7 @@ public class BbPart implements ModelComponent<ModelPart> {
     public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
         return Optional.of(context.computeIfAbsent(name, key -> {
             final PartBuilder builder = new PartBuilder();
-            final ModelContext subContext = context.resolve(builder, context.getLocals());
-            return customType.createInstance(subContext, ctx -> {
+            return customType.createInstance(context.bind(builder), ctx -> {
                 try {
                     return export(ctx, builder).build();
                 } catch (InterruptedException | ExecutionException e) {

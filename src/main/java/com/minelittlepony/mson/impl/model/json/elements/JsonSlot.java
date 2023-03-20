@@ -86,12 +86,11 @@ public class JsonSlot<T> implements ModelComponent<T> {
     @Override
     public T export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            FileContent<?> jsContext = data.get();
-            ModelContext subContext = jsContext.createContext(context.getModel(), new Locals(jsContext).bake());
+            ModelContext subContext = context.extendWith(data.get(), Locals::new);
 
             T inst = implementation.createInstance(subContext);
             if (inst instanceof MsonModel) {
-                ((MsonModel)inst).init(subContext.resolve(context.getContext()));
+                ((MsonModel)inst).init(subContext.bind(context.getThis()));
             }
 
             return inst;
@@ -102,8 +101,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
     @Override
     public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
         return Optional.of(context.computeIfAbsent(name, key -> {
-            FileContent<?> jsContext = data.get();
-            ModelContext subContext = jsContext.createContext(context.getModel(), new Locals(jsContext).bake());
+            ModelContext subContext = context.extendWith(data.get(), Locals::new);
 
             if (implementation.isCompatible(customType)) {
                 return (K)implementation.createInstance(subContext);
@@ -116,8 +114,8 @@ public class JsonSlot<T> implements ModelComponent<T> {
     private class Locals implements FileContentLocalsImpl {
         private final FileContent.Locals parent;
 
-        Locals(FileContent<?> parent) {
-            this.parent = parent.getLocals();
+        Locals(FileContent.Locals parent) {
+            this.parent = parent;
         }
 
         @Override

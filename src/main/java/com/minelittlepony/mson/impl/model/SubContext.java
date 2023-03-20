@@ -40,7 +40,7 @@ class SubContext implements ModelContextImpl {
     @Nullable
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T getContext() {
+    public <T> T getThis() {
         return (T)context;
     }
 
@@ -65,8 +65,8 @@ class SubContext implements ModelContextImpl {
     }
 
     @Override
-    public ModelContext resolve(Object child, Locals locals) {
-        if (child == getContext() && locals == getLocals()) {
+    public ModelContext bind(Object child, Locals locals) {
+        if (child == getThis() && locals == getLocals()) {
             return this;
         }
         return new SubContext(parent, locals, child);
