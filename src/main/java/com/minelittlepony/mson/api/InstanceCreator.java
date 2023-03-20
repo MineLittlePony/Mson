@@ -28,7 +28,7 @@ public interface InstanceCreator<T> {
     }
 
     public static <T> InstanceCreator<T> ofFunction(Class<T> type, Function<ModelPart, T> function) {
-        return new ReflectedModelKey<>(ctx -> function.apply(ctx.toTree()), function, type);
+        return new ReflectedModelKey<>(null, function, type);
     }
 
     public static <T> InstanceCreator<T> ofFactory(Class<T> type, Function<ModelContext, T> factory) {
@@ -49,8 +49,6 @@ public interface InstanceCreator<T> {
     }
 
     T createInstance(ModelContext context);
-
-    T createInstance(ModelPart tree);
 
     T createInstance(ModelContext context, Function<ModelContext, ModelPart> converter);
 }

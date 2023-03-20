@@ -3,7 +3,6 @@ package com.minelittlepony.mson.impl.key;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Util;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.gson.JsonParseException;
@@ -80,23 +79,18 @@ public record ReflectedModelKey<T> (
     @Override
     public T createInstance(ModelContext context) {
         if (contextFactory == null) {
-            throw new NotImplementedException("The generated lamba cannot be used with a model context");
+            if (partFactory != null) {
+                return partFactory.apply(context.toTree());
+            }
+            throw new JsonParseException("The generated lamba cannot be used with a model context");
         }
         return contextFactory.apply(context);
     }
 
     @Override
-    public T createInstance(ModelPart tree) {
-        if (partFactory == null) {
-            throw new NotImplementedException("The generated lamba does not support conversion from a pre-imported model tree");
-        }
-        return partFactory.apply(tree);
-    }
-
-    @Override
     public T createInstance(ModelContext context, Function<ModelContext, ModelPart> converter) {
         if (partFactory != null) {
-            return createInstance(converter.apply(context));
+            return partFactory.apply(converter.apply(context));
         }
         return createInstance(context);
     }
