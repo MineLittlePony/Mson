@@ -58,7 +58,9 @@ public class MsonModelFormat implements ModelFormat<JsonElement> {
     public Optional<FileContent<JsonElement>> loadModel(Identifier modelId, Identifier file, Resource resource, boolean failHard, ModelLoader loader) {
         try (var reader = new InputStreamReader(resource.getInputStream(), Charsets.UTF_8)) {
             return Optional.of(new JsonFileContent(loader, this, modelId, GSON.fromJson(reader, JsonObject.class)));
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            MsonImpl.LOGGER.fatal("Exception whilst loading model file {}", modelId, e);
+        }
         return Optional.empty();
     }
 

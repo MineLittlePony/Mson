@@ -23,7 +23,6 @@ public class ModelMetadataImpl implements ModelMetadata {
 
     @Override
     public Identifier getModelId() {
-        // TODO Auto-generated method stub
         return locals.getModelId();
     }
 
