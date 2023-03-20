@@ -73,7 +73,7 @@ public interface FileContent<Data> {
      * @param model The model being instantiated with this context.
      * @param locals The relevant local variables and inherited references.
      */
-    ModelContext createContext(Model model, ModelContext.Locals locals);
+    ModelContext createContext(Model model, Object thisObj, ModelContext.Locals locals);
 
     /**
      * Queries this context for all of the available component names.

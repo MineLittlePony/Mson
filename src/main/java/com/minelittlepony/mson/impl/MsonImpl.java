@@ -199,7 +199,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         @Override
         public Optional<ModelPart> createTree() {
             return getModelData().map(context -> {
-                return context.createContext(null, context.getLocals().bake()).toTree();
+                return context.createContext(null, null, context.getLocals().bake()).toTree();
             });
         }
 
@@ -208,7 +208,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             Preconditions.checkNotNull(factory, "Factory should not be null");
 
             return getModelData().map(context -> {
-                ModelContext ctx = context.createContext(null, context.getLocals().bake());
+                ModelContext ctx = context.createContext(null, null, context.getLocals().bake());
 
                 ModelPart root = ctx.toTree();
                 V t = factory.create(root);

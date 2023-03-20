@@ -118,15 +118,13 @@ public class BbPart implements ModelComponent<ModelPart> {
 
     @Override
     public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
-        return Optional.of(context.computeIfAbsent(name, key -> {
-            final PartBuilder builder = new PartBuilder();
-            return customType.createInstance(context.bind(builder), ctx -> {
-                try {
-                    return export(ctx, builder).build();
-                } catch (InterruptedException | ExecutionException e) {
-                    throw new FutureAwaitException(e);
-                }
-            });
+        final PartBuilder builder = new PartBuilder();
+        return Optional.of(customType.createInstance(context.bind(builder), ctx -> {
+            try {
+                return export(ctx, builder).build();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new FutureAwaitException(e);
+            }
         }));
     }
 

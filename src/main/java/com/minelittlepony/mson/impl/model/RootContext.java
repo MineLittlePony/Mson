@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 public class RootContext implements ModelContextImpl {
 
     private Model model;
+    private Object thisObj;
 
     private final Map<String, Object> objectCache = new HashMap<>();
 
@@ -32,8 +33,9 @@ public class RootContext implements ModelContextImpl {
 
     private final Map<String, ModelComponent<?>> elements;
 
-    public RootContext(Model model, ModelContextImpl inherited, Map<String, ModelComponent<?>> elements, Locals locals) {
+    public RootContext(Model model, Object thisObj, ModelContextImpl inherited, Map<String, ModelComponent<?>> elements, Locals locals) {
         this.model = model;
+        this.thisObj = thisObj;
         this.inherited = inherited;
         this.metadata = new ModelMetadataImpl(locals);
         this.elements = elements;
@@ -52,7 +54,7 @@ public class RootContext implements ModelContextImpl {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getThis() {
-        return (T)model;
+        return (T)(thisObj == null ? model : thisObj);
     }
 
     @Override

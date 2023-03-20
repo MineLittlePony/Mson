@@ -69,7 +69,7 @@ public final class EmptyFileContent implements FileContent<Object>, FileContentL
     }
 
     @Override
-    public ModelContext createContext(Model model, ModelContext.Locals locals) {
+    public ModelContext createContext(Model model, Object thisObj, ModelContext.Locals locals) {
         return EmptyModelContext.INSTANCE;
     }
 

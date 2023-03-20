@@ -86,7 +86,7 @@ public interface ModelContext extends ModelView {
      * the locals as computed by the supplied {inheritLocals} function.
      */
     default ModelContext extendWith(FileContent<?> content, Function<FileContent.Locals, FileContent.Locals> inheritedLocals) {
-        return content.createContext(getModel(), inheritedLocals.apply(content.getLocals()).bake());
+        return content.createContext(getModel(), getThis(), inheritedLocals.apply(content.getLocals()).bake());
     }
 
     /**

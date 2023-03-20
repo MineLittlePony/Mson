@@ -94,10 +94,8 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
 
     @Override
     public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
-        return Optional.of(context.computeIfAbsent(name, key -> {
-            final PartBuilder builder = new PartBuilder();
-            return customType.createInstance(context.bind(builder, Locals::new), ctx -> export(ctx, builder).build());
-        }));
+        final PartBuilder builder = new PartBuilder();
+        return Optional.of(customType.createInstance(context.bind(builder, Locals::new), ctx -> export(ctx, builder).build()));
     }
 
     protected PartBuilder export(ModelContext context, PartBuilder builder) throws FutureAwaitException {

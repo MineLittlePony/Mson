@@ -65,7 +65,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
     }
 
     public JsonSlot(FileContent<JsonElement> context, String name, JsonObject json) {
-        implementation = json.has("implementation") ? InstanceCreator.byName(json.get("implementation").getAsString()) : InstanceCreator.ofPart();
+        implementation = json.has("implementation") ? InstanceCreator.byName(json.get("implementation").getAsString()) : null;
         data = context.resolve(json.get("data"));
         this.name = name.isEmpty() ? JsonUtil.require(json, "name", ID, context.getLocals().getModelId()).getAsString() : name;
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
@@ -76,7 +76,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
 
     @Override
     public <K> Optional<K> tryExportTreeNodes(ModelContext context, Class<K> type) {
-        if (!implementation.isCompatible(type)) {
+        if (implementation == null || !implementation.isCompatible(type)) {
             return Optional.empty();
         }
         return tryExport(context, type);
@@ -87,7 +87,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
         return context.computeIfAbsent(name, key -> {
             ModelContext subContext = context.extendWith(data.get(), Locals::new);
 
-            T inst = implementation.createInstance(subContext.bind(context.getThis()));
+            T inst = (implementation == null ? InstanceCreator.<T>ofPart() : implementation).createInstance(subContext);
 
             return inst;
         });
@@ -96,15 +96,15 @@ public class JsonSlot<T> implements ModelComponent<T> {
     @SuppressWarnings("unchecked")
     @Override
     public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
-        return Optional.of(context.computeIfAbsent(name, key -> {
-            ModelContext subContext = context.extendWith(data.get(), Locals::new);
+        ModelContext subContext = context.extendWith(data.get(), Locals::new);
 
-            if (implementation.isCompatible(customType)) {
-                return (K)implementation.createInstance(subContext);
-            }
+        InstanceCreator<T> implementation = (this.implementation == null ? InstanceCreator.<T>ofPart() : this.implementation);
 
-            return customType.createInstance(subContext);
-        }));
+        if (implementation.isCompatible(customType)) {
+            return Optional.of((K)implementation.createInstance(subContext));
+        }
+
+        return Optional.of(customType.createInstance(subContext));
     }
 
     private class Locals implements FileContentLocalsImpl {

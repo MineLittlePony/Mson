@@ -61,9 +61,7 @@ public class JsonImport implements ModelComponent<ModelPart> {
 
     @Override
     public <K> Optional<K> exportToType(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
-        return Optional.of(context.computeIfAbsent(name, key -> {
-            return customType.createInstance(context.extendWith(file.get(), Locals::new), this::convertContextToTree);
-        }));
+        return Optional.of(customType.createInstance(context.extendWith(file.get(), Locals::new), this::convertContextToTree));
     }
 
     private ModelPart convertContextToTree(ModelContext context) {
