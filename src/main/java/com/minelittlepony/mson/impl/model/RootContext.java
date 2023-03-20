@@ -10,7 +10,6 @@ import com.minelittlepony.mson.api.FutureFunction;
 import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelMetadata;
-import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.impl.ModelContextImpl;
@@ -87,14 +86,7 @@ public class RootContext implements ModelContextImpl {
                 if (customType == null) {
                     return (T)elements.get(name).export(context);
                 } else {
-                    return elements.get(name).exportToType(context, customType)
-                            .map(instance -> {
-                                if (instance instanceof MsonModel model) {
-                                    model.init(context);
-                                }
-                                return instance;
-                            })
-                            .orElseThrow(() -> new ClassCastException("Element " + name + " does not support conversion to the requested type."));
+                    return elements.get(name).exportToType(context, customType).orElseThrow(() -> new ClassCastException("Element " + name + " does not support conversion to the requested type."));
                 }
             } catch (InterruptedException | ExecutionException e) {
                 throw new FutureAwaitException(e);

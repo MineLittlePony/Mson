@@ -8,6 +8,8 @@ import org.jetbrains.annotations.Nullable;
 import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.ModelView;
+import com.minelittlepony.mson.api.MsonModel;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -80,7 +82,7 @@ public record ReflectedModelKey<T> (
     public T createInstance(ModelContext context) {
         if (contextFactory == null) {
             if (partFactory != null) {
-                return partFactory.apply(context.toTree());
+                return initInstance(partFactory.apply(context.toTree()), context);
             }
             throw new JsonParseException("The generated lamba cannot be used with a model context");
         }
@@ -90,8 +92,15 @@ public record ReflectedModelKey<T> (
     @Override
     public T createInstance(ModelContext context, Function<ModelContext, ModelPart> converter) {
         if (partFactory != null) {
-            return partFactory.apply(converter.apply(context));
+            return initInstance(partFactory.apply(converter.apply(context)), context);
         }
         return createInstance(context);
+    }
+
+    private T initInstance(T instance, ModelView view) {
+        if (instance instanceof MsonModel model) {
+            model.init(view);
+        }
+        return instance;
     }
 }

@@ -7,7 +7,6 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.LocalBlock;
@@ -88,10 +87,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
         return context.computeIfAbsent(name, key -> {
             ModelContext subContext = context.extendWith(data.get(), Locals::new);
 
-            T inst = implementation.createInstance(subContext);
-            if (inst instanceof MsonModel) {
-                ((MsonModel)inst).init(subContext.bind(context.getThis()));
-            }
+            T inst = implementation.createInstance(subContext.bind(context.getThis()));
 
             return inst;
         });
