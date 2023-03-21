@@ -6,6 +6,7 @@ import net.minecraft.util.Identifier;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Texture;
@@ -38,10 +39,14 @@ public class JsonImport implements ModelComponent<ModelPart> {
 
     private final String name;
 
-    public JsonImport(FileContent<JsonElement> context, String name, JsonElement file) {
+    public JsonImport(FileContent<JsonElement> context, String name, JsonPrimitive file) {
         this.name = name;
         this.file = context.resolve(file);
         this.locals = Optional.empty();
+    }
+
+    public JsonImport(FileContent<JsonElement> context, String name, JsonElement json) {
+        this(context, name, json.getAsJsonObject());
     }
 
     public JsonImport(FileContent<JsonElement> context, String name, JsonObject json) {
