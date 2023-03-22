@@ -3,8 +3,11 @@ package com.minelittlepony.mson.impl.model;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.base.Strings;
 import com.minelittlepony.mson.api.FutureFunction;
+import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.parser.ModelComponent;
@@ -15,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 
 public class RootContext implements ModelContextImpl {
 
@@ -76,16 +80,20 @@ public class RootContext implements ModelContextImpl {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T findByName(ModelContext context, String name) {
+    public <T> T findByName(ModelContext context, String name, @Nullable Function<ModelPart, T> function, @Nullable Class<T> rootType) {
         if (elements.containsKey(name)) {
 
             try {
-                return (T)elements.get(name).export(context);
+                if (function == null && rootType == null) {
+                    return (T)elements.get(name).export(context);
+                } else {
+                    return (T)elements.get(name).export(context, InstanceCreator.ofFunction(rootType, function));
+                }
             } catch (InterruptedException | ExecutionException e) {
                 throw new FutureAwaitException(e);
             }
         }
-        return inherited.findByName(context, name);
+        return inherited.findByName(context, name, function, rootType);
     }
 
     @SuppressWarnings("unchecked")

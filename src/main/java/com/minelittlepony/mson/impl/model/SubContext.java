@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 class SubContext implements ModelContextImpl {
 
@@ -56,8 +57,8 @@ class SubContext implements ModelContextImpl {
     }
 
     @Override
-    public <T> T findByName(ModelContext context, String name) {
-        return parent.findByName(context, name);
+    public <T> T findByName(ModelContext context, String name, @Nullable Function<ModelPart, T> function, @Nullable Class<T> rootType) {
+        return parent.findByName(context, name, function, rootType);
     }
 
     @Override

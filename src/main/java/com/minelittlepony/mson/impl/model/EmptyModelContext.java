@@ -4,6 +4,8 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.minelittlepony.mson.api.FutureFunction;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.EmptyContextException;
@@ -13,6 +15,7 @@ import com.minelittlepony.mson.impl.ModelContextImpl;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
 
@@ -41,7 +44,7 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
     }
 
     @Override
-    public <T> T findByName(ModelContext context, String name) {
+    public <T> T findByName(ModelContext context, String name, @Nullable Function<ModelPart, T> function, @Nullable Class<T> rootType) {
         throw new IllegalArgumentException(String.format("Key not found `%s`", name));
     }
 

@@ -2,6 +2,8 @@ package com.minelittlepony.mson.impl;
 
 import net.minecraft.client.model.ModelPart;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.minelittlepony.mson.api.ModelContext;
 
 import java.util.Map;
@@ -22,10 +24,20 @@ public interface ModelContextImpl extends ModelContext {
 
     @Override
     default <T> T findByName(String name) {
-        return findByName(this, name);
+        return findByName(this, name, null, null);
     }
 
-    <T> T findByName(ModelContext context, String name);
+    @Override
+    default <T> T findByName(String name, @Nullable Function<ModelPart, T> function) {
+        return findByName(this, name, function, null);
+    }
+
+    @Override
+    default <T> T findByName(String name, @Nullable Function<ModelPart, T> function, @Nullable Class<T> rootType) {
+        return findByName(this, name, function, rootType);
+    }
+
+    <T> T findByName(ModelContext context, String name, @Nullable Function<ModelPart, T> function, @Nullable Class<T> rootType);
 
     @Override
     default ModelContext bind(Object thisObj, Function<Locals, Locals> inheritedLocals) {

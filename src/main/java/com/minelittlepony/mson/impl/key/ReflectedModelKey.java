@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 public record ReflectedModelKey<T> (
         @Nullable Function<ModelContext, T> contextFactory,
         @Nullable Function<ModelPart, T> partFactory,
-        Class<T> type) implements InstanceCreator<T> {
+        @Nullable Class<T> type) implements InstanceCreator<T> {
     private static final Function<String, InstanceCreator<?>> NAME_LOOKUP = Util.memoize(className -> {
         if (className.endsWith("ModelPart")) {
             return InstanceCreator.ofPart();

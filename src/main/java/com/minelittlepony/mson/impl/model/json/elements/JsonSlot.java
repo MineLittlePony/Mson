@@ -1,6 +1,9 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -14,6 +17,7 @@ import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Represents an in-place insertion of another model file's contents
@@ -31,7 +35,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
     /**
      * The object type produced by this slot.
      */
-    private final InstanceCreator<T> implementation;
+    private final Optional<InstanceCreator<T>> implementation;
 
     /**
      * The contents of this slot either expressed at a map of child elements, or a string pointing to a file.
@@ -61,7 +65,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
     }
 
     public JsonSlot(FileContent<JsonElement> context, String name, JsonObject json) {
-        implementation = InstanceCreator.byName(JsonUtil.require(json, "implementation", ID, context.getLocals().getModelId()).getAsString());
+        implementation = JsonUtil.accept(json, "implementation").map(JsonElement::getAsString).map(InstanceCreator::byName);
         data = context.resolve(json.get("data"));
         this.name = name.isEmpty() ? JsonUtil.require(json, "name", ID, context.getLocals().getModelId()).getAsString() : name;
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
@@ -73,22 +77,44 @@ public class JsonSlot<T> implements ModelComponent<T> {
 
     @Override
     public <K> Optional<K> tryExportTreeNodes(ModelContext context, Class<K> type) {
-        if (!implementation.isCompatible(type)) {
+        if (implementation.isPresent() && !implementation.get().isCompatible(type)) {
             return Optional.empty();
         }
-        return tryExport(context, type);
+        Optional<K> value = tryExport(context, type);
+        if (!implementation.isPresent()) {
+            return Optional.empty();
+        }
+        return value;
     }
 
+    @Nullable
     @Override
     public T export(ModelContext context) {
+        return compile(context).result();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <K> Optional<K> export(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
+        CompiledSlot<T> compiled = compile(context);
+        if (implementation.filter(i -> i.isCompatible(customType)).isPresent()) {
+            return Optional.ofNullable((K)compiled.result());
+        }
+        return Optional.ofNullable(customType.createInstance(compiled.sourceContext(), ctx -> compiled.tree()));
+    }
+
+    private CompiledSlot<T> compile(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
             ModelContext subContext = context.extendWith(data.get(),
                 parent -> parent.extendWith(id, Optional.of(locals.bind(context.getLocals())), texture)
             );
 
-            T inst = implementation.createInstance(subContext);
+            ModelPart tree = subContext.toTree();
+            T result = implementation.map(type -> type.createInstance(subContext, ctx -> tree)).orElse(null);
 
-            return inst;
+            return new CompiledSlot<>(result, tree, subContext);
         });
     }
+
+    record CompiledSlot<T>(@Nullable T result, ModelPart tree, ModelContext sourceContext) {}
 }

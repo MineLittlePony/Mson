@@ -58,6 +58,6 @@ public class JsonLink implements ModelComponent<Object> {
 
     @Override
     public Object export(ModelContext context) throws InterruptedException, ExecutionException {
-        return context.computeIfAbsent(linkName, context::findByName);
+        return context.findByName(linkName);
     }
 }

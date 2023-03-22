@@ -1,5 +1,8 @@
 package com.minelittlepony.mson.api.parser;
 
+import org.jetbrains.annotations.Nullable;
+
+import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
 
 import java.util.Optional;
@@ -42,7 +45,15 @@ public interface ModelComponent<T> {
     /**
      * Creates an instance of this component's object type within the supplied model loading context.
      */
+    @Nullable
     T export(ModelContext context) throws InterruptedException, ExecutionException;
+
+    /**
+     * Creates a custom object from the contents of this component.
+     */
+    default <K> Optional<K> export(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
+        return Optional.empty();
+    }
 
     /**
      * Constructor for creating a component.

@@ -1,12 +1,14 @@
 package com.minelittlepony.mson.api;
 
 import net.minecraft.client.model.Model;
+import net.minecraft.client.model.ModelPart;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.minelittlepony.mson.api.model.Texture;
 
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Represents a managed view of the current model being constructed.
@@ -56,6 +58,24 @@ public interface ModelView {
      * @throws InvalidInputException if the named element does not exist.
      */
     <T> T findByName(String name);
+
+    /**
+     * Gets the named element after converting to a particular custom object type.
+     *
+     * @apiNote Experimental
+     */
+    <T> T findByName(String name, Function<ModelPart, T> function);
+
+    /**
+     * Gets the named element after converting to a particular custom object type.
+     * <p>
+     * This is the poloymphic version. If the value created by the queried
+     * component is a subtype of {rootType} will return that instead, otherwise will try to
+     * create an instance using the supplied function.
+     *
+     * @apiNote Experimental
+     */
+    <T> T findByName(String name, Function<ModelPart, T> function, Class<T> rootType);
 
     /**
      * Interface for accessing contextual values.
