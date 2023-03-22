@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.ModelView;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.LocalBlock;
@@ -15,6 +16,7 @@ import com.minelittlepony.mson.util.JsonUtil;
 import javax.annotation.Nullable;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -83,7 +85,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
     public T export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
             ModelContext subContext = context.extendWith(data.get(),
-                parent -> parent.extendWith(id, Optional.of(locals), texture)
+                parent -> parent.extendWith(id, Optional.of(locals.bind(context.getLocals())), texture)
             );
 
             T inst = (implementation == null ? InstanceCreator.<T>ofPart() : implementation).createInstance(subContext);
