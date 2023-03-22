@@ -6,17 +6,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.ModelView;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.LocalBlock;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.JsonUtil;
 
-import javax.annotation.Nullable;
-
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
