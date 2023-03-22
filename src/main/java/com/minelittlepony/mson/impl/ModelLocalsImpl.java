@@ -3,20 +3,22 @@ package com.minelittlepony.mson.impl;
 import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.Maps;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public final class ModelLocalsImpl implements ModelContext.Locals {
 
     private final FileContent.Locals context;
 
-    private final Map<String, CompletableFuture<Float>> precalculatedValues = new HashMap<>();
+    private final Map<String, CompletableFuture<Float>> precalculatedValues = new TreeMap<>();
 
     public ModelLocalsImpl(FileContent.Locals context) {
         this.context = context;
@@ -28,27 +30,43 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
     }
 
     @Override
-    public CompletableFuture<float[]> getDilation() {
-        return context.getDilation();
+    public float[] getDilation() {
+        try {
+            return context.getDilation().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new FutureAwaitException(e);
+        }
     }
 
     @Override
-    public CompletableFuture<Texture> getTexture() {
-        return context.getTexture();
+    public Texture getTexture() {
+        try {
+            return context.getTexture().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new FutureAwaitException(e);
+        }
     }
 
     @Override
-    public CompletableFuture<Float> getLocal(String name, float defaultValue) {
-        return Maps.computeIfAbsent(precalculatedValues, name, n -> {
-            return context.getLocal(n, defaultValue).thenApplyAsync(value -> {
-                return value.complete(new StackFrame(this, n));
-            });
-        });
+    public float getLocal(String name, float defaultValue) {
+        try {
+            return Maps.computeIfAbsent(precalculatedValues, name, n -> {
+                return context.getLocal(n, defaultValue).thenApplyAsync(value -> {
+                    return value.complete(new StackFrame(this, n));
+                });
+            }).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new FutureAwaitException(e);
+        }
     }
 
     @Override
-    public CompletableFuture<Set<String>> keys() {
-        return context.keys();
+    public Set<String> keys() {
+        try {
+            return context.keys().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new FutureAwaitException(e);
+        }
     }
 
     @Override
@@ -72,17 +90,17 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
         }
 
         @Override
-        public CompletableFuture<Texture> getTexture() {
+        public Texture getTexture() {
             return parent.getTexture();
         }
 
         @Override
-        public CompletableFuture<float[]> getDilation() {
+        public float[] getDilation() {
             return parent.getDilation();
         }
 
         @Override
-        public CompletableFuture<Float> getLocal(String name, float defaultValue) {
+        public float getLocal(String name, float defaultValue) {
             if (currentVariableRef.equalsIgnoreCase(name)) {
                 throw new RuntimeException("Cyclical reference. " + toString());
             }
@@ -90,7 +108,7 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
         }
 
         @Override
-        public CompletableFuture<Set<String>> keys() {
+        public Set<String> keys() {
             return parent.keys();
         }
 

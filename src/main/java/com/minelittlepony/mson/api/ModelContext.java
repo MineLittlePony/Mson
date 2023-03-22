@@ -9,7 +9,6 @@ import com.minelittlepony.mson.api.parser.FileContent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
@@ -18,13 +17,6 @@ import java.util.function.Function;
  * This allows access to getting out named elements from the model json.
  */
 public interface ModelContext extends ModelView {
-    /**
-     * Provides access to the contextual information for the current context.
-     * <p>
-     * Includes access to inherited values and properties.
-     */
-    Locals getLocals();
-
     /**
      * Converts the entire model tree into native objects and returns in a root ModelPart.
      */
@@ -80,22 +72,5 @@ public interface ModelContext extends ModelView {
      */
     default ModelContext extendWith(FileContent<?> content, Function<FileContent.Locals, FileContent.Locals> inheritedLocals) {
         return content.createContext(getModel(), getThis(), inheritedLocals.apply(content.getLocals()).bake());
-    }
-
-    /**
-     * Interface for accessing contextual values.
-     * <p>
-     * This typically includes variables and other things that only become available
-     * until after the parent model has been resolved.
-     */
-    interface Locals extends CommonLocals {
-        /**
-         * Gets a completed local variable.
-         */
-        CompletableFuture<Float> getLocal(String name, float defaultValue);
-
-        default CompletableFuture<Float> getLocal(String name) {
-            return getLocal(name, 0F);
-        }
     }
 }

@@ -6,7 +6,6 @@ import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.FutureFunction;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.ModelMetadata;
 import com.minelittlepony.mson.api.exception.EmptyContextException;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.ModelContextImpl;
@@ -14,15 +13,11 @@ import com.minelittlepony.mson.impl.ModelContextImpl;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
 
     static ModelContextImpl INSTANCE = new EmptyModelContext();
     static Identifier ID = new Identifier("mson", "null");
-
-
-    private final ModelMetadataImpl metadata = new ModelMetadataImpl(this);
 
     private EmptyModelContext() {}
 
@@ -61,13 +56,13 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
     }
 
     @Override
-    public CompletableFuture<Set<String>> keys() {
-        return CompletableFuture.completedFuture(new HashSet<>());
+    public Set<String> keys() {
+        return new HashSet<>();
     }
 
     @Override
-    public CompletableFuture<Texture> getTexture() {
-        return CompletableFuture.completedFuture(Texture.EMPTY);
+    public Texture getTexture() {
+        return Texture.EMPTY;
     }
 
     @Override
@@ -76,22 +71,17 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
     }
 
     @Override
-    public CompletableFuture<Float> getLocal(String name, float defaultValue) {
-        return CompletableFuture.completedFuture(defaultValue);
+    public float getLocal(String name, float defaultValue) {
+        return defaultValue;
     }
 
     @Override
-    public CompletableFuture<float[]> getDilation() {
-        return CompletableFuture.completedFuture(new float[] { 0, 0, 0 });
+    public float[] getDilation() {
+        return new float[] { 0, 0, 0 };
     }
 
     @Override
-    public ModelContext.Locals getLocals() {
+    public Locals getLocals() {
         return this;
-    }
-
-    @Override
-    public ModelMetadata getMetadata() {
-        return metadata;
     }
 }

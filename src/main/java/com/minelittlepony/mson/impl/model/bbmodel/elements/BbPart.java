@@ -122,7 +122,7 @@ public class BbPart implements ModelComponent<ModelPart> {
                     rotation[0] * MathHelper.RADIANS_PER_DEGREE,
                     rotation[1] * MathHelper.RADIANS_PER_DEGREE,
                     rotation[2] * MathHelper.RADIANS_PER_DEGREE)
-                .tex(context.getLocals().getTexture().get());
+                .tex(context.getLocals().getTexture());
 
         children.entrySet().forEach(c -> {
             c.getValue().tryExport(context, ModelPart.class).ifPresent(part -> {

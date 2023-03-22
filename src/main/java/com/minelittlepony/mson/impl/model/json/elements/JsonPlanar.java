@@ -26,7 +26,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 /**
@@ -177,17 +176,13 @@ public class JsonPlanar extends JsonCompound {
 
             private static Incomplete<Texture> createTexture(Incomplete<Float> u, Incomplete<Float> v) {
                 return locals -> {
-                    try {
-                        Texture parent = locals.getTexture().get();
-                        return new Texture(
-                                u.complete(locals).intValue(),
-                                v.complete(locals).intValue(),
-                                parent.width(),
-                                parent.height()
-                        );
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new FutureAwaitException(e);
-                    }
+                    Texture parent = locals.getTexture();
+                    return new Texture(
+                            u.complete(locals).intValue(),
+                            v.complete(locals).intValue(),
+                            parent.width(),
+                            parent.height()
+                    );
                 };
             }
         }

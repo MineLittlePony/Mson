@@ -6,7 +6,6 @@ import net.minecraft.client.model.ModelPart;
 import com.google.common.base.Strings;
 import com.minelittlepony.mson.api.FutureFunction;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.ModelMetadata;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.impl.ModelContextImpl;
@@ -25,7 +24,7 @@ public class RootContext implements ModelContextImpl {
     private final Map<String, Object> objectCache = new HashMap<>();
 
     private final ModelContextImpl inherited;
-    private final ModelMetadataImpl metadata;
+    private final Locals locals;
 
     private final Map<String, ModelComponent<?>> elements;
 
@@ -33,8 +32,13 @@ public class RootContext implements ModelContextImpl {
         this.model = model;
         this.thisObj = thisObj;
         this.inherited = inherited;
-        this.metadata = new ModelMetadataImpl(locals);
+        this.locals = locals;
         this.elements = elements;
+    }
+
+    @Override
+    public ModelContext getRoot() {
+        return this;
     }
 
     @SuppressWarnings("unchecked")
@@ -55,12 +59,7 @@ public class RootContext implements ModelContextImpl {
 
     @Override
     public Locals getLocals() {
-        return metadata.getUnchecked();
-    }
-
-    @Override
-    public ModelMetadata getMetadata() {
-        return metadata;
+        return locals;
     }
 
     @Override
@@ -107,10 +106,5 @@ public class RootContext implements ModelContextImpl {
             return this;
         }
         return new SubContext(this, locals, thisObj);
-    }
-
-    @Override
-    public ModelContext getRoot() {
-        return this;
     }
 }

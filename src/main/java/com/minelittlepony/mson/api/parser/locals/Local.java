@@ -8,12 +8,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.Incomplete;
-import com.minelittlepony.mson.api.ModelContext.Locals;
+import com.minelittlepony.mson.api.ModelView.Locals;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 public class Local implements Incomplete<Float> {
@@ -62,13 +61,7 @@ public class Local implements Incomplete<Float> {
             String variableName = prim.getAsString();
             if (variableName.startsWith("#")) {
                 String name = variableName.substring(1);
-                return local -> {
-                    try {
-                        return local.getLocal(name, 0F).get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new FutureAwaitException(e);
-                    }
-                };
+                return local -> local.getLocal(name, 0F);
             }
             return Incomplete.ZERO;
         }

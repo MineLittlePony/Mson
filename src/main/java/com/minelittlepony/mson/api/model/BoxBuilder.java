@@ -41,7 +41,7 @@ public final class BoxBuilder {
     public BoxBuilder(ModelContext context) {
         this.parent = context.<PartBuilder>getThis();
 
-        dilate(context.getMetadata().getDilation());
+        dilate(context.getLocals().getDilation());
 
         u = parent.texture.u();
         v = parent.texture.v();

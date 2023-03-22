@@ -4,6 +4,10 @@ import net.minecraft.client.model.Model;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.minelittlepony.mson.api.model.Texture;
+
+import java.util.Set;
+
 /**
  * Represents a managed view of the current model being constructed.
  *
@@ -27,10 +31,12 @@ public interface ModelView {
      */
     ModelView getRoot();
 
-    /*
-     * Gets the block containing local variables and model metadata.
+    /**
+     * Provides access to the contextual information for the current context.
+     * <p>
+     * Includes access to inherited values and properties.
      */
-    ModelMetadata getMetadata();
+    Locals getLocals();
 
     /**
      * Gets the currently-active model instance.
@@ -50,4 +56,36 @@ public interface ModelView {
      * @throws InvalidInputException if the named element does not exist.
      */
     <T> T findByName(String name);
+
+    /**
+     * Interface for accessing contextual values.
+     * <p>
+     * This typically includes variables and other things that only become available
+     * until after the parent model has been resolved.
+     */
+    interface Locals extends CommonLocals {
+        /**
+         * Gets the texture information from the enclosing context or its parent.
+         */
+        Texture getTexture();
+
+        /**
+         * Gets the local dilation to be applied for a component.
+         */
+        float[] getDilation();
+
+        /**
+         * Gets a set containing the names of all the variables available in this scope.
+         */
+        Set<String> keys();
+
+        /**
+         * Gets a completed local variable.
+         */
+        float getLocal(String name, float defaultValue);
+
+        default float getLocal(String name) {
+            return getLocal(name, 0F);
+        }
+    }
 }

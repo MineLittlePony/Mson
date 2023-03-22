@@ -4,13 +4,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.model.Texture;
 import net.minecraft.client.realms.util.JsonUtils;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class JsonTexture {
     /**
@@ -26,21 +24,11 @@ public class JsonTexture {
     }
 
     private static Incomplete<Texture> merged(JsonElement el) {
-        return locals -> {
-            try {
-                return resolved(el, locals.getTexture()).get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new FutureAwaitException(e);
-            }
-        };
+        return locals -> resolved(el, locals.getTexture());
     }
 
-    public static Texture fromParent(ModelContext.Locals locals) throws FutureAwaitException {
-        try {
-            return locals.getTexture().get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new FutureAwaitException(e);
-        }
+    public static Texture fromParent(ModelContext.Locals locals) {
+        return locals.getTexture();
     }
 
     /**
@@ -58,11 +46,11 @@ public class JsonTexture {
      *
      */
     public static CompletableFuture<Texture> unlocalized(Optional<JsonElement> json, CompletableFuture<Texture> inherited) {
-        return json.map(el -> resolved(el, inherited)).orElse(inherited);
+        return inherited.thenApply(i -> json.map(el -> resolved(el, i)).orElse(i));
     }
 
-    private static CompletableFuture<Texture> resolved(JsonElement json, CompletableFuture<Texture> inherited) {
-        return inherited.thenApplyAsync(t -> of(json, t));
+    private static Texture resolved(JsonElement json, Texture inherited) {
+        return of(json, inherited);
     }
 
     public static Texture of(JsonElement json) {

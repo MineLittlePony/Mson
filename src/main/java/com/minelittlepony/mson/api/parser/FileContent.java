@@ -85,6 +85,13 @@ public interface FileContent<Data> {
     CompletableFuture<Set<String>> getComponentNames();
 
     /**
+     * Gets a top level component by its name.
+     *
+     * @see #getComponentNames()
+     */
+    CompletableFuture<Optional<ModelComponent<?>>> getComponent(String name);
+
+    /**
      * Resolves a new context against the passed in data fragment.
      *
      * The new context is independent of this one, with all named components
@@ -120,6 +127,21 @@ public interface FileContent<Data> {
      * Incompletes are variable-based and require a ModelContext in order to resolve.
      */
     public interface Locals extends CommonLocals {
+        /**
+         * Gets the texture information from the enclosing context or its parent.
+         */
+        CompletableFuture<Texture> getTexture();
+
+        /**
+         * Gets the local dilation to be applied for a component.
+         */
+        CompletableFuture<float[]> getDilation();
+
+        /**
+         * Gets a set containing the names of all the variables available in this scope.
+         */
+        CompletableFuture<Set<String>> keys();
+
         /**
          * Gets a local variable as an incomplete float.
          */

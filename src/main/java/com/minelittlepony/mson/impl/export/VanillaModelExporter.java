@@ -14,6 +14,10 @@ import com.google.gson.JsonObject;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+/**
+ * An exporter that accepts vanilla minecraft's models and outputs them to
+ * a mson formatted json file.
+ */
 public class VanillaModelExporter {
     public JsonObject of(Consumer<JsonObject> initializer) {
         JsonObject json = new JsonObject();

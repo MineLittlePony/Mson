@@ -90,6 +90,13 @@ public class JsonFileContent implements JsonContext {
     }
 
     @Override
+    public CompletableFuture<Optional<ModelComponent<?>>> getComponent(String name) {
+        return parent.thenComposeAsync(p -> p.getComponent(name)).thenApply(component -> {
+            return component.or(() -> Optional.ofNullable(elements.getOrDefault(name, null)));
+        });
+    }
+
+    @Override
     public <T> void addNamedComponent(String name, ModelComponent<T> component) {
         if (!Strings.isNullOrEmpty(name)) {
             elements.put(name, component);

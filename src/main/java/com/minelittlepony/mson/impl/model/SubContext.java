@@ -5,7 +5,6 @@ import net.minecraft.client.model.ModelPart;
 
 import com.minelittlepony.mson.api.FutureFunction;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.ModelMetadata;
 import com.minelittlepony.mson.api.ModelView;
 import com.minelittlepony.mson.impl.ModelContextImpl;
 
@@ -18,14 +17,19 @@ class SubContext implements ModelContextImpl {
 
     private final ModelContextImpl parent;
 
-    private final ModelMetadataImpl metadata;
+    private final Locals locals;
 
     private final Object context;
 
     public SubContext(ModelContextImpl parent, Locals locals, Object context) {
         this.parent = Objects.requireNonNull(parent, "Parent context is required");
-        this.metadata = new ModelMetadataImpl(Objects.requireNonNull(locals, "Locals is required"));
+        this.locals = Objects.requireNonNull(locals, "Locals is required");
         this.context = Objects.requireNonNull(context, "Sub-context element is required");
+    }
+
+    @Override
+    public ModelView getRoot() {
+        return parent.getRoot();
     }
 
     @Nullable
@@ -39,6 +43,11 @@ class SubContext implements ModelContextImpl {
     @Override
     public <T> T getThis() {
         return (T)context;
+    }
+
+    @Override
+    public Locals getLocals() {
+        return locals;
     }
 
     @Override
@@ -62,20 +71,5 @@ class SubContext implements ModelContextImpl {
             return this;
         }
         return new SubContext(parent, locals, child);
-    }
-
-    @Override
-    public ModelView getRoot() {
-        return parent.getRoot();
-    }
-
-    @Override
-    public Locals getLocals() {
-        return metadata.getUnchecked();
-    }
-
-    @Override
-    public ModelMetadata getMetadata() {
-        return metadata;
     }
 }

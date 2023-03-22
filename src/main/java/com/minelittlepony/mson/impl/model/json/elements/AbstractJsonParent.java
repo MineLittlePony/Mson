@@ -17,7 +17,6 @@ import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Contains the common properties for parsing a ModelPart.
@@ -118,29 +117,28 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
         }
 
         @Override
-        public CompletableFuture<float[]> getDilation() {
-            return parent.getDilation().thenApply(inherited -> {
-                float[] dilation = dilate.complete(parent);
-                return new float[] {
-                    inherited[0] + dilation[0],
-                    inherited[1] + dilation[1],
-                    inherited[2] + dilation[2]
-                };
-            });
+        public float[] getDilation() {
+            float[] inherited = parent.getDilation();
+            float[] dilation = dilate.complete(parent);
+            return new float[] {
+                inherited[0] + dilation[0],
+                inherited[1] + dilation[1],
+                inherited[2] + dilation[2]
+            };
         }
 
         @Override
-        public CompletableFuture<Texture> getTexture() {
-            return CompletableFuture.completedFuture(texture.complete(parent));
+        public Texture getTexture() {
+            return texture.complete(parent);
         }
 
         @Override
-        public CompletableFuture<Float> getLocal(String name, float defaultValue) {
+        public float getLocal(String name, float defaultValue) {
             return parent.getLocal(name, defaultValue);
         }
 
         @Override
-        public CompletableFuture<Set<String>> keys() {
+        public Set<String> keys() {
             return parent.keys();
         }
     }

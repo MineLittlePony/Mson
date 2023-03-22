@@ -5,17 +5,12 @@ import net.minecraft.client.model.ModelPart;
 import com.minelittlepony.mson.api.ModelContext;
 
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 public interface ModelContextImpl extends ModelContext {
     @Override
     default float getLocalValue(String name, float defaultValue) {
-        try {
-            return getLocals().getLocal(name, defaultValue).get();
-        } catch (InterruptedException | ExecutionException e) {
-            return defaultValue;
-        }
+        return getLocals().getLocal(name, defaultValue);
     }
 
     @Override
