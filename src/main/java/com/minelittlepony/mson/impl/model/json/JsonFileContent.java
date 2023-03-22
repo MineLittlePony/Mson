@@ -18,8 +18,8 @@ import com.minelittlepony.mson.api.parser.ModelLoader;
 import com.minelittlepony.mson.api.parser.locals.LocalBlock;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.impl.ModelContextImpl;
-import com.minelittlepony.mson.impl.ModelLocalsImpl;
 import com.minelittlepony.mson.impl.model.EmptyFileContent;
+import com.minelittlepony.mson.impl.model.FileContentLocalsImpl;
 import com.minelittlepony.mson.impl.model.RootContext;
 import com.minelittlepony.mson.impl.model.json.elements.JsonCompound;
 import com.minelittlepony.mson.impl.model.json.elements.JsonTexture;
@@ -136,7 +136,7 @@ public class JsonFileContent implements JsonContext {
         return variables;
     }
 
-    public static class RootVariables implements FileContent.Locals {
+    public static class RootVariables implements FileContentLocalsImpl {
         private final Identifier id;
         private final CompletableFuture<FileContent.Locals> parent;
         private final CompletableFuture<Texture> texture;
@@ -177,11 +177,6 @@ public class JsonFileContent implements JsonContext {
         @Override
         public CompletableFuture<Set<String>> keys() {
             return parent.thenComposeAsync(Locals::keys).thenApply(locals::appendKeys);
-        }
-
-        @Override
-        public ModelContext.Locals bake() {
-            return new ModelLocalsImpl(this);
         }
     }
 }

@@ -6,7 +6,9 @@ import net.minecraft.util.Identifier;
 import com.minelittlepony.mson.api.CommonLocals;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.model.traversal.Traversable;
+import com.minelittlepony.mson.api.parser.locals.LocalBlock;
 import com.minelittlepony.mson.impl.model.EmptyFileContent;
 
 import java.util.Optional;
@@ -131,5 +133,7 @@ public interface FileContent<Data> {
          * Creates a frozen copy of this file's locals
          */
         ModelContext.Locals bake();
+
+        Locals extendWith(Identifier modelId, Optional<LocalBlock> block, Optional<Texture> texture);
     }
 }

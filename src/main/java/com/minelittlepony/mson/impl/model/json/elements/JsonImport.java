@@ -7,19 +7,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
-import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.LocalBlock;
 import com.minelittlepony.mson.api.parser.FileContent;
-import com.minelittlepony.mson.impl.model.FileContentLocalsImpl;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -59,7 +55,9 @@ public class JsonImport implements ModelComponent<ModelPart> {
 
     @Override
     public ModelPart export(ModelContext context) {
-        return context.computeIfAbsent(name, key -> convertContextToTree(context.extendWith(file.get(), Locals::new)));
+        return context.computeIfAbsent(name, key -> convertContextToTree(context.extendWith(file.get(),
+            parent -> parent.extendWith(parent.getModelId(), locals.map(l -> l.bind(context.getLocals())), Optional.empty())
+        )));
     }
 
     private ModelPart convertContextToTree(ModelContext context) {
@@ -71,40 +69,5 @@ public class JsonImport implements ModelComponent<ModelPart> {
         }
 
         return tree.values().stream().findFirst().orElseThrow(() -> new JsonParseException("Imported file must define exactly one part."));
-    }
-
-    private class Locals implements FileContentLocalsImpl {
-        private final FileContent.Locals parent;
-
-        Locals(FileContent.Locals parent) {
-            this.parent = parent;
-        }
-
-        @Override
-        public Identifier getModelId() {
-            return parent.getModelId();
-        }
-
-        @Override
-        public CompletableFuture<float[]> getDilation() {
-            return parent.getDilation();
-        }
-
-        @Override
-        public CompletableFuture<Texture> getTexture() {
-            return parent.getTexture();
-        }
-
-        @Override
-        public CompletableFuture<Incomplete<Float>> getLocal(String name, float defaultValue) {
-            return locals.flatMap(locals -> locals.get(name)).orElseGet(() -> parent.getLocal(name, defaultValue));
-        }
-
-        @Override
-        public CompletableFuture<Set<String>> keys() {
-            return locals
-                    .map(locals -> parent.keys().thenApplyAsync(locals::appendKeys))
-                    .orElseGet(() -> parent.keys());
-        }
     }
 }

@@ -4,20 +4,17 @@ import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.LocalBlock;
 import com.minelittlepony.mson.api.parser.FileContent;
-import com.minelittlepony.mson.impl.model.FileContentLocalsImpl;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import javax.annotation.Nullable;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -85,46 +82,13 @@ public class JsonSlot<T> implements ModelComponent<T> {
     @Override
     public T export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            ModelContext subContext = context.extendWith(data.get(), Locals::new);
+            ModelContext subContext = context.extendWith(data.get(),
+                parent -> parent.extendWith(id, Optional.of(locals), texture)
+            );
 
             T inst = (implementation == null ? InstanceCreator.<T>ofPart() : implementation).createInstance(subContext);
 
             return inst;
         });
-    }
-
-    private class Locals implements FileContentLocalsImpl {
-        private final FileContent.Locals parent;
-
-        Locals(FileContent.Locals parent) {
-            this.parent = parent;
-        }
-
-        @Override
-        public Identifier getModelId() {
-            return id;
-        }
-
-        @Override
-        public CompletableFuture<float[]> getDilation() {
-            return parent.getDilation();
-        }
-
-        @Override
-        public CompletableFuture<Texture> getTexture() {
-            return texture
-                    .map(CompletableFuture::completedFuture)
-                    .orElseGet(parent::getTexture);
-        }
-
-        @Override
-        public CompletableFuture<Incomplete<Float>> getLocal(String name, float defaultValue) {
-            return locals.get(name).orElseGet(() -> parent.getLocal(name, defaultValue));
-        }
-
-        @Override
-        public CompletableFuture<Set<String>> keys() {
-            return parent.keys().thenApplyAsync(locals::appendKeys);
-        }
     }
 }

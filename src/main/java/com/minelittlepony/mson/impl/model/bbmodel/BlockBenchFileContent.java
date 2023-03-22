@@ -15,7 +15,7 @@ import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.ModelFormat;
 import com.minelittlepony.mson.impl.ModelContextImpl;
-import com.minelittlepony.mson.impl.ModelLocalsImpl;
+import com.minelittlepony.mson.impl.model.FileContentLocalsImpl;
 import com.minelittlepony.mson.impl.model.RootContext;
 import com.minelittlepony.mson.impl.model.bbmodel.elements.BbCube;
 import com.minelittlepony.mson.impl.model.bbmodel.elements.BbPart;
@@ -159,7 +159,7 @@ class BlockBenchFileContent implements JsonContext {
         return locals;
     }
 
-    public static class RootVariables implements FileContent.Locals {
+    public static class RootVariables implements FileContentLocalsImpl {
         private final Identifier id;
         private final CompletableFuture<Texture> texture;
         private final CompletableFuture<float[]> dilate = CompletableFuture.completedFuture(new float[] {1,1,1});
@@ -201,11 +201,6 @@ class BlockBenchFileContent implements JsonContext {
         @Override
         public CompletableFuture<Set<String>> keys() {
             return CompletableFuture.completedFuture(new HashSet<>());
-        }
-
-        @Override
-        public ModelContext.Locals bake() {
-            return new ModelLocalsImpl(this);
         }
     }
 }
