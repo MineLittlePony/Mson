@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.impl;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
@@ -20,46 +21,42 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 class ModelFoundry implements ModelLoader {
-    private final ResourceManager manager;
 
-    private LoadWorker<FileContent<?>> worker = LoadWorker.sync();
+    private final AtomicReference<LoadWorker<FileContent<?>>> worker = new AtomicReference<>(LoadWorker.sync());
 
     private final Map<Identifier, CompletableFuture<FileContent<?>>> loadedFiles = new HashMap<>();
 
     private final MsonImpl mson;
 
-    public ModelFoundry(ResourceManager manager, MsonImpl mson) {
-        this.manager = manager;
+    public ModelFoundry(MsonImpl mson) {
         this.mson = mson;
     }
 
     @Override
     public ResourceManager getResourceManager() {
-        return manager;
+        return MinecraftClient.getInstance().getResourceManager();
     }
 
     CompletableFuture<Void> load() {
         Set<String> extensions = mson.handlersByExtension.keySet();
-
-        return CompletableFuture.allOf(getResourceManager().findResources("models/entity", id -> {
+        getResourceManager().findResources("models/entity", id -> {
             String path = id.getPath();
             return extensions.stream().anyMatch(extension -> path.endsWith("." + extension));
-        }).entrySet().stream().map(this::loadModel).toArray(CompletableFuture[]::new));
+        }).entrySet().stream().map(this::loadModel);
+
+        return CompletableFuture.allOf(loadedFiles.values().stream().toArray(CompletableFuture[]::new));
     }
 
     ModelFoundry setWorker(LoadWorker<FileContent<?>> worker) {
-        synchronized (this) {
-            this.worker = worker;
-        }
+        this.worker.set(worker);
         return this;
     }
 
     LoadWorker<FileContent<?>> getWorker() {
-        synchronized (this) {
-            return worker;
-        }
+        return worker.get();
     }
 
     public Optional<FileContent<?>> getOrLoadModelData(ModelKey<?> key) throws InterruptedException, ExecutionException, FutureAwaitException {

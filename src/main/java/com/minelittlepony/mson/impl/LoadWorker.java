@@ -11,16 +11,16 @@ public interface LoadWorker<T> {
 
     CompletableFuture<T> load(Supplier<T> loadFunc, String loadMessage);
 
-    public static <T> LoadWorker<T> async(Executor executor, Profiler serverProfiler, Profiler clientProfiler) {
+    public static <T> LoadWorker<T> async(Executor executor, Profiler profiler) {
         return (loadFunc, loadMessage) -> {
             return CompletableFuture.supplyAsync(() -> {
-                serverProfiler.startTick();
-                clientProfiler.push(loadMessage);
+                profiler.startTick();
+                profiler.push(loadMessage);
                 try {
                     return loadFunc.get();
                 } finally {
-                    clientProfiler.pop();
-                    serverProfiler.endTick();
+                    profiler.pop();
+                    profiler.endTick();
                 }
             }, executor);
         };

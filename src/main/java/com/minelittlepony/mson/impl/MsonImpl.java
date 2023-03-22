@@ -13,7 +13,6 @@ import net.minecraft.util.profiler.Profiler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
@@ -41,6 +40,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
@@ -58,43 +58,61 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     final Map<Identifier, ModelFormat<?>> formatHandlers = new HashMap<>();
     final Map<String, Set<ModelFormat<?>>> handlersByExtension = new HashMap<>();
 
-    private final Object locker = new Object();
-    @Nullable
-    ModelFoundry foundry;
+    private final AtomicReference<ModelFoundry> foundry = new AtomicReference<>(new ModelFoundry(this));
+
+    private final Set<Identifier> vanillaModels = new HashSet<>();
 
     private MsonImpl() {
         registerModelFormatHandler(ModelFormat.MSON, MsonModelFormat.INSTANCE);
         registerModelFormatHandler(ModelFormat.BBMODEL, BBModelFormat.INSTANCE);
     }
 
+    public Stream<ModelFormat<?>> getHandlers(String extension) {
+        return handlersByExtension.getOrDefault(extension, Set.of()).stream();
+    }
+
     public void registerVanillaModels(Map<EntityModelLayer, TexturedModelData> modelParts) {
-        clearData();
-        modelParts.forEach((layer, vanilla) -> {
-            Identifier id = new Identifier(layer.getId().getNamespace(), String.format("mson/%s", layer.getId().getPath()));
-            ((MsonImpl.KeyHolder)vanilla).setKey(registeredModels.computeIfAbsent(id, VanillaKey::new));
-            getOrCreateFoundry().loadModel(id, getDefaultFormatHandler());
-        });
+        synchronized (vanillaModels) {
+            vanillaModels.clear();
+            modelParts.forEach((layer, vanilla) -> {
+                Identifier id = new Identifier(layer.getId().getNamespace(), String.format("mson/%s", layer.getId().getPath()));
+                ((MsonImpl.KeyHolder)vanilla).setKey(registeredModels.computeIfAbsent(id, VanillaKey::new));
+                vanillaModels.add(id);
+            });
+        }
 
         if (DEBUG) {
             new VanillaModelExportWriter().exportAll(FabricLoader.getInstance().getGameDir().resolve("debug_model_export").normalize());
         }
     }
 
-    public Stream<ModelFormat<?>> getHandlers(String extension) {
-        return handlersByExtension.getOrDefault(extension, Set.of()).stream();
+    private CompletableFuture<Void> requireVanillaModels(Synchronizer sync, ResourceManager sender,
+            Profiler prepareProfiler, Profiler applyProfiler,
+            Executor prepareExecutor, Executor applyExecutor) {
+        boolean hasVanillaModels;
+        synchronized (vanillaModels) {
+            hasVanillaModels = !vanillaModels.isEmpty();
+        }
+        if (!hasVanillaModels) {
+            return MinecraftClient.getInstance().getEntityModelLoader()
+                    .reload(sync, sender, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor);
+        }
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override
     public CompletableFuture<Void> reload(Synchronizer sync, ResourceManager sender,
-            Profiler serverProfiler, Profiler clientProfiler,
-            Executor serverExecutor, Executor clientExecutor) {
-        clearData();
-        return MinecraftClient.getInstance().getEntityModelLoader()
-                .reload(sync, sender, serverProfiler, clientProfiler, serverExecutor, clientExecutor)
-                .thenCompose(v -> getOrCreateFoundry().setWorker(LoadWorker.async(serverExecutor, serverProfiler, clientProfiler)).load()
+            Profiler prepareProfiler, Profiler applyProfiler,
+            Executor prepareExecutor, Executor applyExecutor) {
+        ModelFoundry loadingFoundry = new ModelFoundry(this).setWorker(LoadWorker.async(prepareExecutor, prepareProfiler));
+
+        return requireVanillaModels(sync, sender, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor)
+                .thenComposeAsync(v -> loadingFoundry.load(), prepareExecutor)
                 .thenCompose(sync::whenPrepared)
-                .thenRunAsync(renderers::initialize, clientExecutor))
-                .thenRunAsync(() -> getOrCreateFoundry().setWorker(LoadWorker.sync()));
+                .thenRunAsync(() -> {
+                    foundry.set(loadingFoundry.setWorker(LoadWorker.sync()));
+                    renderers.initialize();
+                }, applyExecutor);
     }
 
     @Override
@@ -150,21 +168,6 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     @Override
     public <Data> Optional<ModelFormat<Data>> getFormatHandler(Identifier id) {
         return Optional.ofNullable((ModelFormat<Data>)formatHandlers.get(id));
-    }
-
-    private ModelFoundry getOrCreateFoundry() {
-        synchronized (locker) {
-            if (foundry == null) {
-                foundry = new ModelFoundry(MinecraftClient.getInstance().getResourceManager(), this);
-            }
-            return foundry;
-        }
-    }
-
-    private void clearData() {
-        synchronized (locker) {
-            foundry = null;
-        }
     }
 
     public interface KeyHolder {
@@ -232,7 +235,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         @Override
         public Optional<FileContent<?>> getModelData() {
             try {
-                return getOrCreateFoundry().getOrLoadModelData(this);
+                return foundry.get().getOrLoadModelData(this);
             } catch (InterruptedException | ExecutionException | FutureAwaitException e) {
                 throw new RuntimeException("Could not create model", e);
             }
