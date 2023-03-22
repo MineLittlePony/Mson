@@ -32,7 +32,9 @@ import java.util.concurrent.CompletableFuture;
 public class JsonSlot<T> implements ModelComponent<T> {
     public static final Identifier ID = new Identifier("mson", "slot");
 
-    @Nullable
+    /**
+     * The object type produced by this slot.
+     */
     private final InstanceCreator<T> implementation;
 
     /**
@@ -75,7 +77,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
 
     @Override
     public <K> Optional<K> tryExportTreeNodes(ModelContext context, Class<K> type) {
-        if (implementation == null || !implementation.isCompatible(type)) {
+        if (!implementation.isCompatible(type)) {
             return Optional.empty();
         }
         return tryExport(context, type);
@@ -88,7 +90,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
                 parent -> parent.extendWith(id, Optional.of(locals.bind(context.getLocals())), texture)
             );
 
-            T inst = (implementation == null ? InstanceCreator.<T>ofPart() : implementation).createInstance(subContext);
+            T inst = implementation.createInstance(subContext);
 
             return inst;
         });
