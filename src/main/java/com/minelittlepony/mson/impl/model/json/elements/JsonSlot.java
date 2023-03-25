@@ -7,8 +7,10 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.LocalBlock;
@@ -17,7 +19,6 @@ import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Represents an in-place insertion of another model file's contents
@@ -95,7 +96,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <K> Optional<K> export(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
+    public <K> Optional<K> export(ModelContext context, InstanceCreator<K> customType) {
         CompiledSlot<T> compiled = compile(context);
         if (implementation.filter(i -> i.isCompatible(customType)).isPresent()) {
             return Optional.ofNullable((K)compiled.result());
@@ -116,5 +117,18 @@ public class JsonSlot<T> implements ModelComponent<T> {
         });
     }
 
+    @Override
+    public void write(ModelContext context, ModelFileWriter writer) {
+        try {
+            FileContent<?> content = data.get();
+            writer.writeTree(name, content, context.extendWith(content,
+                parent -> parent.extendWith(id, Optional.of(locals.bind(context.getLocals())), texture)
+            ));
+        } catch (Exception e) {
+            throw new JsonParseException(e);
+        }
+    }
+
     record CompiledSlot<T>(@Nullable T result, ModelPart tree, ModelContext sourceContext) {}
+
 }

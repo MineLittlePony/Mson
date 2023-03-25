@@ -7,7 +7,7 @@ import net.minecraft.util.Identifier;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.exception.FutureAwaitException;
+import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.FileContent;
@@ -72,15 +72,18 @@ public class JsonCompound extends AbstractJsonParent {
     }
 
     @Override
-    protected PartBuilder export(ModelContext context, PartBuilder builder) throws FutureAwaitException {
-        super.export(context, builder);
-
+    protected void export(ModelContext context, PartBuilder builder) {
         children.entrySet().forEach(c -> {
             c.getValue().tryExport(context, ModelPart.class).ifPresent(part -> {
                builder.addChild(c.getKey(), part);
             });
         });
         cubes.forEach(c -> c.tryExport(context, Cuboid.class).ifPresent(builder::addCube));
-        return builder;
+    }
+
+    @Override
+    protected void write(ModelContext context, PartBuilder builder, ModelFileWriter writer) {
+        cubes.forEach(cube -> cube.write(context, writer));
+        children.values().forEach(child -> child.write(context, writer));
     }
 }

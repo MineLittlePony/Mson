@@ -5,12 +5,15 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.MathHelper;
 
+import org.joml.Quaternionf;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Face;
-import com.minelittlepony.mson.api.model.Rect;
+import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.model.Vert;
 import com.minelittlepony.mson.api.parser.FileContent;
@@ -22,7 +25,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -51,7 +53,7 @@ import java.util.stream.Collectors;
  *   "uuid": "b38e15fc-748d-c7fa-fa9d-2ac7b265d63e"
  * }
  */
-public class BbCube implements ModelComponent<Cuboid> {
+public class BbCube implements ModelComponent<Cuboid>, QuadsBuilder {
     public static final Identifier ID = new Identifier("blockbench", "cube");
 
     private final boolean boxUv;
@@ -92,55 +94,64 @@ public class BbCube implements ModelComponent<Cuboid> {
     }
 
     @Override
-    public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
+    public Cuboid export(ModelContext context) {
+        return createBuilder(context).build();
+    }
+
+    @Override
+    public void write(ModelContext context, ModelFileWriter writer) {
+        writer.writeBox(createBuilder(context));
+    }
+
+    private BoxBuilder createBuilder(ModelContext context) {
 
         if (boxUv) {
             return new BoxBuilder(context)
                     .tex(texture)
                     .pos(origin)
                     .size(to[0] - from[0], to[1] - from[1], to[2] - from[2])
-                    .dilate(0, 0, 0)
-                    .build();
+                    .dilate(0, 0, 0);
         }
 
         return new BoxBuilder(context)
             .pos(origin)
             .size(to[0] - from[0], to[1] - from[1], to[2] - from[2])
             .dilate(0, 0, 0)
-            .build(ctx -> {
-                float xMax = ctx.pos[0] + ctx.size[0] + ctx.dilate[0];
-                float yMax = ctx.pos[1] + ctx.size[1] + ctx.dilate[1];
-                float zMax = ctx.pos[2] + ctx.size[2] + ctx.dilate[2];
+            .quads(this);
+    }
 
-                float xMin = ctx.pos[0] - ctx.dilate[0];
-                float yMin = ctx.pos[1] - ctx.dilate[1];
-                float zMin = ctx.pos[2] - ctx.dilate[2];
+    @Override
+    public void build(BoxBuilder ctx, QuadBuffer buffer) {
+        float xMax = ctx.pos[0] + ctx.size[0] + ctx.dilate[0];
+        float yMax = ctx.pos[1] + ctx.size[1] + ctx.dilate[1];
+        float zMax = ctx.pos[2] + ctx.size[2] + ctx.dilate[2];
 
-                if (ctx.mirror[0]) {
-                    float v = xMax;
-                    xMax = xMin;
-                    xMin = v;
-                }
+        float xMin = ctx.pos[0] - ctx.dilate[0];
+        float yMin = ctx.pos[1] - ctx.dilate[1];
+        float zMin = ctx.pos[2] - ctx.dilate[2];
 
-                // w:west e:east d:down u:up s:south n:north
-                Vert wds = ctx.vert(xMin, yMin, zMax, 0, 0);
-                Vert eds = ctx.vert(xMax, yMin, zMin, 0, 8);
-                Vert eus = ctx.vert(xMax, yMax, zMin, 8, 8);
-                Vert wus = ctx.vert(xMin, yMax, zMin, 8, 0);
-                Vert wdn = ctx.vert(xMin, yMin, zMax, 0, 0);
-                Vert edn = ctx.vert(xMax, yMin, zMax, 0, 8);
-                Vert eun = ctx.vert(xMax, yMax, zMax, 8, 8);
-                Vert wun = ctx.vert(xMin, yMax, zMax, 8, 0);
+        if (ctx.mirror[0]) {
+            float v = xMax;
+            xMax = xMin;
+            xMin = v;
+        }
 
-                return new Rect[] {
-                    faces.get(Face.EAST).createRect(ctx, edn, eds, eus, eun),
-                    faces.get(Face.WEST).createRect(ctx, wds, wdn, wun, wus),
-                    faces.get(Face.UP).createRect(ctx, edn, wdn, wds, eds),
-                    faces.get(Face.DOWN).createRect(ctx, eus, wus, wun, eun),
-                    faces.get(Face.NORTH).createRect(ctx, eds, wds, wus, eus),
-                    faces.get(Face.SOUTH).createRect(ctx, wdn, edn, eun, wun)
-                };
-            });
+        // w:west e:east d:down u:up s:south n:north
+        Vert wds = buffer.vert(xMin, yMin, zMax, 0, 0);
+        Vert eds = buffer.vert(xMax, yMin, zMin, 0, 8);
+        Vert eus = buffer.vert(xMax, yMax, zMin, 8, 8);
+        Vert wus = buffer.vert(xMin, yMax, zMin, 8, 0);
+        Vert wdn = buffer.vert(xMin, yMin, zMax, 0, 0);
+        Vert edn = buffer.vert(xMax, yMin, zMax, 0, 8);
+        Vert eun = buffer.vert(xMax, yMax, zMax, 8, 8);
+        Vert wun = buffer.vert(xMin, yMax, zMax, 8, 0);
+
+        faces.get(Face.EAST).createRect(ctx, buffer, edn, eds, eus, eun);
+        faces.get(Face.WEST).createRect(ctx, buffer, wds, wdn, wun, wus);
+        faces.get(Face.UP).createRect(ctx, buffer, edn, wdn, wds, eds);
+        faces.get(Face.DOWN).createRect(ctx, buffer, eus, wus, wun, eun);
+        faces.get(Face.NORTH).createRect(ctx, buffer, eds, wds, wus, eus);
+        faces.get(Face.SOUTH).createRect(ctx, buffer, wdn, edn, eun, wun);
     }
 
     record CubeFace(Face face, float[] uv, int texture, float rotation) {
@@ -152,13 +163,14 @@ public class BbCube implements ModelComponent<Cuboid> {
             JsonUtil.acceptFloats(json, "uv", uv());
         }
 
-        public Rect createRect(BoxBuilder ctx, Vert a, Vert b, Vert c, Vert d) {
+        public void createRect(BoxBuilder builder, QuadsBuilder.QuadBuffer buffer, Vert a, Vert b, Vert c, Vert d) {
             Face.Axis axis = face.getAxis();
-            return ctx.quad(uv[0], uv[1], uv[2], uv[3], face.getLighting(), a, b, c, d).rotate(
-                    axis == Face.Axis.X ? rotation : 0,
-                    axis == Face.Axis.Y ? rotation : 0,
-                    axis == Face.Axis.Z ? rotation : 0
-            );
+
+            buffer.quad(uv[0], uv[1], uv[2], uv[3], face.getLighting(), builder.mirror[0], true, new Quaternionf().rotateXYZ(
+                axis == Face.Axis.X ? rotation : 0,
+                axis == Face.Axis.Y ? rotation : 0,
+                axis == Face.Axis.Z ? rotation : 0
+            ), a, b, c, d);
         }
     }
 }

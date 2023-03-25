@@ -1,8 +1,4 @@
-package com.minelittlepony.mson.impl.export;
-
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.model.TexturedModelData;
-import net.minecraft.client.render.entity.model.EntityModelLayer;
+package com.minelittlepony.mson.api.export;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -15,46 +11,34 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Stack;
 
-public class VanillaModelExportWriter {
-    private final VanillaModelExporter exporter = new VanillaModelExporter();
+public abstract class ModelSerializer<T> implements AutoCloseable {
 
-    public void exportAll(Path root) {
-        ((ModelList)MinecraftClient.getInstance().getEntityModelLoader()).getModelParts().forEach((id, model) -> {
-            writeToFile(root.resolve(id.getId().getNamespace()).resolve(id.getId().getPath() + ".json"), model);
-        });
-    }
+    public abstract JsonElement writeToJsonElement(T content);
 
-    public String toJsonString(TexturedModelData model) {
+    public String writeToString(T content) {
         try {
-            return writeIndented(exporter.export(model), new StringWriter()).toString();
+            return writeIndented(writeToJsonElement(content), new StringWriter()).toString();
         } catch (IOException e) {
             throw new AssertionError(e);
         }
     }
 
-    public void writeToFile(Path path, TexturedModelData model) {
-        try {
-            Files.createDirectories(path.getParent());
-        } catch (IOException e) {
-            throw new AssertionError(e);
-        }
+    public void writeToFile(Path path, T content) throws IOException {
+        Files.createDirectories(path.getParent());
 
-        try (var writer = Files.newBufferedWriter(path)) {
-            writeIndented(exporter.export(model), writer).flush();
-        } catch (IOException e) {
-            throw new AssertionError(e);
+        try (var w = Files.newBufferedWriter(path)) {
+            writeIndented(writeToJsonElement(content), w).flush();
         }
     }
 
-    private <T extends Writer> T writeIndented(JsonElement json, T writer) throws IOException {
+    private <W extends Writer> W writeIndented(JsonElement json, W writer) throws IOException {
         Streams.write(json, new JsWriter(writer));
         return writer;
     }
 
-    class JsWriter extends JsonWriter {
+    private static class JsWriter extends JsonWriter {
         private static final String INDENT = "  ";
         private static final String NO_INDENT = "";
 
@@ -97,14 +81,11 @@ public class VanillaModelExportWriter {
             setIndent(indent);
             return this;
         }
+
         private JsonWriter popIndent() {
             currentIndent = indentStack.pop();
             setIndent(currentIndent);
             return this;
         }
-    }
-
-    public interface ModelList {
-        Map<EntityModelLayer, TexturedModelData> getModelParts();
     }
 }

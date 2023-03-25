@@ -10,9 +10,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
-import com.minelittlepony.mson.api.model.Rect;
 import com.minelittlepony.mson.api.model.Vert;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.FileContent;
@@ -59,16 +59,23 @@ public class JsonQuads implements ModelComponent<Cuboid>, QuadsBuilder {
         BoxBuilder builder = new BoxBuilder(context);
         builder.u = texU;
         builder.v = texV;
-        return builder.build(this);
+        return builder.quads(this).build();
     }
 
     @Override
-    public Rect[] build(BoxBuilder box) {
-        return quads.stream().map(q -> q.build(box)).toArray(i -> new Rect[i]);
+    public void write(ModelContext context, ModelFileWriter writer) {
+        BoxBuilder builder = new BoxBuilder(context);
+        builder.u = texU;
+        builder.v = texV;
+        writer.writeBox(builder.quads(this));
+    }
+
+    @Override
+    public void build(BoxBuilder box, QuadBuffer buffer) {
+        quads.forEach(q -> q.build(box, buffer));
     }
 
     class JsonQuad {
-
         private final int x;
         private final int y;
 
@@ -89,15 +96,8 @@ public class JsonQuads implements ModelComponent<Cuboid>, QuadsBuilder {
                 .collect(Collectors.toList());
         }
 
-        Rect build(BoxBuilder builder) {
-            return builder.quad(x, y, w, h, Direction.UP,
-                    builder.vert(0, 0, 0, 0, 0),
-                    builder.vert(0, 0, 0, 0, 0),
-                    builder.vert(0, 0, 0, 0, 0),
-                    builder.vert(0, 0, 0, 0, 0)
-            ).setVertices(builder.mirror[0], verts.stream()
-                    .map(v -> v.build(builder))
-                    .toArray(Vert[]::new));
+        void build(BoxBuilder builder, QuadBuffer buffer) {
+            buffer.quad(x, y, w, h, Direction.UP, builder.mirror[0], verts.stream().map(v -> v.build(buffer)).toArray(Vert[]::new));
         }
     }
 
@@ -128,8 +128,8 @@ public class JsonQuads implements ModelComponent<Cuboid>, QuadsBuilder {
             }
         }
 
-        Vert build(BoxBuilder builder) {
-            return builder.vert(x, y, z, u, v);
+        Vert build(QuadBuffer buffer) {
+            return buffer.vert(x, y, z, u, v);
         }
     }
 }

@@ -12,12 +12,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.minelittlepony.mson.api.export.VanillaModelSerializer;
 import com.minelittlepony.mson.impl.MsonImpl;
-import com.minelittlepony.mson.impl.export.VanillaModelExportWriter;
+
 import java.util.Map;
 
 @Mixin(EntityModelLoader.class)
-abstract class MixinEntityModelLoader implements SynchronousResourceReloader, VanillaModelExportWriter.ModelList {
+abstract class MixinEntityModelLoader implements SynchronousResourceReloader, VanillaModelSerializer.ModelList {
     @Override
     @Accessor("modelParts")
     public abstract Map<EntityModelLayer, TexturedModelData> getModelParts();

@@ -4,16 +4,16 @@ import org.jetbrains.annotations.Nullable;
 
 import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.export.ModelFileWriter;
 
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 /**
  * A json component.
  *
  * Consumes data and "exports" a concrete model instance, or a piece of a model.
  */
-public interface ModelComponent<T> {
+public interface ModelComponent<T> extends ModelFileWriter.Writeable {
 
     /**
      * Tries to export this component to the chosen type.
@@ -32,7 +32,7 @@ public interface ModelComponent<T> {
         Object s;
         try {
             s = export(context);
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (Exception e) {
             return Optional.empty();
         }
 
@@ -46,12 +46,12 @@ public interface ModelComponent<T> {
      * Creates an instance of this component's object type within the supplied model loading context.
      */
     @Nullable
-    T export(ModelContext context) throws InterruptedException, ExecutionException;
+    T export(ModelContext context);
 
     /**
      * Creates a custom object from the contents of this component.
      */
-    default <K> Optional<K> export(ModelContext context, InstanceCreator<K> customType) throws InterruptedException, ExecutionException {
+    default <K> Optional<K> export(ModelContext context, InstanceCreator<K> customType) {
         return Optional.empty();
     }
 

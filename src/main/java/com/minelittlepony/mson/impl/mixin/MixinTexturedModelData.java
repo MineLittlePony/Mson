@@ -10,8 +10,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelKey;
+import com.minelittlepony.mson.api.export.JsonBuffer;
 import com.minelittlepony.mson.impl.MsonImpl;
-import com.minelittlepony.mson.impl.export.VanillaModelExporter;
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +28,7 @@ import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.util.math.Vector2f;
 
 @Mixin(TexturedModelData.class)
-abstract class MixinTexturedModelData implements MsonImpl.KeyHolder, VanillaModelExporter.JsonConvertable {
+abstract class MixinTexturedModelData implements MsonImpl.KeyHolder, JsonBuffer.JsonConvertable {
     private Optional<ModelKey<?>> key = Optional.empty();
 
     @Shadow private @Final ModelData data;
@@ -45,9 +45,9 @@ abstract class MixinTexturedModelData implements MsonImpl.KeyHolder, VanillaMode
     }
 
     @Override
-    public JsonObject toJson(VanillaModelExporter exporter) {
+    public JsonObject toJson(JsonBuffer exporter) {
         return exporter.of(json -> {
-            exporter.object(json, "data", exporter.export(data).get("children"));
+            exporter.object(json, "data", exporter.write(data).get("children"));
             exporter.object(json, "texture", exporter.of(js -> {
                 js.addProperty("w", ((MixinTextureDimensions)dimensions).getWidth());
                 js.addProperty("h", ((MixinTextureDimensions)dimensions).getHeight());
@@ -56,16 +56,16 @@ abstract class MixinTexturedModelData implements MsonImpl.KeyHolder, VanillaMode
     }
 }
 @Mixin(ModelPartData.class)
-abstract class MixinModelPartData implements VanillaModelExporter.JsonConvertable {
+abstract class MixinModelPartData implements JsonBuffer.JsonConvertable {
     @Shadow private @Final List<ModelCuboidData> cuboidData;
     @Shadow private @Final ModelTransform rotationData;
     @Shadow private @Final Map<String, ModelPartData> children;
     @Override
-    public JsonObject toJson(VanillaModelExporter exporter) {
+    public JsonObject toJson(JsonBuffer exporter) {
         return exporter.of(json -> {
-            if (!cuboidData.isEmpty()) json.add("cubes", exporter.of(cuboidData.stream().map(exporter::export)));
+            if (!cuboidData.isEmpty()) json.add("cubes", exporter.of(cuboidData.stream().map(exporter::write)));
             if (!children.isEmpty()) json.add("children", exporter.of(js -> {
-                children.forEach((key, value) -> js.add(key, exporter.export(value)));
+                children.forEach((key, value) -> js.add(key, exporter.write(value)));
             }));
             if (rotationData != ModelTransform.NONE) {
                 exporter.array(json, "pivot", rotationData.pivotX, rotationData.pivotY, rotationData.pivotZ);
@@ -75,7 +75,7 @@ abstract class MixinModelPartData implements VanillaModelExporter.JsonConvertabl
     }
 }
 @Mixin(ModelCuboidData.class)
-abstract class MixinModelCuboidData implements VanillaModelExporter.JsonConvertable {
+abstract class MixinModelCuboidData implements JsonBuffer.JsonConvertable {
     @Shadow private @Final Vector3f offset;
     @Shadow private @Final Vector3f dimensions;
     @Shadow private @Final Dilation extraSize;
@@ -83,7 +83,7 @@ abstract class MixinModelCuboidData implements VanillaModelExporter.JsonConverta
     @Shadow private @Final Vector2f textureUV;
     @Shadow private @Final Vector2f textureScale;
     @Override
-    public JsonObject toJson(VanillaModelExporter exporter) {
+    public JsonObject toJson(JsonBuffer exporter) {
         return exporter.of(json -> {
             exporter.array(json, "from", offset);
             exporter.array(json, "size", dimensions);

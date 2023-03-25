@@ -6,10 +6,15 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 
+import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -33,6 +38,9 @@ public final class BoxBuilder {
     public boolean[] mirror = new boolean[3];
 
     public CoordinateFixture fixture = CoordinateFixture.unfixed();
+
+    @Nullable
+    public QuadsBuilder quads;
 
     public BoxBuilder(PartBuilder parent) {
         this.parent = parent;
@@ -99,48 +107,9 @@ public final class BoxBuilder {
         return this;
     }
 
-    /**
-     * Creates a new vertex mapping the given (x, y, z) coordinates to a texture offset.
-     */
-    public Vert vert(float x, float y, float z, int u, int v) {
-        return (Vert)new ModelPart.Vertex(x, y, z, u, v);
-    }
-
-    /**
-     * Creates a new quad with the given spatial vertices.
-     */
-    public Rect quad(
-            float u, float v,
-            float w, float h,
-            Direction direction,
-            Vert ...vertices) {
-        return quad(u, v, w, h, direction, mirror[0], vertices);
-    }
-
-    /**
-     * Creates a new quad with the given spatial vertices.
-     */
-    public Rect quad(
-            float u, float v,
-            float w, float h,
-            Direction direction,
-            boolean mirror,
-            Vert ...vertices) {
-
-        ModelPart.Vertex[] verts = new ModelPart.Vertex[vertices.length];
-        System.arraycopy(vertices, 0, verts, 0, vertices.length);
-
-        return (Rect)new ModelPart.Quad(
-                verts,
-                u,         v,
-                u + w, v + h,
-                parent.texture.width(), parent.texture.height(),
-                mirror,
-                direction);
-    }
-
-    public Cuboid build() {
-        return build(ALL_DIRECTIONS);
+    public BoxBuilder quads(QuadsBuilder quads) {
+        this.quads = quads;
+        return this;
     }
 
     public Cuboid build(Set<Direction> enabledSides) {
@@ -155,9 +124,50 @@ public final class BoxBuilder {
         );
     }
 
-    public Cuboid build(QuadsBuilder builder) {
+    public Cuboid build() {
+        if (quads == null) {
+            return build(ALL_DIRECTIONS);
+        }
+
         Cuboid box = build(Set.of());
-        ((Cube)box).setSides(builder.build(this));
+        List<Rect> quads = new ArrayList<>();
+        this.quads.build(this, new QuadsBuilder.QuadBuffer() {
+            private final ModelPart.Vertex emptyVertex = new ModelPart.Vertex(0, 0, 0, 0, 0);
+            private final ModelPart.Vertex[] defaultVertices = {emptyVertex, emptyVertex, emptyVertex, emptyVertex};
+
+            @Override
+            public Vert vert(float x, float y, float z, int u, int v) {
+                return (Vert)new ModelPart.Vertex(x, y, z, u, v);
+            }
+
+            @Override
+            public void quad(float u, float v, float w, float h, Direction direction, Vert... vertices) {
+                quad(u, v, w, h, direction, mirror[0], vertices);
+            }
+
+            @Override
+            public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert... vertices) {
+                ModelPart.Vertex[] verts = new ModelPart.Vertex[vertices.length];
+                System.arraycopy(vertices, 0, verts, 0, vertices.length);
+
+                Rect rect = (Rect)new ModelPart.Quad(
+                        remap ? verts : defaultVertices,
+                        u,         v,
+                        u + w, v + h,
+                        parent.texture.width(), parent.texture.height(),
+                        mirror,
+                        direction);
+                if (!remap) {
+                    rect.setVertices(mirror, vertices);
+                }
+                if (rotation != null) {
+                    rect.rotate(rotation);
+                }
+
+                quads.add(rect);
+            }
+        });
+        ((Cube)box).setSides(quads.toArray(Rect[]::new));
         return box;
     }
 

@@ -20,12 +20,12 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
+import com.minelittlepony.mson.api.export.VanillaModelSerializer;
 import com.minelittlepony.mson.api.model.traversal.PartSkeleton;
 import com.minelittlepony.mson.api.model.traversal.SkeletonisedModel;
 import com.minelittlepony.mson.api.parser.ModelFormat;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.Mson;
-import com.minelittlepony.mson.impl.export.VanillaModelExportWriter;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.RootContext;
 import com.minelittlepony.mson.impl.model.bbmodel.BBModelFormat;
@@ -82,7 +82,11 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         }
 
         if (DEBUG) {
-            new VanillaModelExportWriter().exportAll(FabricLoader.getInstance().getGameDir().resolve("debug_model_export").normalize());
+            try (var serializer = new VanillaModelSerializer()) {
+                serializer.exportAll(FabricLoader.getInstance().getGameDir().resolve("debug_model_export").normalize());
+            } catch (Exception e) {
+                throw new AssertionError(e);
+            }
         }
     }
 

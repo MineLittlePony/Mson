@@ -3,6 +3,8 @@ package com.minelittlepony.mson.api.parser;
 import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 
+import com.minelittlepony.mson.api.export.ModelSerializer;
+
 import java.util.Optional;
 
 /**
@@ -29,6 +31,13 @@ public interface ModelFormat<Data> {
      * The file extension that this format is capable of parsing.
      */
     String getFileExtension();
+
+    /**
+     * Creates a serializer that converts a loaded model back into this format.
+     */
+    default Optional<ModelSerializer<FileContent<?>>> createSerializer() {
+        return Optional.empty();
+    }
 
     /**
      * Loads a model for the requested model id using the provided asset loader.

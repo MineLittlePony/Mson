@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
+import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.api.parser.FileContent;
@@ -55,17 +56,21 @@ public class JsonPlanar extends JsonCompound {
     }
 
     @Override
-    protected PartBuilder export(ModelContext context, PartBuilder builder) throws FutureAwaitException {
+    protected void export(ModelContext context, PartBuilder builder) throws FutureAwaitException {
         super.export(context, builder);
         faces.values()
             .stream()
             .flatMap(face -> face.export(context))
             .forEach(builder::addCube);
-
-        return builder;
     }
 
-    class JsonFaceSet {
+    @Override
+    protected void write(ModelContext context, PartBuilder builder, ModelFileWriter writer) {
+        super.write(context, builder, writer);
+        faces.values().forEach(face -> face.write(context, writer));
+    }
+
+    class JsonFaceSet implements ModelFileWriter.Writeable {
 
         private final Face face;
 
@@ -83,9 +88,17 @@ public class JsonPlanar extends JsonCompound {
             }
         }
 
-        Stream<Cuboid> export(ModelContext subContext) throws FutureAwaitException {
+        Stream<Cuboid> export(ModelContext subContext) {
             Fixtures fixtures = new Fixtures(subContext);
             return elements.stream().map(face -> face.export(subContext, fixtures));
+        }
+
+        @Override
+        public void write(ModelContext context, ModelFileWriter writer) {
+            Fixtures fixtures = new Fixtures(context);
+            for (var face : elements) {
+                face.write(context, fixtures, writer);
+            }
         }
 
         class Fixtures extends FixtureImpl {
@@ -164,14 +177,25 @@ public class JsonPlanar extends JsonCompound {
                 }
             }
 
-            public Cuboid export(ModelContext context, Fixtures fixtures) throws FutureAwaitException {
+            public Cuboid export(ModelContext context, Fixtures fixtures) {
                 return new BoxBuilder(context)
                     .fix(fixtures)
                     .tex(texture.complete(context))
                     .mirror(face.getAxis(), mirror)
                     .pos(position.complete(context))
                     .size(face.getAxis(), size.complete(context))
-                    .build(QuadsBuilder.plane(face));
+                    .quads(QuadsBuilder.plane(face))
+                    .build();
+            }
+
+            public void write(ModelContext context, Fixtures fixtures, ModelFileWriter writer) {
+                writer.writeBox(new BoxBuilder(context)
+                    .fix(fixtures)
+                    .tex(texture.complete(context))
+                    .mirror(face.getAxis(), mirror)
+                    .pos(position.complete(context))
+                    .size(face.getAxis(), size.complete(context))
+                    .quads(QuadsBuilder.plane(face)));
             }
 
             private static Incomplete<Texture> createTexture(Incomplete<Float> u, Incomplete<Float> v) {

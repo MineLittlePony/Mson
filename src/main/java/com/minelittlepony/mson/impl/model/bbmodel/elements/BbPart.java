@@ -10,6 +10,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
+import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.parser.ModelComponent;
@@ -107,16 +108,15 @@ public class BbPart implements ModelComponent<ModelPart> {
     }
 
     @Override
-    public ModelPart export(ModelContext context) throws InterruptedException, ExecutionException {
+    public ModelPart export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            final PartBuilder builder = new PartBuilder();
+            var builder = createBuilder(context);
             return export(context.bind(builder), builder).build();
         });
     }
 
-    protected PartBuilder export(ModelContext context, PartBuilder builder) throws FutureAwaitException, InterruptedException, ExecutionException {
-        builder
-                .hidden(!visibility)
+    protected PartBuilder createBuilder(ModelContext context) {
+        final PartBuilder builder = new PartBuilder().hidden(!visibility)
                 .pivot(origin)
                 .rotate(
                     rotation[0] * MathHelper.RADIANS_PER_DEGREE,
@@ -124,6 +124,10 @@ public class BbPart implements ModelComponent<ModelPart> {
                     rotation[2] * MathHelper.RADIANS_PER_DEGREE)
                 .tex(context.getLocals().getTexture());
 
+        return builder;
+    }
+
+    protected PartBuilder export(ModelContext context, PartBuilder builder) throws FutureAwaitException, InterruptedException, ExecutionException {
         children.entrySet().forEach(c -> {
             c.getValue().tryExport(context, ModelPart.class).ifPresent(part -> {
                builder.addChild(c.getKey(), part);
@@ -133,4 +137,20 @@ public class BbPart implements ModelComponent<ModelPart> {
         return builder;
     }
 
+
+    @Override
+    public void write(ModelContext context, ModelFileWriter writer) {
+        PartBuilder builder = createBuilder(context);
+        writer.writePart(name, builder, w -> {
+            ModelContext boundContext = context.bind(builder);
+
+            for (var cube : cubes) {
+                cube.write(boundContext, w);
+            }
+
+            for (var child : children.values()) {
+                child.write(boundContext, w);
+            }
+        });
+    }
 }

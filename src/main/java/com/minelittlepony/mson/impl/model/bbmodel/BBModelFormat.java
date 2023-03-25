@@ -10,6 +10,7 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.minelittlepony.mson.api.export.ModelSerializer;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.ModelFormat;
@@ -45,6 +46,11 @@ public class BBModelFormat implements ModelFormat<JsonElement> {
     @Override
     public String getFileExtension() {
         return "bbmodel";
+    }
+
+    @Override
+    public Optional<ModelSerializer<FileContent<?>>> createSerializer() {
+        return Optional.of(new BBModelWriter());
     }
 
     @Override

@@ -12,17 +12,17 @@ import java.util.Map;
 
 public class PartBuilder {
 
-    Texture texture = Texture.EMPTY;
+    public Texture texture = Texture.EMPTY;
 
-    private float[] rotate = new float[3];
-    private float[] pivot = new float[3];
+    public float[] rotate = new float[3];
+    public float[] pivot = new float[3];
 
-    boolean[] mirror = new boolean[3];
+    public boolean[] mirror = new boolean[3];
 
     final List<ModelPart.Cuboid> cubes = new ArrayList<>();
     final Map<String, ModelPart> children = new HashMap<>();
 
-    boolean hidden;
+    public boolean hidden;
 
     public PartBuilder addChild(String name, ModelPart child) {
         children.put(name, child);

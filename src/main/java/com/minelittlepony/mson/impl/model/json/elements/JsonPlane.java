@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Face;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
@@ -15,8 +16,6 @@ import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.Local;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.JsonUtil;
-
-import java.util.concurrent.ExecutionException;
 
 /**
  * A single-face alternative to mson:box
@@ -75,13 +74,25 @@ public class JsonPlane implements ModelComponent<Cuboid> {
     }
 
     @Override
-    public Cuboid export(ModelContext context) throws InterruptedException, ExecutionException {
+    public Cuboid export(ModelContext context) {
         return new BoxBuilder(context)
             .tex(texture.complete(context))
             .mirror(face.getAxis(), mirror)
             .pos(position.complete(context))
             .size(face.getAxis(), size.complete(context))
             .dilate(dilate.complete(context))
-            .build(QuadsBuilder.plane(face));
+            .quads(QuadsBuilder.plane(face))
+            .build();
+    }
+
+    @Override
+    public void write(ModelContext context, ModelFileWriter writer) {
+        writer.writeBox(new BoxBuilder(context)
+            .tex(texture.complete(context))
+            .mirror(face.getAxis(), mirror)
+            .pos(position.complete(context))
+            .size(face.getAxis(), size.complete(context))
+            .dilate(dilate.complete(context))
+            .quads(QuadsBuilder.plane(face)));
     }
 }

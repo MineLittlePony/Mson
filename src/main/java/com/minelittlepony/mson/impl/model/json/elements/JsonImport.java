@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.LocalBlock;
 import com.minelittlepony.mson.api.parser.FileContent;
@@ -16,6 +17,7 @@ import com.minelittlepony.mson.util.JsonUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -60,6 +62,28 @@ public class JsonImport implements ModelComponent<ModelPart> {
         )));
     }
 
+    @Override
+    public void write(ModelContext context, ModelFileWriter writer) {
+        try {
+            FileContent<?> fileContent = file.get();
+            Set<String> components = fileContent.getComponentNames().get();
+
+            if (components.size() != 1) {
+                throw new JsonParseException("Imported file must define exactly one part.");
+            }
+
+            String name = components.stream().findFirst().get();
+
+            var boundContext = context.extendWith(file.get(),
+                parent -> parent.extendWith(parent.getModelId(), locals.map(l -> l.bind(context.getLocals())), Optional.empty())
+            );
+
+            fileContent.getComponent(name).get().get().write(boundContext, writer);
+        } catch (Exception e) {
+            throw new JsonParseException(e);
+        }
+    }
+
     private ModelPart convertContextToTree(ModelContext context) {
         Map<String, ModelPart> tree = new HashMap<>();
         context.getTree(tree);
@@ -68,6 +92,6 @@ public class JsonImport implements ModelComponent<ModelPart> {
             throw new JsonParseException("Imported file must define exactly one part.");
         }
 
-        return tree.values().stream().findFirst().orElseThrow(() -> new JsonParseException("Imported file must define exactly one part."));
+        return tree.values().stream().findFirst().get();
     }
 }

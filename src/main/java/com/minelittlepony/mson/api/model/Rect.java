@@ -20,7 +20,7 @@ public interface Rect {
 
     default Rect rotate(Quaternionf rotation) {
         for (int i = 0; i < vertexCount(); i++) {
-            getVertex(i).getPos().rotate(rotation);
+            getVertex(i).rotate(rotation);
         }
         return this;
     }

@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
+import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
@@ -84,13 +85,31 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
     @Override
     public ModelPart export(ModelContext context) {
         return context.computeIfAbsent(name, key -> {
-            final PartBuilder builder = new PartBuilder();
-            return export(context.bind(builder, Locals::new), builder).build();
+            final PartBuilder builder = createBuilder(context);
+            export(context.bind(builder, Locals::new), builder);
+            return builder.build();
         });
     }
 
-    protected PartBuilder export(ModelContext context, PartBuilder builder) throws FutureAwaitException {
+    @Override
+    public void write(ModelContext context, ModelFileWriter writer) {
+        final PartBuilder builder = createBuilder(context);
+        writer.writePart(name, builder, w -> {
+            write(context.bind(builder, Locals::new), builder, w);
+        });
+    }
+
+    protected void export(ModelContext context, PartBuilder builder) throws FutureAwaitException {
+
+    }
+
+    protected void write(ModelContext context, PartBuilder builder, ModelFileWriter writer) {
+
+    }
+
+    protected PartBuilder createBuilder(ModelContext context) throws FutureAwaitException {
         float[] rotate = this.rotate.complete(context);
+        final PartBuilder builder = new PartBuilder();
         builder
                 .hidden(!visible)
                 .pivot(this.pivot.complete(context))

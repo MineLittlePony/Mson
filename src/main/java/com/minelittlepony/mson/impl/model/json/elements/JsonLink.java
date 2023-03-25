@@ -2,9 +2,8 @@ package com.minelittlepony.mson.impl.model.json.elements;
 
 import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.parser.ModelComponent;
-
-import java.util.concurrent.ExecutionException;
 
 /**
  * A direct link to another named element in a model.
@@ -57,7 +56,12 @@ public class JsonLink implements ModelComponent<Object> {
     }
 
     @Override
-    public Object export(ModelContext context) throws InterruptedException, ExecutionException {
+    public Object export(ModelContext context) {
         return context.findByName(linkName);
+    }
+
+    @Override
+    public void write(ModelContext context, ModelFileWriter writer) {
+
     }
 }

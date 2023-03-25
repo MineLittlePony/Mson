@@ -9,7 +9,6 @@ import com.google.common.base.Strings;
 import com.minelittlepony.mson.api.FutureFunction;
 import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.impl.ModelContextImpl;
 import com.minelittlepony.mson.util.Maps;
@@ -17,7 +16,6 @@ import com.minelittlepony.mson.util.Maps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 public class RootContext implements ModelContextImpl {
@@ -81,19 +79,15 @@ public class RootContext implements ModelContextImpl {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T findByName(ModelContext context, String name, @Nullable Function<ModelPart, T> function, @Nullable Class<T> rootType) {
-        if (elements.containsKey(name)) {
-
-            try {
-                if (function == null && rootType == null) {
-                    return (T)elements.get(name).export(context);
-                } else {
-                    return (T)elements.get(name).export(context, InstanceCreator.ofFunction(rootType, function));
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                throw new FutureAwaitException(e);
-            }
+        if (!elements.containsKey(name)) {
+            return inherited.findByName(context, name, function, rootType);
         }
-        return inherited.findByName(context, name, function, rootType);
+
+        if (function == null && rootType == null) {
+            return (T)elements.get(name).export(context);
+        }
+
+        return (T)elements.get(name).export(context, InstanceCreator.ofFunction(rootType, function));
     }
 
     @SuppressWarnings("unchecked")
