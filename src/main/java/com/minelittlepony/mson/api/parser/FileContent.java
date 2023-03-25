@@ -89,7 +89,7 @@ public interface FileContent<Data> {
      *
      * @see #getComponentNames()
      */
-    CompletableFuture<Optional<ModelComponent<?>>> getComponent(String name);
+    CompletableFuture<ModelComponent<?>> getComponent(String name);
 
     /**
      * Resolves a new context against the passed in data fragment.

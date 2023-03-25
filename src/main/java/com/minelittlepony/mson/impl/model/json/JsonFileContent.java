@@ -90,10 +90,13 @@ public class JsonFileContent implements JsonContext {
     }
 
     @Override
-    public CompletableFuture<Optional<ModelComponent<?>>> getComponent(String name) {
-        return parent.thenComposeAsync(p -> p.getComponent(name)).thenApply(component -> {
-            return component.or(() -> Optional.ofNullable(elements.getOrDefault(name, null)));
-        });
+    public CompletableFuture<ModelComponent<?>> getComponent(String name) {
+        ModelComponent<?> component = elements.getOrDefault(name, null);
+        if (component != null) {
+            return CompletableFuture.completedFuture(component);
+        }
+
+        return parent.thenComposeAsync(p -> p.getComponent(name));
     }
 
     @Override

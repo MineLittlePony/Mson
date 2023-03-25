@@ -67,7 +67,7 @@ public class JsonPlanar extends JsonCompound {
     @Override
     protected void write(ModelContext context, PartBuilder builder, ModelFileWriter writer) {
         super.write(context, builder, writer);
-        faces.values().forEach(face -> face.write(context, writer));
+        faces.values().forEach(face -> writer.write(context, face));
     }
 
     class JsonFaceSet implements ModelFileWriter.Writeable {

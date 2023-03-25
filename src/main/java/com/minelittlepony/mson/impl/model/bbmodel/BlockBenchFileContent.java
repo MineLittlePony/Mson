@@ -122,8 +122,8 @@ class BlockBenchFileContent implements JsonContext {
     }
 
     @Override
-    public CompletableFuture<Optional<ModelComponent<?>>> getComponent(String name) {
-        return CompletableFuture.completedFuture(Optional.ofNullable(elements.getOrDefault(name, null)));
+    public CompletableFuture<ModelComponent<?>> getComponent(String name) {
+        return CompletableFuture.completedFuture(elements.getOrDefault(name, null));
     }
 
     @Override

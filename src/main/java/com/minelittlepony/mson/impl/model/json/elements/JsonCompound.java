@@ -83,7 +83,7 @@ public class JsonCompound extends AbstractJsonParent {
 
     @Override
     protected void write(ModelContext context, PartBuilder builder, ModelFileWriter writer) {
-        cubes.forEach(cube -> cube.write(context, writer));
-        children.values().forEach(child -> child.write(context, writer));
+        cubes.forEach(cube -> writer.write(context, cube));
+        children.forEach((name, child) -> writer.write(name, context, child));
     }
 }

@@ -1,7 +1,6 @@
 package com.minelittlepony.mson.impl;
 
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
@@ -20,7 +19,6 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
-import com.minelittlepony.mson.api.export.VanillaModelSerializer;
 import com.minelittlepony.mson.api.model.traversal.PartSkeleton;
 import com.minelittlepony.mson.api.model.traversal.SkeletonisedModel;
 import com.minelittlepony.mson.api.parser.ModelFormat;
@@ -48,8 +46,6 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     public static final MsonImpl INSTANCE = new MsonImpl();
 
     private static final Identifier ID = new Identifier("mson", "models");
-
-    public static boolean DEBUG = false;
 
     private final PendingEntityRendererRegistry renderers = new PendingEntityRendererRegistry();
 
@@ -81,12 +77,8 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
             });
         }
 
-        if (DEBUG) {
-            try (var serializer = new VanillaModelSerializer()) {
-                serializer.exportAll(FabricLoader.getInstance().getGameDir().resolve("debug_model_export").normalize());
-            } catch (Exception e) {
-                throw new AssertionError(e);
-            }
+        if (MsonMod.DEBUG) {
+            Test.exportVanillaModels();
         }
     }
 
@@ -116,6 +108,11 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
                 .thenRunAsync(() -> {
                     foundry.set(loadingFoundry.setWorker(LoadWorker.sync()));
                     renderers.initialize();
+
+                    if (MsonMod.DEBUG) {
+                        Test.exportBbModels(registeredModels.values());
+                    }
+
                 }, applyExecutor);
     }
 
@@ -142,7 +139,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     public static void checkNamespace(String namespace) {
         Preconditions.checkArgument(!"minecraft".equalsIgnoreCase(namespace), "Id must have a namespace other than `minecraft`.");
-        Preconditions.checkArgument(DEBUG || !"mson".equalsIgnoreCase(namespace), "`mson` is a reserved namespace.");
+        Preconditions.checkArgument(!"mson".equalsIgnoreCase(namespace), "`mson` is a reserved namespace.");
         Preconditions.checkArgument(!"dynamic".equalsIgnoreCase(namespace), "`dynamic` is a reserved namespace.");
     }
 

@@ -6,6 +6,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resource.ResourceType;
 
 public final class MsonMod implements ClientModInitializer {
+    public static final boolean DEBUG = Boolean.getBoolean("mson.debug");
+
     @Override
     public void onInitializeClient() {
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(MsonImpl.INSTANCE);
@@ -15,6 +17,8 @@ public final class MsonMod implements ClientModInitializer {
             });
         }
 
-       // Test.init();
+        if (DEBUG) {
+            Test.init();
+        }
     }
 }

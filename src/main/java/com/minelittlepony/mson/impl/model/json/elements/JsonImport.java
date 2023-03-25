@@ -78,7 +78,7 @@ public class JsonImport implements ModelComponent<ModelPart> {
                 parent -> parent.extendWith(parent.getModelId(), locals.map(l -> l.bind(context.getLocals())), Optional.empty())
             );
 
-            fileContent.getComponent(name).get().get().write(boundContext, writer);
+            writer.write(name, boundContext, fileContent.getComponent(name).get());
         } catch (Exception e) {
             throw new JsonParseException(e);
         }

@@ -64,8 +64,8 @@ public final class EmptyFileContent implements FileContent<Object>, FileContentL
     }
 
     @Override
-    public CompletableFuture<Optional<ModelComponent<?>>> getComponent(String name) {
-        return CompletableFuture.completedFuture(Optional.empty());
+    public CompletableFuture<ModelComponent<?>> getComponent(String name) {
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override

@@ -25,7 +25,7 @@ import java.util.function.Function;
  * Holds all the parameters so we don't have to shove them into a Box sub-class.
  */
 public final class BoxBuilder {
-    private static final Set<Direction> ALL_DIRECTIONS = EnumSet.allOf(Direction.class);
+    public static final Set<Direction> ALL_DIRECTIONS = EnumSet.allOf(Direction.class);
 
     public final PartBuilder parent;
 
@@ -63,9 +63,7 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder pos(float... pos) {
-        this.pos[0] = pos[0];
-        this.pos[1] = pos[1];
-        this.pos[2] = pos[2];
+        System.arraycopy(pos, 0, this.pos, 0, 3);
         return this;
     }
 
@@ -107,6 +105,10 @@ public final class BoxBuilder {
         return this;
     }
 
+    public Vert vert(float x, float y, float z, int u, int v) {
+        return (Vert)new ModelPart.Vertex(x, y, z, u, v);
+    }
+
     public BoxBuilder quads(QuadsBuilder quads) {
         this.quads = quads;
         return this;
@@ -136,13 +138,8 @@ public final class BoxBuilder {
             private final ModelPart.Vertex[] defaultVertices = {emptyVertex, emptyVertex, emptyVertex, emptyVertex};
 
             @Override
-            public Vert vert(float x, float y, float z, int u, int v) {
-                return (Vert)new ModelPart.Vertex(x, y, z, u, v);
-            }
-
-            @Override
-            public void quad(float u, float v, float w, float h, Direction direction, Vert... vertices) {
-                quad(u, v, w, h, direction, mirror[0], vertices);
+            public boolean getDefaultMirror() {
+                return mirror[0];
             }
 
             @Override

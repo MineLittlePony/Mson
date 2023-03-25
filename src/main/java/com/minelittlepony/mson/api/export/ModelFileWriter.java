@@ -5,10 +5,15 @@ import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.parser.FileContent;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public interface ModelFileWriter {
-    ModelFileWriter writePart(String name, PartBuilder part, Consumer<ModelFileWriter> content);
+
+    ModelFileWriter write(ModelContext context, Writeable element);
+
+    ModelFileWriter write(String name, ModelContext context, Writeable element);
+
+    ModelFileWriter writePart(String name, PartBuilder part, BiConsumer<ModelFileWriter, PartBuilder> content);
 
     ModelFileWriter writeBox(BoxBuilder box);
 

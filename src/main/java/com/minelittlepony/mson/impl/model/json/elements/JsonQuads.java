@@ -19,7 +19,6 @@ import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Represents a custom structure where the quads and vertices are manually defined.
@@ -46,12 +45,12 @@ public class JsonQuads implements ModelComponent<Cuboid>, QuadsBuilder {
 
         List<JsonVertex> vertices = Streams.stream(JsonUtil.require(json, "vertices", ID, context.getLocals().getModelId())
                 .getAsJsonArray())
-                .map(JsonVertex::new)
-                .collect(Collectors.toList());
+                .map(JsonVertex::fromJson)
+                .toList();
 
         quads = Streams.stream(JsonUtil.require(json, "faces", ID, context.getLocals().getModelId()).getAsJsonArray())
-            .map(v -> new JsonQuad(context, vertices, v))
-            .collect(Collectors.toList());
+            .map(v -> JsonQuad.fromJson(context, vertices, v))
+            .toList();
     }
 
     @Override
@@ -75,61 +74,48 @@ public class JsonQuads implements ModelComponent<Cuboid>, QuadsBuilder {
         quads.forEach(q -> q.build(box, buffer));
     }
 
-    class JsonQuad {
-        private final int x;
-        private final int y;
-
-        private final int w;
-        private final int h;
-
-        private final List<JsonVertex> verts;
-
-        JsonQuad(FileContent<JsonElement> context, List<JsonVertex> vertices, JsonElement json) {
+    record JsonQuad (int x, int y, int w, int h, List<JsonVertex> verts) {
+        static JsonQuad fromJson(FileContent<JsonElement> context, List<JsonVertex> vertices, JsonElement json) {
             JsonObject o = json.getAsJsonObject();
-            x = JsonUtils.getIntOr("x", o, 0);
-            y = JsonUtils.getIntOr("y", o, 0);
-            w = JsonUtils.getIntOr("w", o, 0);
-            h = JsonUtils.getIntOr("h", o, 0);
-            verts = Streams.stream(JsonUtil.require(o, "vertices", ID, context.getLocals().getModelId()).getAsJsonArray())
-                .map(JsonElement::getAsInt)
-                .map(vertices::get)
-                .collect(Collectors.toList());
+            return new JsonQuad(
+                JsonUtils.getIntOr("x", o, 0),
+                JsonUtils.getIntOr("y", o, 0),
+                JsonUtils.getIntOr("w", o, 0),
+                JsonUtils.getIntOr("h", o, 0),
+                Streams.stream(JsonUtil.require(o, "vertices", ID, context.getLocals().getModelId()).getAsJsonArray())
+                    .map(JsonElement::getAsInt)
+                    .map(vertices::get)
+                    .toList()
+            );
         }
 
         void build(BoxBuilder builder, QuadBuffer buffer) {
-            buffer.quad(x, y, w, h, Direction.UP, builder.mirror[0], verts.stream().map(v -> v.build(buffer)).toArray(Vert[]::new));
+            buffer.quad(x, y, w, h, Direction.UP, builder.mirror[0], verts.stream().map(v -> v.build(builder)).toArray(Vert[]::new));
         }
     }
 
-    class JsonVertex {
-
-        private final float x;
-        private final float y;
-        private final float z;
-
-        private final int u;
-        private final int v;
-
-        JsonVertex(JsonElement json) {
+    record JsonVertex (float x, float y, float z, int u, int v) {
+        static JsonVertex fromJson(JsonElement json) {
             if (json.isJsonArray()) {
                 JsonArray arr = json.getAsJsonArray();
-                x = arr.get(0).getAsFloat();
-                y = arr.get(1).getAsFloat();
-                z = arr.get(2).getAsFloat();
-                u = arr.get(3).getAsInt();
-                v = arr.get(4).getAsInt();
-            } else {
-                JsonObject o = json.getAsJsonObject();
-                x = JsonUtil.getFloatOr("x", o, 0);
-                y = JsonUtil.getFloatOr("y", o, 0);
-                z = JsonUtil.getFloatOr("z", o, 0);
-                u = JsonUtils.getIntOr("u", o, 0);
-                v = JsonUtils.getIntOr("v", o, 0);
+                return new JsonVertex(
+                    arr.get(0).getAsFloat(), arr.get(1).getAsFloat(), arr.get(2).getAsFloat(),
+                    arr.get(3).getAsInt(), arr.get(4).getAsInt()
+                );
             }
+
+            JsonObject o = json.getAsJsonObject();
+            return new JsonVertex(
+                JsonUtil.getFloatOr("x", o, 0),
+                JsonUtil.getFloatOr("y", o, 0),
+                JsonUtil.getFloatOr("z", o, 0),
+                JsonUtils.getIntOr("u", o, 0),
+                JsonUtils.getIntOr("v", o, 0)
+            );
         }
 
-        Vert build(QuadBuffer buffer) {
-            return buffer.vert(x, y, z, u, v);
+        Vert build(BoxBuilder builder) {
+            return builder.vert(x, y, z, u, v);
         }
     }
 }

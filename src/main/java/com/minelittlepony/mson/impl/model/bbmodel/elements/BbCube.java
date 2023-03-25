@@ -137,14 +137,14 @@ public class BbCube implements ModelComponent<Cuboid>, QuadsBuilder {
         }
 
         // w:west e:east d:down u:up s:south n:north
-        Vert wds = buffer.vert(xMin, yMin, zMax, 0, 0);
-        Vert eds = buffer.vert(xMax, yMin, zMin, 0, 8);
-        Vert eus = buffer.vert(xMax, yMax, zMin, 8, 8);
-        Vert wus = buffer.vert(xMin, yMax, zMin, 8, 0);
-        Vert wdn = buffer.vert(xMin, yMin, zMax, 0, 0);
-        Vert edn = buffer.vert(xMax, yMin, zMax, 0, 8);
-        Vert eun = buffer.vert(xMax, yMax, zMax, 8, 8);
-        Vert wun = buffer.vert(xMin, yMax, zMax, 8, 0);
+        Vert wds = ctx.vert(xMin, yMin, zMax, 0, 0);
+        Vert eds = ctx.vert(xMax, yMin, zMin, 0, 8);
+        Vert eus = ctx.vert(xMax, yMax, zMin, 8, 8);
+        Vert wus = ctx.vert(xMin, yMax, zMin, 8, 0);
+        Vert wdn = ctx.vert(xMin, yMin, zMax, 0, 0);
+        Vert edn = ctx.vert(xMax, yMin, zMax, 0, 8);
+        Vert eun = ctx.vert(xMax, yMax, zMax, 8, 8);
+        Vert wun = ctx.vert(xMin, yMax, zMax, 8, 0);
 
         faces.get(Face.EAST).createRect(ctx, buffer, edn, eds, eus, eun);
         faces.get(Face.WEST).createRect(ctx, buffer, wds, wdn, wun, wus);

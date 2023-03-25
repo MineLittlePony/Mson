@@ -40,14 +40,14 @@ public interface QuadsBuilder {
             float tipZMax = zMax - ctx.size[2] * tipInset;
 
             // w:west e:east d:down u:up s:south n:north
-            Vert wds = buffer.vert(tipXmin, yMin, tipZmin, 0, 0);
-            Vert eds = buffer.vert(tipXMax, yMin, tipZmin, 0, 8);
-            Vert eus = buffer.vert(xMax,    yMax, zMin,    8, 8);
-            Vert wus = buffer.vert(xMin,    yMax, zMin,    8, 0);
-            Vert wdn = buffer.vert(tipXmin, yMin, tipZMax, 0, 0);
-            Vert edn = buffer.vert(tipXMax, yMin, tipZMax, 0, 8);
-            Vert eun = buffer.vert(xMax,    yMax, zMax,    8, 8);
-            Vert wun = buffer.vert(xMin,    yMax, zMax,    8, 0);
+            Vert wds = ctx.vert(tipXmin, yMin, tipZmin, 0, 0);
+            Vert eds = ctx.vert(tipXMax, yMin, tipZmin, 0, 8);
+            Vert eus = ctx.vert(xMax,    yMax, zMin,    8, 8);
+            Vert wus = ctx.vert(xMin,    yMax, zMin,    8, 0);
+            Vert wdn = ctx.vert(tipXmin, yMin, tipZMax, 0, 0);
+            Vert edn = ctx.vert(tipXMax, yMin, tipZMax, 0, 8);
+            Vert eun = ctx.vert(xMax,    yMax, zMax,    8, 8);
+            Vert wun = ctx.vert(xMin,    yMax, zMax,    8, 0);
 
             buffer.quad(ctx.u + ctx.size[2] + ctx.size[0],               ctx.size[2], ctx.v + ctx.size[2],  ctx.size[1], Direction.EAST,  edn, eds, eus, eun);
             buffer.quad(ctx.u,                                           ctx.size[2], ctx.v + ctx.size[2],  ctx.size[1], Direction.WEST,  wds, wdn, wun, wus);
@@ -94,14 +94,14 @@ public interface QuadsBuilder {
             }
 
             // w:west e:east d:down u:up s:south n:north
-            Vert wds = buffer.vert(xMin, yMin, zMin, 0, 0);
-            Vert eds = buffer.vert(xMax, yMin, zMin, 0, 8);
-            Vert eus = buffer.vert(xMax, yMax, zMin, 8, 8);
-            Vert wus = buffer.vert(xMin, yMax, zMin, 8, 0);
-            Vert wdn = buffer.vert(xMin, yMin, zMax, 0, 0);
-            Vert edn = buffer.vert(xMax, yMin, zMax, 0, 8);
-            Vert eun = buffer.vert(xMax, yMax, zMax, 8, 8);
-            Vert wun = buffer.vert(xMin, yMax, zMax, 8, 0);
+            Vert wds = ctx.vert(xMin, yMin, zMin, 0, 0);
+            Vert eds = ctx.vert(xMax, yMin, zMin, 0, 8);
+            Vert eus = ctx.vert(xMax, yMax, zMin, 8, 8);
+            Vert wus = ctx.vert(xMin, yMax, zMin, 8, 0);
+            Vert wdn = ctx.vert(xMin, yMin, zMax, 0, 0);
+            Vert edn = ctx.vert(xMax, yMin, zMax, 0, 8);
+            Vert eun = ctx.vert(xMax, yMax, zMax, 8, 8);
+            Vert wun = ctx.vert(xMin, yMax, zMax, 8, 0);
 
             boolean mirror = ctx.mirror[0] || ctx.mirror[1] || ctx.mirror[2];
 
@@ -139,7 +139,7 @@ public interface QuadsBuilder {
 
     interface QuadBuffer {
 
-        void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert ...vertices);
+        boolean getDefaultMirror();
 
         default void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, Vert ...vertices) {
             quad(u, v, w, h, direction, mirror, remap, null, vertices);
@@ -149,8 +149,11 @@ public interface QuadsBuilder {
             quad(u, v, w, h, direction, mirror, true, vertices);
         }
 
-        void quad(float u, float v, float w, float h, Direction direction, Vert ...vertices);
+        default void quad(float u, float v, float w, float h, Direction direction, Vert ...vertices) {
+            quad(u, v, w, h, direction, getDefaultMirror(), vertices);
+        }
 
-        Vert vert(float x, float y, float z, int u, int v);
+        void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert ...vertices);
+
     }
 }

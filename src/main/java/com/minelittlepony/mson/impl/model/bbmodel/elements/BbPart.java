@@ -137,20 +137,12 @@ public class BbPart implements ModelComponent<ModelPart> {
         return builder;
     }
 
-
     @Override
     public void write(ModelContext context, ModelFileWriter writer) {
-        PartBuilder builder = createBuilder(context);
-        writer.writePart(name, builder, w -> {
+        writer.writePart(name, createBuilder(context), (w, builder) -> {
             ModelContext boundContext = context.bind(builder);
-
-            for (var cube : cubes) {
-                cube.write(boundContext, w);
-            }
-
-            for (var child : children.values()) {
-                child.write(boundContext, w);
-            }
+            cubes.forEach(cube -> w.write(boundContext, cube));
+            children.forEach((name, child) -> w.write(name, boundContext, child));
         });
     }
 }

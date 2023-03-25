@@ -93,8 +93,7 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
 
     @Override
     public void write(ModelContext context, ModelFileWriter writer) {
-        final PartBuilder builder = createBuilder(context);
-        writer.writePart(name, builder, w -> {
+        writer.writePart(name, createBuilder(context), (w, builder) -> {
             write(context.bind(builder, Locals::new), builder, w);
         });
     }
