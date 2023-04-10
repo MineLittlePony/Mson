@@ -121,8 +121,7 @@ public final class BoxBuilder {
                 size[0], size[1], size[2],
                 dilate[0], dilate[1], dilate[2],
                 mirror[0],
-                parent.texture.width(), parent.texture.height(),
-                enabledSides
+                parent.texture.width(), parent.texture.height()
         );
     }
 
@@ -133,10 +132,10 @@ public final class BoxBuilder {
 
         Cuboid box = build(Set.of());
         List<Rect> quads = new ArrayList<>();
-        this.quads.build(this, new QuadsBuilder.QuadBuffer() {
-            private final ModelPart.Vertex emptyVertex = new ModelPart.Vertex(0, 0, 0, 0, 0);
-            private final ModelPart.Vertex[] defaultVertices = {emptyVertex, emptyVertex, emptyVertex, emptyVertex};
+        final ModelPart.Vertex emptyVertex = new ModelPart.Vertex(0, 0, 0, 0, 0);
+        final ModelPart.Vertex[] defaultVertices = {emptyVertex, emptyVertex, emptyVertex, emptyVertex};
 
+        this.quads.build(this, new QuadsBuilder.QuadBuffer() {
             @Override
             public boolean getDefaultMirror() {
                 return mirror[0];
@@ -164,6 +163,11 @@ public final class BoxBuilder {
                 quads.add(rect);
             }
         });
+
+        while (quads.size() < 6) {
+            quads.add((Rect)new ModelPart.Quad(defaultVertices, 0, 0, 0, 0, 0, 0, false, Direction.UP));
+        }
+
         ((Cube)box).setSides(quads.toArray(Rect[]::new));
         return box;
     }
