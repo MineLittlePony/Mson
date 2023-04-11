@@ -4,8 +4,7 @@ import net.minecraft.client.model.ModelCuboidData;
 import net.minecraft.client.model.ModelData;
 import net.minecraft.client.model.ModelPartData;
 import net.minecraft.client.model.TexturedModelData;
-
-import org.joml.Vector3f;
+import net.minecraft.util.math.Vec3f;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -50,15 +49,15 @@ public class JsonBuffer {
         return arr;
     }
 
-    public JsonObject array(JsonObject json, String name, Vector3f vec) {
-        if (vec != null && vec.length() != 0) {
+    public JsonObject array(JsonObject json, String name, Vec3f vec) {
+        if (vec != null && vec.getX() != 0 && vec.getY() != 0 && vec.getZ() != 0) {
             json.add(name, of(vec));
         }
         return json;
     }
 
-    public JsonArray of(Vector3f vec) {
-        return of(vec.x(), vec.y(), vec.z());
+    public JsonArray of(Vec3f vec) {
+        return of(vec.getX(), vec.getY(), vec.getZ());
     }
 
     public <T extends JsonConvertable> JsonArray of(Iterable<T> values) {

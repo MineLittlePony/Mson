@@ -2,9 +2,9 @@ package com.minelittlepony.mson.impl.model.bbmodel;
 
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Quaternion;
 
 import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionf;
 
 import com.google.common.collect.Streams;
 import com.google.gson.JsonElement;
@@ -123,7 +123,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             }
 
             @Override
-            public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert... vertices) {
+            public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternion rotation, Vert... vertices) {
                 faces.computeIfAbsent(direction, d -> new ArrayList<>()).add(buffer.of(face -> {
                     face.add("uv", buffer.of(u - box.u, v - box.v, w - box.u, h - box.v));
                     face.addProperty("texture", 0);
@@ -198,7 +198,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
                     }
 
                     @Override
-                    public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert... verts) {
+                    public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternion rotation, Vert... verts) {
                         List<UUID> vertexIds = Arrays.stream(verts).map(vert -> vertices.computeIfAbsent(vert, vv -> UUID.randomUUID())).toList();
 
                         buffer.object(facesJson, UUID.randomUUID().toString(), buffer.of(faceJson -> {
@@ -215,7 +215,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             }));
             buffer.object(elementJson, "vertices", buffer.of(verticesJson -> {
                 vertices.forEach((vert, vertId) -> {
-                    verticesJson.add(vertId.toString(), buffer.of(vert.getPos().x(), vert.getPos().y(), vert.getPos().z()));
+                    verticesJson.add(vertId.toString(), buffer.of(vert.getPos().getX(), vert.getPos().getY(), vert.getPos().getZ()));
                 });
             }));
         }));

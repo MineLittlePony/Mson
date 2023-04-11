@@ -17,6 +17,7 @@ import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
+import com.minelittlepony.mson.api.ModelView;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.model.traversal.PartSkeleton;
@@ -226,7 +227,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
                     if (ctx instanceof RootContext) {
                         ((RootContext)ctx).setModel(t);
                     }
-                    ((MsonModel)t).init(ctx);
+                    ((MsonModel)t).init((ModelView)ctx);
                 }
                 return t;
             })

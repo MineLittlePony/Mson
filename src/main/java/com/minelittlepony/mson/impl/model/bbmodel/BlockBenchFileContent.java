@@ -5,6 +5,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 
 import com.google.common.base.Strings;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
@@ -21,8 +22,10 @@ import com.minelittlepony.mson.impl.model.bbmodel.elements.BbCube;
 import com.minelittlepony.mson.impl.model.bbmodel.elements.BbPart;
 import com.minelittlepony.mson.util.JsonUtil;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -80,7 +83,7 @@ class BlockBenchFileContent implements JsonContext {
         this.format = format;
         this.locals = new RootVariables(id, json);
 
-        JsonUtil.require(json, "elements", id).getAsJsonArray().asList().stream().forEach(element -> {
+        JsonUtil.require(json, "elements", id).getAsJsonArray().forEach(element -> {
             loadComponent(element, BbCube.ID).ifPresent(component -> {
                 if (((ModelComponent<?>)component) instanceof BbCube cube) {
                     cube.uuid.ifPresent(uuid -> {
@@ -93,7 +96,7 @@ class BlockBenchFileContent implements JsonContext {
         JsonUtil.accept(json, "outliner")
             .map(JsonElement::getAsJsonArray)
             .stream()
-            .flatMap(e -> e.asList().stream())
+            .flatMap(e -> asList(e).stream())
             .map(JsonElement::getAsJsonObject)
             .forEach(element -> {
                 loadComponent(element, BbPart.ID).ifPresent(component -> {
@@ -109,6 +112,12 @@ class BlockBenchFileContent implements JsonContext {
         if ("java_block".equalsIgnoreCase(formatVariant) && elements.isEmpty()) {
             elements.put("root", new BbPart(cubes.values(), "root"));
         }
+    }
+
+    private static List<JsonElement> asList(JsonArray array) {
+        List<JsonElement> list = new ArrayList<>();
+        array.forEach(list::add);
+        return list;
     }
 
     @Override

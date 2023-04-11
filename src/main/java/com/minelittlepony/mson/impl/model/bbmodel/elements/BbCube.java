@@ -4,8 +4,7 @@ import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.MathHelper;
-
-import org.joml.Quaternionf;
+import net.minecraft.util.math.Quaternion;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -166,7 +165,7 @@ public class BbCube implements ModelComponent<Cuboid>, QuadsBuilder {
         public void createRect(BoxBuilder builder, QuadsBuilder.QuadBuffer buffer, Vert a, Vert b, Vert c, Vert d) {
             Face.Axis axis = face.getAxis();
 
-            buffer.quad(uv[0], uv[1], uv[2], uv[3], face.getLighting(), builder.mirror[0], true, new Quaternionf().rotateXYZ(
+            buffer.quad(uv[0], uv[1], uv[2], uv[3], face.getLighting(), builder.mirror[0], true, Quaternion.fromEulerXyz(
                 axis == Face.Axis.X ? rotation : 0,
                 axis == Face.Axis.Y ? rotation : 0,
                 axis == Face.Axis.Z ? rotation : 0

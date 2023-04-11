@@ -5,9 +5,9 @@ import net.minecraft.client.model.ModelPart.*;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Quaternion;
 
 import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionf;
 
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
@@ -142,7 +142,7 @@ public final class BoxBuilder {
             }
 
             @Override
-            public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert... vertices) {
+            public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternion rotation, Vert... vertices) {
                 ModelPart.Vertex[] verts = new ModelPart.Vertex[vertices.length];
                 System.arraycopy(vertices, 0, verts, 0, vertices.length);
 

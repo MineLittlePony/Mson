@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.impl.mixin;
 
-import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,6 +25,7 @@ import net.minecraft.client.model.ModelTransform;
 import net.minecraft.client.model.TextureDimensions;
 import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.util.math.Vector2f;
+import net.minecraft.util.math.Vec3f;
 
 @Mixin(TexturedModelData.class)
 abstract class MixinTexturedModelData implements MsonImpl.KeyHolder, JsonBuffer.JsonConvertable {
@@ -76,8 +76,8 @@ abstract class MixinModelPartData implements JsonBuffer.JsonConvertable {
 }
 @Mixin(ModelCuboidData.class)
 abstract class MixinModelCuboidData implements JsonBuffer.JsonConvertable {
-    @Shadow private @Final Vector3f offset;
-    @Shadow private @Final Vector3f dimensions;
+    @Shadow private @Final Vec3f offset;
+    @Shadow private @Final Vec3f dimensions;
     @Shadow private @Final Dilation extraSize;
     @Shadow private @Final boolean mirror;
     @Shadow private @Final Vector2f textureUV;

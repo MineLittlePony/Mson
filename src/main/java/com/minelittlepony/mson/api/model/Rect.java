@@ -1,10 +1,10 @@
 package com.minelittlepony.mson.api.model;
 
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import net.minecraft.util.math.Quaternion;
+import net.minecraft.util.math.Vec3f;
 
 public interface Rect {
-    Vector3f getNormal();
+    Vec3f getNormal();
 
     Vert getVertex(int index);
 
@@ -15,10 +15,10 @@ public interface Rect {
     int vertexCount();
 
     default Rect rotate(float x, float y, float z) {
-        return rotate(new Quaternionf().rotateXYZ(x, y, z));
+        return rotate(Quaternion.fromEulerXyz(x, y, z));
     }
 
-    default Rect rotate(Quaternionf rotation) {
+    default Rect rotate(Quaternion rotation) {
         for (int i = 0; i < vertexCount(); i++) {
             getVertex(i).rotate(rotation);
         }

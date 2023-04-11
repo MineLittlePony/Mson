@@ -6,6 +6,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.MathHelper;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
@@ -85,7 +86,7 @@ public class BbPart implements ModelComponent<ModelPart> {
 
         JsonUtil.accept(json, "children").map(JsonElement::getAsJsonArray)
             .stream()
-            .flatMap(a -> a.asList().stream())
+            .flatMap(a -> asList(a).stream())
             .forEach(child -> {
                if (child.isJsonObject()) {
                    context.loadComponent(child, ID).ifPresent(component -> {
@@ -99,6 +100,12 @@ public class BbPart implements ModelComponent<ModelPart> {
                    context.loadComponent(child, BbCube.ID).ifPresent(cubes::add);
                }
             });
+    }
+
+    private static List<JsonElement> asList(JsonArray array) {
+        List<JsonElement> list = new ArrayList<>();
+        array.forEach(list::add);
+        return list;
     }
 
     public BbPart(Collection<ModelComponent<?>> cubes, String name) {

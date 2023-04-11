@@ -12,12 +12,18 @@ import java.util.function.Function;
  * i.e. MineLittlePony's "parts" or the results of a slot with a non-tree output type.
  */
 public interface MsonModel {
+
+    @Deprecated
+    default void init(ModelContext context) {}
+
     /**
      * Called to initialise this model with all of its contents.
      *
      * @param view A view into the model contents this component was created from.
      */
-    default void init(ModelView view) {}
+    default void init(ModelView view) {
+        init((ModelContext)view);
+    }
 
     /**
      * Constructor to create a new mson model.

@@ -97,7 +97,7 @@ class ModelFoundry implements ModelLoader {
         String extension = Files.getFileExtension(entry.getKey().getPath());
         System.out.println("Loading Model: " + entry.getKey());
         return loadModel(
-                entry.getKey().withPath(p -> p.replace("models/entity/", "").replace("." + extension, "")),
+                new Identifier(entry.getKey().getNamespace(), entry.getKey().getPath().replace("models/entity/", "").replace("." + extension, "")),
                 entry.getKey(),
                 entry.getValue()
         );
@@ -119,7 +119,7 @@ class ModelFoundry implements ModelLoader {
         }
         Identifier first = resources.keySet().stream().sorted().toList().get(0);
         if (preferredFormat != null) {
-            Identifier preferredFile = file.withPath(p -> p + "." + preferredFormat.getFileExtension());
+            Identifier preferredFile = new Identifier(file.getNamespace(), file.getPath() + "." + preferredFormat.getFileExtension());
             if (resources.containsKey(preferredFile)) {
                 return loadModel(modelId, preferredFile, resources.get(preferredFile));
             }
