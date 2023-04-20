@@ -31,6 +31,8 @@ class ModelFoundry implements ModelLoader {
 
     private final MsonImpl mson;
 
+    private static final CompletableFuture<FileContent<?>> EMPTY_FILE = CompletableFuture.completedFuture(FileContent.empty());
+
     public ModelFoundry(MsonImpl mson) {
         this.mson = mson;
     }
@@ -95,7 +97,6 @@ class ModelFoundry implements ModelLoader {
 
     public CompletableFuture<FileContent<?>> loadModel(Map.Entry<Identifier, Resource> entry) {
         String extension = Files.getFileExtension(entry.getKey().getPath());
-        System.out.println("Loading Model: " + entry.getKey());
         return loadModel(
                 new Identifier(entry.getKey().getNamespace(), entry.getKey().getPath().replace("models/entity/", "").replace("." + extension, "")),
                 entry.getKey(),
@@ -105,6 +106,11 @@ class ModelFoundry implements ModelLoader {
 
     @Override
     public CompletableFuture<FileContent<?>> loadModel(Identifier modelId, @Nullable ModelFormat<?> preferredFormat) {
+        synchronized (loadedFiles) {
+            if (loadedFiles.containsKey(modelId)) {
+                return loadedFiles.get(modelId);
+            }
+        }
         Identifier file = new Identifier(modelId.getNamespace(), "models/entity/" + modelId.getPath());
 
         Map<Identifier, Resource> resources = getResourceManager().findResources("models/entity", id -> {
@@ -115,7 +121,10 @@ class ModelFoundry implements ModelLoader {
             MsonImpl.LOGGER.warn("Ambiguous reference: {} could refer to [{}]", file, String.join(",", resources.keySet().stream().map(Identifier::toString).toArray(String[]::new)));
         }
         if (resources.isEmpty()) {
-            return CompletableFuture.completedFuture(FileContent.empty());
+            synchronized (loadedFiles) {
+                loadedFiles.put(modelId, EMPTY_FILE);
+                return EMPTY_FILE;
+            }
         }
         Identifier first = resources.keySet().stream().sorted().toList().get(0);
         if (preferredFormat != null) {
