@@ -1,7 +1,7 @@
  # M-SON
  
+ [![Current Version](https://img.shields.io/github/v/release/MineLittlePony/Mson)](https://github.com/MineLittlePony/Mson/releases/latest)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/MineLittlePony/Mson/gradle-build.yml)](https://github.com/MineLittlePony/Mson/actions/workflows/gradle-build.yml)
-![Build Status](https://img.shields.io/github/v/release/MineLittlePony/Mson)
 ![Downloads](https://img.shields.io/github/downloads/MineLittlePony/Mson/total.svg?color=yellowgreen)
 [![Discord Server](https://img.shields.io/discord/182490536119107584.svg?color=blueviolet)](https://discord.gg/HbJSFyu)
 ![License](https://img.shields.io/github/license/MineLittlePony/Mson)
