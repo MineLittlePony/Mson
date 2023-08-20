@@ -26,7 +26,7 @@ import java.util.function.Function;
 
 final class Test {
     static void init() {
-        var RAYMAN = playerRendererFactor(Mson.getInstance().registerModel(new Identifier("mson_test", "slot_test"), MsonPlayer::new));
+        var RAYMAN = playerRendererFactor(Mson.getInstance().registerModel(new Identifier("mson_test", "planar_cube"), MsonPlayer::new));
         //var PLANE = playerRendererFactor(Mson.getInstance().registerModel(new Identifier("mson_test", "plane"), MsonPlayer::new));
 
         Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer("default", RAYMAN);

@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.impl.model.bbmodel;
 
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 
@@ -18,6 +19,7 @@ import com.minelittlepony.mson.api.export.ModelSerializer;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
+import com.minelittlepony.mson.api.model.Rect;
 import com.minelittlepony.mson.api.model.QuadsBuilder.QuadBuffer;
 import com.minelittlepony.mson.api.model.Vert;
 import com.minelittlepony.mson.api.parser.FileContent;
@@ -174,9 +176,12 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
         float[] pivot = Objects.requireNonNull(currentPart, "No part on stack").pivot();
 
         // fix coordinates
-        float[] pos = {box.pos[0], box.pos[1], box.pos[2] };
-        box.pos(pos[0] + pivot[0], -pos[1] - box.size[1] - pivot[1], pos[2] + pivot[2]);
-        box.size(pos[0] + box.size[0] + pivot[0], -pos[1] - pivot[1], pos[2] + box.size[2] + pivot[2]);
+        float[] size = { box.size[0], box.size[1], box.size[2] };
+        box.pos(
+                box.pos[0] + pivot[0],
+               -box.pos[1] - size[1] - pivot[1],
+                box.pos[2] + pivot[2]
+        );
 
         var id = UUID.randomUUID();
         currentPart.elements().add(id);
@@ -189,22 +194,50 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             elementJson.addProperty("locked", false);
             elementJson.add("uv_offset", buffer.of(box.u, box.v));
 
-            Map<Vert, UUID> vertices = new HashMap<>();
+            Map<Vert, UUID> verticesCache = new HashMap<>();
             buffer.object(elementJson, "faces", buffer.of(facesJson -> {
                 box.quads.build(box, new QuadBuffer() {
+                    private final ModelPart.Vertex emptyVertex = new ModelPart.Vertex(0, 0, 0, 0, 0);
+                    private final ModelPart.Vertex[] defaultVertices = {emptyVertex, emptyVertex, emptyVertex, emptyVertex};
+
                     @Override
                     public boolean getDefaultMirror() {
                         return box.mirror[0];
                     }
 
                     @Override
-                    public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert... verts) {
-                        List<UUID> vertexIds = Arrays.stream(verts).map(vert -> vertices.computeIfAbsent(vert, vv -> UUID.randomUUID())).toList();
+                    public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert... vertices) {
+                        ModelPart.Vertex[] verts = new ModelPart.Vertex[vertices.length];
+                        System.arraycopy(vertices, 0, verts, 0, vertices.length);
+
+                        Rect rect = (Rect)new ModelPart.Quad(
+                                remap ? verts : defaultVertices,
+                                u,         v,
+                                u + w, v + h,
+                                box.parent.texture.width(), box.parent.texture.height(),
+                                mirror,
+                                direction);
+                        if (!remap) {
+                            rect.setVertices(mirror, vertices);
+                        }
+                        if (rotation != null) {
+                            rect.rotate(rotation);
+                        }
+
+                        Vert[] finalVertices = new Vert[rect.vertexCount()];
+                        for (int i = 0; i < rect.vertexCount(); i++) {
+                            finalVertices[i] = rect.getVertex(i);
+                        }
+
+                        List<UUID> vertexIds = Arrays.stream(finalVertices).map(vert -> verticesCache.computeIfAbsent(vert, vv -> UUID.randomUUID())).toList();
 
                         buffer.object(facesJson, UUID.randomUUID().toString(), buffer.of(faceJson -> {
                             buffer.object(faceJson, "uv", buffer.of(uvJson -> {
-                                for (int i = 0; i < verts.length; i++) {
-                                    uvJson.add(vertexIds.get(i).toString(), buffer.of(verts[i].getU(), verts[i].getV()));
+                                for (int i = 0; i < finalVertices.length; i++) {
+                                    uvJson.add(vertexIds.get(i).toString(), buffer.of(
+                                            finalVertices[i].getU() * box.parent.texture.width(),
+                                            finalVertices[i].getV() * box.parent.texture.height()
+                                    ));
                                 }
                             }));
                             faceJson.add("vertices", buffer.of(vertexIds.stream().map(UUID::toString).map(JsonPrimitive::new)));
@@ -214,11 +247,17 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
                 });
             }));
             buffer.object(elementJson, "vertices", buffer.of(verticesJson -> {
-                vertices.forEach((vert, vertId) -> {
+                verticesCache.forEach((vert, vertId) -> {
                     verticesJson.add(vertId.toString(), buffer.of(vert.getPos().x(), vert.getPos().y(), vert.getPos().z()));
                 });
             }));
         }));
+    }
+
+    private void rotate(Vert[] verts, @Nullable Quaternionf rotation) {
+        if (rotation != null) {
+            Arrays.stream(verts).forEach(vert -> vert.rotate(rotation));
+        }
     }
 
     @Override
