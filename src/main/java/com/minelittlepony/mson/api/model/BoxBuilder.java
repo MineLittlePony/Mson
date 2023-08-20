@@ -131,12 +131,12 @@ public final class BoxBuilder {
         }
 
         Cuboid box = build(Set.of());
-        ((Cube)box).setSides(collectQuads().toArray(Rect[]::new));
+        ((Cube)box).setSides(collectQuads().stream().map(Quad::rect).toArray(Rect[]::new));
         return box;
     }
 
-    public List<Rect> collectQuads() {
-        List<Rect> quads = new ArrayList<>();
+    public List<Quad> collectQuads() {
+        List<Quad> quads = new ArrayList<>();
         this.quads.build(this, new QuadsBuilder.QuadBuffer() {
             private final ModelPart.Vertex emptyVertex = new ModelPart.Vertex(0, 0, 0, 0, 0);
             private final ModelPart.Vertex[] defaultVertices = {emptyVertex, emptyVertex, emptyVertex, emptyVertex};
@@ -165,7 +165,7 @@ public final class BoxBuilder {
                     rect.rotate(rotation);
                 }
 
-                quads.add(rect);
+                quads.add(new Quad(rect, direction));
             }
         });
         return quads;
@@ -176,4 +176,6 @@ public final class BoxBuilder {
 
         void setRenderLayerFactory(Function<Identifier, RenderLayer> supplier);
     }
+
+    public record Quad(Rect rect, Direction direction) {}
 }

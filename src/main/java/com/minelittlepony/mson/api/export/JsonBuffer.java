@@ -77,27 +77,27 @@ public final class JsonBuffer {
         return arr;
     }
 
-    public JsonObject write(TexturedModelData model) {
+    public JsonElement write(TexturedModelData model) {
         return write((JsonConvertable)(Object)model);
     }
 
-    public JsonObject write(ModelData part) {
+    public JsonElement write(ModelData part) {
         return write(part.getRoot());
     }
 
-    public JsonObject write(ModelPartData part) {
+    public JsonElement write(ModelPartData part) {
         return write((JsonConvertable)(Object)part);
     }
 
-    public JsonObject write(ModelCuboidData part) {
+    public JsonElement write(ModelCuboidData part) {
         return write((JsonConvertable)(Object)part);
     }
 
-    public JsonObject write(JsonConvertable part) {
+    public JsonElement write(JsonConvertable part) {
         return part.toJson(this);
     }
 
     public interface JsonConvertable {
-        JsonObject toJson(JsonBuffer exporter);
+        JsonElement toJson(JsonBuffer exporter);
     }
 }

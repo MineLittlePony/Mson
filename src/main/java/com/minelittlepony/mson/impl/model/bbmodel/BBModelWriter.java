@@ -14,6 +14,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.export.JsonBuffer;
+import com.minelittlepony.mson.api.export.JsonBuffer.JsonConvertable;
 import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.export.ModelSerializer;
 import com.minelittlepony.mson.api.model.BoxBuilder;
@@ -39,15 +40,14 @@ import java.util.stream.Collectors;
 
 class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFileWriter {
 
-    private final JsonBuffer buffer = JsonBuffer.INSTANCE;
-
-    private final List<JsonObject> elements = new ArrayList<>();
+    private final List<JsonConvertable> elements = new ArrayList<>();
 
     private PartStack stack = new PartStack();
 
     @Override
     public JsonElement writeToJsonElement(FileContent<?> content) {
         close();
+        JsonBuffer buffer = JsonBuffer.INSTANCE;
         return buffer.of(root -> {
             buffer.object(root, "meta", buffer.of(meta -> {
                 meta.addProperty("format_version", "4.0");
@@ -66,7 +66,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
                 writeTree(context, content);
                 root.add("outliner", buffer.of(stack.part().children().stream().map(part -> part.toJson(buffer))));
             });
-            root.add("elements", buffer.of(elements.stream()));
+            root.add("elements", buffer.of(elements));
             root.add("textures", buffer.of());
         });
     }
@@ -111,9 +111,9 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
     }
 
     private void generateStandardCube(Identifier type, BoxBuilder box) {
-        float[] pivot = stack.part().pivot();
+        PartStack.Part part = stack.part();
 
-        Map<Direction, List<JsonObject>> faces = new EnumMap<>(Direction.class);
+        Map<Direction, List<JsonConvertable>> faces = new EnumMap<>(Direction.class);
 
         float[] emptyDilation = new float[box.dilate.length];
         boolean isAxisDilated = isUsingPerAxisDilation(box.dilate);
@@ -121,6 +121,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
         float[] dilate = isAxisDilated ? box.dilate : emptyDilation;
         float inflate = isAxisDilated ? 0 : box.dilate[0];
         box.dilate = emptyDilation;
+        boolean[] mirroring = {false};
 
         QuadsBuilder.BOX.build(box, new QuadBuffer() {
             @Override
@@ -130,7 +131,8 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
 
             @Override
             public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert... vertices) {
-                faces.computeIfAbsent(direction, d -> new ArrayList<>()).add(buffer.of(face -> {
+                mirroring[0] |= mirror;
+                faces.computeIfAbsent(direction, d -> new ArrayList<>()).add(buffer -> buffer.of(face -> {
                     face.add("uv", buffer.of(u - box.u, v - box.v, w - box.u, h - box.v));
                     face.addProperty("texture", 0);
                 }));
@@ -141,16 +143,22 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             for (int i = 0; i < maxCubes; i++) {
                 final int ordinal = i;
                 var id = UUID.randomUUID();
-                stack.part().elements().add(id);
+                part.elements().add(id);
 
-                elements.add(buffer.of(elementJson -> {
-                    elementJson.addProperty("name", type.getPath() + "_" + id);
+                elements.add(buffer -> buffer.of(elementJson -> {
+                    elementJson.addProperty("name", part.isRedundant() ? part.name() : type.getPath());
                     elementJson.addProperty("type", "cube");
                     elementJson.addProperty("uuid", id.toString());
                     elementJson.addProperty("rescale", false);
                     elementJson.addProperty("locked", false);
                     elementJson.addProperty("inflate", inflate);
-                    elementJson.addProperty("visibility", !stack.part().hidden());
+                    elementJson.addProperty("mirror_uv", mirroring[0]);
+                    elementJson.addProperty("visibility", !part.hidden());
+                    if (part.isRedundant()) {
+                        part.writeTransform(elementJson, buffer);
+                    }
+
+                    float[] pivot = part.pivot();
                     elementJson.add("from", buffer.of(
                             box.pos[0] + pivot[0] - dilate[0],
                            -box.pos[1] - box.size[1] - pivot[1] - dilate[1],
@@ -164,7 +172,9 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
                     elementJson.add("uv_offset", buffer.of(box.u, box.v));
                     buffer.object(elementJson, "faces", buffer.of(facesJson -> {
                         BoxBuilder.ALL_DIRECTIONS.forEach(direction -> {
-                            facesJson.add(direction.name().toLowerCase(Locale.ROOT), faces.getOrDefault(direction, List.of()).stream()
+                            facesJson.add(direction.name().toLowerCase(Locale.ROOT), faces.getOrDefault(direction, List.of())
+                                    .stream()
+                                    .map(face -> face.toJson(buffer))
                                 .skip(ordinal)
                                 .findFirst()
                                 .orElseGet(() -> buffer.of(face -> {
@@ -188,7 +198,8 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
     }
 
     private void generateMesh(Identifier type, BoxBuilder box) {
-        float[] pivot = stack.part().pivot();
+        PartStack.Part part = stack.part();
+        float[] pivot = part.pivot();
 
         // fix coordinates
         float[] size = { box.size[0], box.size[1], box.size[2] };
@@ -199,19 +210,25 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
         );
 
         var id = UUID.randomUUID();
-        stack.part().elements().add(id);
+        part.meshes().add(id);
 
-        elements.add(buffer.of(elementJson -> {
-            elementJson.addProperty("name", type + "_" + id);
+        elements.add(buffer -> buffer.of(elementJson -> {
+
+            List<BoxBuilder.Quad> quads = box.collectQuads();
+
+            List<Direction> directions = quads.stream().map(BoxBuilder.Quad::direction)
+                    .distinct().toList();
+
+            elementJson.addProperty("name", part.isRedundant() ? part.name() : (directions.size() == 1 ? directions.get(0).asString() + "_" : "") + type.getPath());
             elementJson.addProperty("type", "mesh");
             elementJson.addProperty("uuid", id.toString());
             elementJson.addProperty("rescale", false);
             elementJson.addProperty("locked", false);
-            elementJson.addProperty("visibility", !stack.part().hidden());
+            elementJson.addProperty("visibility", !part.hidden());
             elementJson.add("uv_offset", buffer.of(box.u, box.v));
 
-            Map<Vert, UUID> verticesCache = box.collectQuads().stream()
-                .flatMap(rect -> Arrays.stream(rect.getVertices()))
+            Map<Vert, UUID> verticesCache = quads.stream()
+                .flatMap(quad -> Arrays.stream(quad.rect().getVertices()))
                 .collect(Collectors.toMap(Function.identity(), vv -> UUID.randomUUID()));
 
             buffer.object(elementJson, "faces", buffer.of(facesJson -> {
@@ -230,7 +247,15 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             }));
             buffer.object(elementJson, "vertices", buffer.of(verticesJson -> {
                 verticesCache.forEach((vert, vertId) -> {
-                    verticesJson.add(vertId.toString(), buffer.of(vert.getPos().x(), vert.getPos().y(), vert.getPos().z()));
+                    if (part.isRedundant()) {
+                        verticesJson.add(vertId.toString(), buffer.of(
+                                vert.getPos().x() + part.part().pivot[0],
+                                vert.getPos().y() + part.part().pivot[1],
+                                vert.getPos().z() + part.part().pivot[2]
+                        ));
+                    } else {
+                        verticesJson.add(vertId.toString(), buffer.of(vert.getPos().x(), vert.getPos().y(), vert.getPos().z()));
+                    }
                 });
             }));
         }));
@@ -285,7 +310,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             if (name == null || name.isEmpty()) {
                 name = name();
             }
-            Part childPart = new Part(UUID.randomUUID(), name, part, new ArrayList<>(), new ArrayList<>(), currentPart.empty() ? null : part());
+            Part childPart = new Part(UUID.randomUUID(), name, part, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), currentPart.empty() ? null : part());
             if (childPart.parent() != null) {
                 childPart.parent().children().add(childPart);
             }
@@ -329,9 +354,12 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             }
         }
 
-        record Part(UUID id, String name, PartBuilder part, List<UUID> elements, List<Part> children, @Nullable Part parent) implements JsonBuffer.JsonConvertable {
+        record Part(UUID id, String name, PartBuilder part, List<UUID> elements, List<UUID> meshes, List<Part> children, @Nullable Part parent) implements JsonBuffer.JsonConvertable {
             @Override
-            public JsonObject toJson(JsonBuffer buffer) {
+            public JsonElement toJson(JsonBuffer buffer) {
+                if (isRedundant()) {
+                    return new JsonPrimitive(elements.get(0).toString());
+                }
                 return buffer.of(elementJson -> {
                     elementJson.addProperty("name", name);
                     elementJson.addProperty("color", 0);
@@ -340,24 +368,33 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
                     elementJson.addProperty("isOpen", false);
                     elementJson.addProperty("locked", false);
                     elementJson.addProperty("visibility", !hidden());
-                    float[] pivot = pivot();
-                    elementJson.add("origin", buffer.of(
-                            pivot[0],
-                           -pivot[1],
-                            pivot[2]
-                    ));
-                    float[] rotate = rotate();
-                    elementJson.add("rotation", buffer.of(
-                           -rotate[0] / MathHelper.RADIANS_PER_DEGREE,
-                            rotate[1] / MathHelper.RADIANS_PER_DEGREE,
-                           -rotate[2] / MathHelper.RADIANS_PER_DEGREE
-                    ));
+                    writeTransform(elementJson, buffer);
                     elementJson.addProperty("autouv", 0);
                     elementJson.add("children", buffer.of(Streams.concat(
                             elements.stream().map(UUID::toString).map(JsonPrimitive::new),
+                            meshes.stream().map(UUID::toString).map(JsonPrimitive::new),
                             children.stream().map(c -> c.toJson(buffer))
                     )));
                 });
+            }
+
+            void writeTransform(JsonObject elementJson, JsonBuffer buffer) {
+                float[] pivot = pivot();
+                elementJson.add("origin", buffer.of(
+                        pivot[0],
+                       -pivot[1],
+                        pivot[2]
+                ));
+                float[] rotate = rotate();
+                elementJson.add("rotation", buffer.of(
+                       -rotate[0] / MathHelper.RADIANS_PER_DEGREE,
+                        rotate[1] / MathHelper.RADIANS_PER_DEGREE,
+                       -rotate[2] / MathHelper.RADIANS_PER_DEGREE
+                ));
+            }
+
+            boolean isRedundant() {
+                return elements.size() == 1 && children.isEmpty() && meshes.isEmpty();
             }
 
             boolean hidden() {

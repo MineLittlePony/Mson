@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.export.JsonBuffer;
@@ -45,9 +46,9 @@ abstract class MixinTexturedModelData implements MsonImpl.KeyHolder, JsonBuffer.
     }
 
     @Override
-    public JsonObject toJson(JsonBuffer exporter) {
+    public JsonElement toJson(JsonBuffer exporter) {
         return exporter.of(json -> {
-            exporter.object(json, "data", exporter.write(data).get("children"));
+            exporter.object(json, "data", ((JsonObject)exporter.write(data)).get("children"));
             exporter.object(json, "texture", exporter.of(js -> {
                 js.addProperty("w", ((MixinTextureDimensions)dimensions).getWidth());
                 js.addProperty("h", ((MixinTextureDimensions)dimensions).getHeight());
