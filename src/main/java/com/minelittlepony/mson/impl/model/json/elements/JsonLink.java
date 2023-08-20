@@ -3,7 +3,11 @@ package com.minelittlepony.mson.impl.model.json.elements;
 import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.export.ModelFileWriter;
+import com.minelittlepony.mson.api.export.ModelFileWriter.Writeable;
+import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.parser.ModelComponent;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * A direct link to another named element in a model.
@@ -63,5 +67,14 @@ public class JsonLink implements ModelComponent<Object> {
     @Override
     public void write(ModelContext context, ModelFileWriter writer) {
 
+    }
+
+    @Override
+    public Writeable replace(ModelContext context, FileContent<?> content) {
+        try {
+            return content.getComponent(linkName).get();
+        } catch (InterruptedException | ExecutionException e) {
+            return this;
+        }
     }
 }

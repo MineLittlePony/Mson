@@ -21,5 +21,9 @@ public interface ModelFileWriter {
 
     public interface Writeable {
         void write(ModelContext context, ModelFileWriter writer);
+
+        default Writeable replace(ModelContext context, FileContent<?> content) {
+            return this;
+        }
     }
 }

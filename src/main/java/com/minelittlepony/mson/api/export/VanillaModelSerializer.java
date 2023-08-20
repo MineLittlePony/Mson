@@ -10,8 +10,6 @@ import java.nio.file.Path;
 import java.util.Map;
 
 public class VanillaModelSerializer extends ModelSerializer<TexturedModelData> {
-    private final JsonBuffer buffer = new JsonBuffer();
-
     public void exportAll(Path root) {
         ((ModelList)MinecraftClient.getInstance().getEntityModelLoader()).getModelParts().forEach((id, model) -> {
             try {
@@ -24,7 +22,7 @@ public class VanillaModelSerializer extends ModelSerializer<TexturedModelData> {
 
     @Override
     public JsonElement writeToJsonElement(TexturedModelData content) {
-        return buffer.write(content);
+        return JsonBuffer.INSTANCE.write(content);
     }
 
     public interface ModelList {

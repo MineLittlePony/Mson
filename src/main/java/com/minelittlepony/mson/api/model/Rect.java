@@ -14,6 +14,8 @@ public interface Rect {
 
     int vertexCount();
 
+    Vert[] getVertices();
+
     default Rect rotate(float x, float y, float z) {
         return rotate(new Quaternionf().rotateXYZ(x, y, z));
     }

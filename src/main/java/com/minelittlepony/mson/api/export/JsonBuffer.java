@@ -18,7 +18,11 @@ import java.util.stream.Stream;
  * An exporter that accepts vanilla minecraft's models and outputs them to
  * a mson formatted json file.
  */
-public class JsonBuffer {
+public final class JsonBuffer {
+    public static final JsonBuffer INSTANCE = new JsonBuffer();
+
+    private JsonBuffer() {}
+
     public JsonObject of(Consumer<JsonObject> initializer) {
         JsonObject json = new JsonObject();
         initializer.accept(json);

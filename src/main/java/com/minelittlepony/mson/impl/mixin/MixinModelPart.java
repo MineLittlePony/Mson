@@ -113,6 +113,12 @@ abstract class MixinQuad implements Rect {
         return vertices.length;
     }
     @Override
+    public Vert[] getVertices() {
+        Vert[] vertices = new Vert[this.vertices.length];
+        System.arraycopy(this.vertices, 0, vertices, 0, vertices.length);
+        return vertices;
+    }
+    @Override
     public Rect setVertices(boolean reflect, Vert...vertices) {
         this.vertices = new ModelPart.Vertex[vertices.length];
         System.arraycopy(vertices, 0, this.vertices, 0, vertices.length);
