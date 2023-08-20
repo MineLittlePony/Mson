@@ -39,8 +39,7 @@ public final class BoxBuilder {
 
     public CoordinateFixture fixture = CoordinateFixture.unfixed();
 
-    @Nullable
-    public QuadsBuilder quads;
+    public QuadsBuilder quads = QuadsBuilder.BOX;
 
     public BoxBuilder(PartBuilder parent) {
         this.parent = parent;
