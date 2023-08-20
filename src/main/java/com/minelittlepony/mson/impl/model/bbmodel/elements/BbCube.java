@@ -154,6 +154,11 @@ public class BbCube implements ModelComponent<Cuboid>, QuadsBuilder {
         faces.get(Face.SOUTH).createRect(ctx, buffer, wdn, edn, eun, wun);
     }
 
+    @Override
+    public Identifier getId() {
+        return ID;
+    }
+
     record CubeFace(Face face, float[] uv, int texture, float rotation) {
         CubeFace(Face face, JsonObject json) {
             this(face, new float[4],
@@ -173,4 +178,5 @@ public class BbCube implements ModelComponent<Cuboid>, QuadsBuilder {
             ), a, b, c, d);
         }
     }
+
 }

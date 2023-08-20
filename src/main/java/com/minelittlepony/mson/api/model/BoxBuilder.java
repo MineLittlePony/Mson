@@ -127,7 +127,7 @@ public final class BoxBuilder {
     }
 
     public Cuboid build() {
-        if (quads == null) {
+        if (quads.getId() == QuadsBuilder.CUBE) {
             return build(ALL_DIRECTIONS);
         }
 

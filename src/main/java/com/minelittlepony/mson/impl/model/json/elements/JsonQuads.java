@@ -74,6 +74,11 @@ public class JsonQuads implements ModelComponent<Cuboid>, QuadsBuilder {
         quads.forEach(q -> q.build(box, buffer));
     }
 
+    @Override
+    public Identifier getId() {
+        return ID;
+    }
+
     record JsonQuad (int x, int y, int w, int h, List<JsonVertex> verts) {
         static JsonQuad fromJson(FileContent<JsonElement> context, List<JsonVertex> vertices, JsonElement json) {
             JsonObject o = json.getAsJsonObject();

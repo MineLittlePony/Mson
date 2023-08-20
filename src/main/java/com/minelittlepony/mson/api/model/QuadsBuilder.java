@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.api.model;
 
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 
 import org.jetbrains.annotations.Nullable;
@@ -7,11 +8,17 @@ import org.joml.Quaternionf;
 
 import com.minelittlepony.mson.api.model.Face.Axis;
 
+import java.util.function.BiConsumer;
+
 /**
  * A builder for creating box quads.
  */
 public interface QuadsBuilder {
-    static QuadsBuilder BOX = cone(0);
+    static Identifier CONE = new Identifier("mson", "cone");
+    static Identifier PLANE = new Identifier("mson", "plane");
+    static Identifier CUBE = new Identifier("mson", "cube");
+
+    static QuadsBuilder BOX = of(CUBE, cone(0)::build);
 
     /**
      * Otherwise known as a truncated square pyramid.
@@ -19,7 +26,7 @@ public interface QuadsBuilder {
      * This produces a square polygon with tapered sides ending in a flat top.
      */
     static QuadsBuilder cone(float tipInset) {
-        return (ctx, buffer) -> {
+        return of(CONE, (ctx, buffer) -> {
             float xMax = ctx.pos[0] + ctx.size[0] + ctx.dilate[0];
             float yMax = ctx.pos[1] + ctx.size[1] + ctx.dilate[1];
             float zMax = ctx.pos[2] + ctx.size[2] + ctx.dilate[2];
@@ -55,14 +62,14 @@ public interface QuadsBuilder {
             buffer.quad(ctx.u + ctx.size[2] + ctx.size[0],               ctx.size[0], ctx.v + ctx.size[2], -ctx.size[2], Direction.UP,    eus, wus, wun, eun);
             buffer.quad(ctx.u + ctx.size[2],                             ctx.size[0], ctx.v + ctx.size[2],  ctx.size[1], Direction.NORTH, eds, wds, wus, eus);
             buffer.quad(ctx.u + ctx.size[2] + ctx.size[0] + ctx.size[2], ctx.size[0], ctx.v + ctx.size[2],  ctx.size[1], Direction.SOUTH, wdn, edn, eun, wun);
-        };
+        });
     }
 
     /**
      * Creates a single, flat plane aligned to the given face.
      */
     static QuadsBuilder plane(Face face) {
-        return (ctx, buffer) -> {
+        return of(PLANE, (ctx, buffer) -> {
             float xMax = ctx.pos[0] + ctx.size[0];
             float yMax = ctx.pos[1] + ctx.size[1];
             float zMax = ctx.pos[2] + ctx.size[2];
@@ -129,13 +136,30 @@ public interface QuadsBuilder {
             if (face == Face.NORTH) {
                 buffer.quad(ctx.u, ctx.v, ctx.size[0], ctx.size[1], lighting, mirror, eds, wds, wus, eus);
             }
-        };
+        });
     }
 
     /**
      * Builds the quads array using the provided box builder.
      */
     void build(BoxBuilder ctx, QuadBuffer buffer);
+
+    Identifier getId();
+
+    static QuadsBuilder of(Identifier id, BiConsumer<BoxBuilder, QuadBuffer> constructor) {
+        return new QuadsBuilder() {
+            @Override
+            public void build(BoxBuilder ctx, QuadBuffer buffer) {
+                constructor.accept(ctx, buffer);
+            }
+
+            @Override
+            public Identifier getId() {
+                return id;
+            }
+
+        };
+    }
 
     interface QuadBuffer {
 
