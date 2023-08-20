@@ -132,6 +132,11 @@ public final class BoxBuilder {
         }
 
         Cuboid box = build(Set.of());
+        ((Cube)box).setSides(collectQuads().toArray(Rect[]::new));
+        return box;
+    }
+
+    public List<Rect> collectQuads() {
         List<Rect> quads = new ArrayList<>();
         this.quads.build(this, new QuadsBuilder.QuadBuffer() {
             private final ModelPart.Vertex emptyVertex = new ModelPart.Vertex(0, 0, 0, 0, 0);
@@ -164,8 +169,7 @@ public final class BoxBuilder {
                 quads.add(rect);
             }
         });
-        ((Cube)box).setSides(quads.toArray(Rect[]::new));
-        return box;
+        return quads;
     }
 
     public interface RenderLayerSetter {
