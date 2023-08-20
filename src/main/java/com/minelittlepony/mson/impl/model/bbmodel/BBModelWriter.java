@@ -115,6 +115,13 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
 
         Map<Direction, List<JsonObject>> faces = new EnumMap<>(Direction.class);
 
+        float[] emptyDilation = new float[box.dilate.length];
+        boolean isAxisDilated = isUsingPerAxisDilation(box.dilate);
+
+        float[] dilate = isAxisDilated ? box.dilate : emptyDilation;
+        float inflate = isAxisDilated ? 0 : box.dilate[0];
+        box.dilate = emptyDilation;
+
         QuadsBuilder.BOX.build(box, new QuadBuffer() {
             @Override
             public boolean getDefaultMirror() {
@@ -142,16 +149,17 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
                     elementJson.addProperty("uuid", id.toString());
                     elementJson.addProperty("rescale", false);
                     elementJson.addProperty("locked", false);
+                    elementJson.addProperty("inflate", inflate);
                     elementJson.addProperty("visibility", !stack.part().hidden());
                     elementJson.add("from", buffer.of(
-                            box.pos[0] + pivot[0] - box.dilate[0],
-                           -box.pos[1] - box.size[1] - pivot[1] - box.dilate[1],
-                            box.pos[2] + pivot[2] - box.dilate[2]
+                            box.pos[0] + pivot[0] - dilate[0],
+                           -box.pos[1] - box.size[1] - pivot[1] - dilate[1],
+                            box.pos[2] + pivot[2] - dilate[2]
                     ));
                     elementJson.add("to", buffer.of(
-                            box.pos[0] + box.size[0] + pivot[0] + box.dilate[0],
-                           -box.pos[1] - pivot[1] + box.dilate[1],
-                            box.pos[2] + box.size[2] + pivot[2] + box.dilate[2]
+                            box.pos[0] + box.size[0] + pivot[0] + dilate[0],
+                           -box.pos[1] - pivot[1] + dilate[1],
+                            box.pos[2] + box.size[2] + pivot[2] + dilate[2]
                     ));
                     elementJson.add("uv_offset", buffer.of(box.u, box.v));
                     buffer.object(elementJson, "faces", buffer.of(facesJson -> {
@@ -168,6 +176,15 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
                 }));
             }
         });
+    }
+
+    private boolean isUsingPerAxisDilation(float[] dilate) {
+        for (int i = 0; i < dilate.length; i++) {
+            if (dilate[i] != dilate[0]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void generateMesh(Identifier type, BoxBuilder box) {
@@ -332,7 +349,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
                     float[] rotate = rotate();
                     elementJson.add("rotation", buffer.of(
                            -rotate[0] / MathHelper.RADIANS_PER_DEGREE,
-                           -rotate[1] / MathHelper.RADIANS_PER_DEGREE,
+                            rotate[1] / MathHelper.RADIANS_PER_DEGREE,
                            -rotate[2] / MathHelper.RADIANS_PER_DEGREE
                     ));
                     elementJson.addProperty("autouv", 0);
