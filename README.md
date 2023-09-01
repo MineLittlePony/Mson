@@ -28,15 +28,29 @@
 
 ### What is Mson?
 
+[Wiki](https://github.com/MineLittlePony/Mson/wiki) | [Model Language Definition](https://github.com/MineLittlePony/Mson/tree/1.20/doc)
+
 Mson is a fabric library/mod for defining and loading entity models through configurable json files.
 
 It makes modders' lives easier by taking the model geometry out of the code and putting it in a place where it's separated from game logic,
 and it makes player's lives better by making it possible for your models to be customised and replaced using nothing more than a resourcepack.
 
 
-## Getting Started
+## Getting Started [ResourcePack & Mod Creators]
 
 When MSON is installed, every entity model in the game can be loaded from an equivalent json file in the `assets/<namespace>/models/entity/mson` folder. Check [this folder](https://github.com/MineLittlePony/Mson/tree/1.20/src/test/resources/assets/minecraft/models/entity/mson) for a short list of example models made to closely (and in some cases not very closely) match the equivalent model for a limited few vanilla entities.
 
 For a more complete list, and instructions on how to convert models already loaded into the game, check the [Sample 1.20.1 Models](https://github.com/MineLittlePony/Mson/wiki/Sample-1.20.1-Models) wiki page.
+
+## Getting Started [Mod Creators]
+
+Want to register your own models to load with mson? Doing so is as simple as:
+
+1) `assets/<modid>/models/entity/my_model.json`
+
+2) `static ModelKey<MyEntityModel<MyEntity> MY_ENTITY_MODEL = Mson.getInstance().registerModel(new Identifier("mymod", "my_model"), MyEntityModel::new);`
+
+3) `MyEntityModel<MyEntity> model = MyModels.MY_ENTITY_MODEL.createModel();`
+
+Want to create a humanoid model? Mson already bundles models for steve, alex, and a simplistic quadruped, so just specify `{ "parent": "mson:steve" }` as your starting model and add override for each body part as you go. Check [here](https://github.com/MineLittlePony/Mson/tree/1.20/src/test/resources/assets) for examples!
 
