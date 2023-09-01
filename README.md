@@ -25,3 +25,18 @@
 >     _"the other building was masoned up out of hewn limestone"_
 >  - cut or dress (stone).  
 >     _"one course of massive stones, roughly masoned"_
+
+### What is Mson?
+
+Mson is a fabric library/mod for defining and loading entity models through configurable json files.
+
+It makes modders' lives easier by taking the model geometry out of the code and putting it in a place where it's separated from game logic,
+and it makes player's lives better by making it possible for your models to be customised and replaced using nothing more than a resourcepack.
+
+
+## Getting Started
+
+When MSON is installed, every entity model in the game can be loaded from an equivalent json file in the `assets/<namespace>/models/entity/mson` folder. Check [this folder](https://github.com/MineLittlePony/Mson/tree/1.20/src/test/resources/assets/minecraft/models/entity/mson) for a short list of example models made to closely (and in some cases not very closely) match the equivalent model for a limited few vanilla entities.
+
+For a more complete list, and instructions on how to convert models already loaded into the game, check the [Sample 1.20.1 Models](https://github.com/MineLittlePony/Mson/wiki/Sample-1.20.1-Models) wiki page.
+
