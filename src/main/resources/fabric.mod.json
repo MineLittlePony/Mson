@@ -25,11 +25,10 @@
     "mson.mixin.json"
   ],
   "depends": {
-    "fabricloader": ">=0.11.3",
-    "java": ">=16",
-    "fabric-api-base": ">=0.1.0",
-    "fabric-lifecycle-events-v1": ">=0.1.0",
-    "fabric-resource-loader-v0": ">=0.1.0"
+    "minecraft": "${minecraftVersion}",
+    "fabricloader": "${loaderVersion}",
+    "java": ">=17",
+    "fabric-api": "${fabricVersion}"
   },
   "custom": {
     "modmenu": {
