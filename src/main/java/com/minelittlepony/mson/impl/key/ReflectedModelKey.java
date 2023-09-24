@@ -11,13 +11,12 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelView;
 import com.minelittlepony.mson.api.MsonModel;
 
+import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
-@Deprecated
 public record ReflectedModelKey<T> (
-        @Nullable Function<ModelContext, T> contextFactory,
-        @Nullable Function<ModelPart, T> partFactory,
+        Optional<Function<ModelContext, T>> contextFactory,
+        Optional<Function<ModelPart, T>> partFactory,
         @Nullable Class<T> type) implements InstanceCreator<T> {
     private static final Function<String, InstanceCreator<?>> NAME_LOOKUP = Util.memoize(className -> {
         if (className.endsWith("ModelPart")) {
@@ -34,30 +33,13 @@ public record ReflectedModelKey<T> (
             return InstanceCreator.ofPart();
         }
 
-        Supplier<Object> supplier = null;
-
-        Function<ModelPart, Object> treeFactory = null;
-        Function<ModelContext, Object> contextFactory = null;
-
-        try {
-            supplier = MethodHandles.createInstanceSupplier(type);
-        } catch (Error | Exception ignored) { }
-
-        try {
-            treeFactory = MethodHandles.createInstanceFactory(type, ModelPart.class);
-        } catch (Error | Exception ignored) { }
-
-        try {
-            contextFactory = MethodHandles.createInstanceFactory(type, ModelContext.class);
-        } catch (Error | Exception ignored) { }
-
-        final Supplier<Object> supplierCopy = supplier;
-        var key = new ReflectedModelKey<Object>(
-                contextFactory == null ? supplierCopy == null ? null : ctx -> supplierCopy.get() : contextFactory,
-                treeFactory == null ? supplierCopy == null ? null : tree -> supplierCopy.get() : treeFactory,
+        var supplier = MethodHandles.createInstanceSupplier(type);
+        var key = new ReflectedModelKey<>(
+                MethodHandles.createInstanceFactory(type, ModelContext.class).or(() -> supplier.map(c -> ctx -> c.get())),
+                MethodHandles.createInstanceFactory(type, ModelPart.class).or(() -> supplier.map(c -> tree -> c.get())),
                 type
         );
-        if (key.contextFactory == null && key.partFactory == null) {
+        if (key.contextFactory().isEmpty() && key.partFactory().isEmpty()) {
             throw new RuntimeException("Could not locate constructors for type " + type);
         }
         return key;
@@ -80,21 +62,18 @@ public record ReflectedModelKey<T> (
 
     @Override
     public T createInstance(ModelContext context) {
-        if (contextFactory == null) {
-            if (partFactory != null) {
-                return initInstance(partFactory.apply(context.toTree()), context);
-            }
-            throw new JsonParseException("The generated lamba cannot be used with a model context");
-        }
-        return contextFactory.apply(context);
+        return contextFactory.map(factory -> factory.apply(context))
+                .orElseGet(() -> {
+            return partFactory.map(factory -> initInstance(factory.apply(context.toTree()), context))
+                    .orElseThrow(() -> new JsonParseException("The generated lamba cannot be used with a model context"));
+        });
     }
 
     @Override
     public T createInstance(ModelContext context, Function<ModelContext, ModelPart> converter) {
-        if (partFactory != null) {
-            return initInstance(partFactory.apply(converter.apply(context)), context);
-        }
-        return createInstance(context);
+        return partFactory
+                .map(factory -> initInstance(factory.apply(converter.apply(context)), context))
+                .orElseGet(() -> createInstance(context));
     }
 
     private T initInstance(T instance, ModelView view) {

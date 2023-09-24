@@ -7,10 +7,10 @@ import org.jetbrains.annotations.Nullable;
 
 import com.minelittlepony.mson.impl.key.ReflectedModelKey;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-@SuppressWarnings("deprecation")
 public interface InstanceCreator<T> {
     InstanceCreator<ModelPart> DEFAULT = InstanceCreator.ofFunction(ModelPart.class, Function.identity());
 
@@ -28,15 +28,15 @@ public interface InstanceCreator<T> {
     }
 
     public static <T> InstanceCreator<T> ofFunction(Class<T> type, Function<ModelPart, T> function) {
-        return new ReflectedModelKey<>(null, function, type);
+        return new ReflectedModelKey<>(Optional.empty(), Optional.of(function), type);
     }
 
     public static <T> InstanceCreator<T> ofFactory(Class<T> type, Function<ModelContext, T> factory) {
-        return new ReflectedModelKey<>(factory, null, type);
+        return new ReflectedModelKey<>(Optional.of(factory), Optional.empty(), type);
     }
 
     public static <T> InstanceCreator<T> ofSupplier(Class<T> type, Supplier<T> supplier) {
-        return new ReflectedModelKey<>(ctx -> supplier.get(), tree -> supplier.get(), type);
+        return new ReflectedModelKey<>(Optional.of(ctx -> supplier.get()), Optional.of(tree -> supplier.get()), type);
     }
 
     @Nullable

@@ -2,10 +2,12 @@ package com.minelittlepony.mson.impl;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.render.entity.EntityRendererFactory.Context;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -19,28 +21,27 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public final class PendingEntityRendererRegistry implements EntityRendererRegistry {
-
-    public final RendererList<
-                    String,
-                    EntityRendererFactory.Context,
-                    PlayerEntityRenderer
-                > player = new RendererList<>(new Identifier("mson", "renderers/player"), EntityRendererRegistry::registerPlayerRenderer);
-    public final RendererList<
+    public final PendingRegistrations<
+                    Identifier,
+                    Map.Entry<Predicate<AbstractClientPlayerEntity>, Function<EntityRendererFactory.Context, ? extends PlayerEntityRenderer>>
+                > player = new PendingRegistrations<>(new Identifier("mson", "renderers/player"), (registry, key, entry) -> {
+                    registry.registerPlayerRenderer(key, entry.getKey(), entry.getValue());
+                });
+    public final PendingRegistrations<
                     EntityType<?>,
-                    EntityRendererFactory.Context,
-                    EntityRenderer<?>
-                > entity = new RendererList<>(new Identifier("mson", "renderers/entity"), EntityRendererRegistry::registerEntityRenderer);
-    public final RendererList<
+                    Function<EntityRendererFactory.Context, ? extends EntityRenderer<?>>
+                > entity = new PendingRegistrations<>(new Identifier("mson", "renderers/entity"), EntityRendererRegistry::registerEntityRenderer);
+    public final PendingRegistrations<
                     BlockEntityType<?>,
-                    BlockEntityRendererFactory.Context,
-                    BlockEntityRenderer<?>
-                > block = new RendererList<>(new Identifier("mson", "renderers/block"), EntityRendererRegistry::registerBlockRenderer);
+                    Function<BlockEntityRendererFactory.Context, ? extends BlockEntityRenderer<?>>
+                > block = new PendingRegistrations<>(new Identifier("mson", "renderers/block"), EntityRendererRegistry::registerBlockRenderer);
 
     @Override
-    public <T extends PlayerEntityRenderer> void registerPlayerRenderer(String skinType, Function<EntityRendererFactory.Context, T> constructor) {
-        player.register(skinType, constructor);
+    public <T extends PlayerEntityRenderer> void registerPlayerRenderer(Identifier skinType, Predicate<AbstractClientPlayerEntity> playerPredicate, Function<Context, T> constructor) {
+        player.register(skinType, Map.entry(playerPredicate, constructor));
     }
 
     @Override
@@ -59,10 +60,10 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
         block.reload();
     }
 
-    public class RendererList<Type, Dispatcher, Renderer> {
-        private final HashMap<? extends Type, ? extends Function<Dispatcher, Renderer>> entries = new HashMap<>();
+    public class PendingRegistrations<Key, Entry> {
+        private final HashMap<Key, Entry> entries = new HashMap<>();
 
-        private final RegisterAction<Type, Dispatcher, Renderer> runtimeAdd;
+        private final Registerable<Key, Entry> registerable;
 
         private boolean waiting;
 
@@ -71,16 +72,15 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
 
         private final Identifier registryId;
 
-        public RendererList(Identifier registryId, RegisterAction<Type, Dispatcher, Renderer> runtimeAdd) {
+        public PendingRegistrations(Identifier registryId, Registerable<Key, Entry> registerable) {
             this.registryId = registryId;
-            this.runtimeAdd = runtimeAdd;
+            this.registerable = registerable;
         }
 
-        @SuppressWarnings("unchecked")
-        public <T extends Type, R extends Renderer> void register(T type, Function<Dispatcher, R> constructor) {
-            ((Map<T, Function<Dispatcher, R>>)(Object)entries).put(type, constructor);
+        public void register(Key key, Entry entry) {
+            entries.put(key, entry);
             if (runtimeRegistry != null && !waiting) {
-                ((RegisterAction<T, Dispatcher, R>)runtimeAdd).call(runtimeRegistry, type, constructor);
+                registerable.register(runtimeRegistry, key, entry);
             }
         }
 
@@ -89,7 +89,7 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
             waiting = false;
             if (runtimeRegistry != null) {
                 MsonImpl.LOGGER.info(delayed ? "Running delayed initialization for registry '{}'" : "Initializing registry '{}'", registryId);
-                entries.forEach((k, v) -> runtimeAdd.call(runtimeRegistry, k, v));
+                entries.forEach((k, v) -> registerable.register(runtimeRegistry, k, v));
             } else {
                 MsonImpl.LOGGER.info("Registry '{}' queued for delayed initialization", registryId);
                 waiting = true;
@@ -103,9 +103,9 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
                 reload();
             }
         }
-    }
 
-    interface RegisterAction<Type, Dispatcher, Renderer> {
-        void call(EntityRendererRegistry registry, Type type, Function<Dispatcher, Renderer> constructor);
+        interface Registerable<Key, Entry> {
+            void register(EntityRendererRegistry registry, Key key, Entry entry);
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.minelittlepony.mson.impl.mixin;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
@@ -9,6 +10,7 @@ import net.minecraft.client.render.entity.model.EntityModelLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.util.Identifier;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,6 +18,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.google.common.collect.ImmutableMap;
 import com.minelittlepony.mson.api.EntityRendererRegistry;
@@ -24,13 +27,13 @@ import com.minelittlepony.mson.impl.MsonImpl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 @Mixin(EntityRenderDispatcher.class)
 abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     @Shadow
     private Map<EntityType<?>, EntityRenderer<? extends Entity>> renderers;
-    @Shadow
-    private Map<String, PlayerEntityRenderer> modelRenderers;
+    private Map<Identifier, Map.Entry<Predicate<AbstractClientPlayerEntity>, PlayerEntityRenderer>> customModelRenderers;
     @Shadow
     private @Final EntityModelLoader modelLoader;
 
@@ -53,14 +56,14 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     }
 
     @Override
-    public <R extends PlayerEntityRenderer> void registerPlayerRenderer(String skinType, Function<EntityRendererFactory.Context, R> constructor) {
+    public <R extends PlayerEntityRenderer> void registerPlayerRenderer(Identifier id, Predicate<AbstractClientPlayerEntity> playerPredicate, Function<EntityRendererFactory.Context, R> constructor) {
         try {
-            if (modelRenderers instanceof ImmutableMap) {
-                modelRenderers = new HashMap<>(modelRenderers);
+            if (customModelRenderers == null) {
+                customModelRenderers = new HashMap<>();
             }
-            modelRenderers.put(skinType, constructor.apply(createContext()));
+            customModelRenderers.put(id, Map.entry(playerPredicate, constructor.apply(createContext())));
         } catch (Exception e) {
-            MsonImpl.LOGGER.error("Error whilst updating player renderer " + skinType + ": " + e.getMessage(), e);
+            MsonImpl.LOGGER.error("Error whilst updating adding player renderer with id " + id + ": " + e.getMessage(), e);
         }
     }
 
@@ -76,4 +79,18 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
         }
     }
 
+    @Inject(
+            method = "getRenderer(Lnet/minecraft/entity/Entity;)Lnet/minecraft/client/render/entity/EntityRenderer;",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void onGetRenderer(Entity entity, CallbackInfoReturnable<EntityRenderer<?>> info) {
+        if (entity instanceof AbstractClientPlayerEntity player) {
+            customModelRenderers.values().stream()
+                .filter(entry -> entry.getKey().test(player))
+                .findFirst()
+                .map(Map.Entry::getValue)
+                .ifPresent(info::setReturnValue);
+        }
+    }
 }

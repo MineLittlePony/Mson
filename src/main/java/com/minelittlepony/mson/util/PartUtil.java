@@ -3,13 +3,13 @@ package com.minelittlepony.mson.util;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPart.Cuboid;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class PartUtil {
     public static final Cuboid EMPTY_CUBE = new Cuboid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true, 0, 0, Set.of());
-    public static final ModelPart EMPTY_PART = new ModelPart(List.of(EMPTY_CUBE), new HashMap<String, ModelPart>());
+    public static final ModelPart EMPTY_PART = new ModelPart(List.of(EMPTY_CUBE), Map.of());
 
     /**
      * Rotates this model to align itself with the angles of another.
