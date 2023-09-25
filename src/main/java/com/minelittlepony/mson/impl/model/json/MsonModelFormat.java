@@ -3,6 +3,8 @@ package com.minelittlepony.mson.impl.model.json;
 import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 
+import org.jetbrains.annotations.VisibleForTesting;
+
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -19,6 +21,8 @@ import com.minelittlepony.mson.impl.model.json.elements.*;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -57,6 +61,16 @@ public class MsonModelFormat implements ModelFormat<JsonElement> {
     @Override
     public Optional<FileContent<JsonElement>> loadModel(Identifier modelId, Identifier file, Resource resource, boolean failHard, ModelLoader loader) {
         try (var reader = new InputStreamReader(resource.getInputStream(), Charsets.UTF_8)) {
+            return Optional.of(new JsonFileContent(loader, this, modelId, GSON.fromJson(reader, JsonObject.class)));
+        } catch (Exception e) {
+            MsonImpl.LOGGER.fatal("Exception whilst loading model file {}", modelId, e);
+        }
+        return Optional.empty();
+    }
+
+    @VisibleForTesting
+    public Optional<FileContent<JsonElement>> loadModel(Identifier modelId, Path file, ModelLoader loader) {
+        try (var reader = new InputStreamReader(Files.newInputStream(file), Charsets.UTF_8)) {
             return Optional.of(new JsonFileContent(loader, this, modelId, GSON.fromJson(reader, JsonObject.class)));
         } catch (Exception e) {
             MsonImpl.LOGGER.fatal("Exception whilst loading model file {}", modelId, e);

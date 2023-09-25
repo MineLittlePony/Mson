@@ -15,6 +15,7 @@ import com.minelittlepony.mson.api.Mson;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.export.VanillaModelSerializer;
 import com.minelittlepony.mson.api.model.biped.MsonPlayer;
+import com.minelittlepony.mson.api.parser.ModelLoader;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.bbmodel.BBModelFormat;
 
@@ -33,8 +34,8 @@ final class Test {
         Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer(ID, player -> true, RAYMAN);
     }
 
-    static void exportVanillaModels() {
-        try (var serializer = new VanillaModelSerializer()) {
+    static void exportVanillaModels(ModelLoader modelLoader) {
+        try (var serializer = new VanillaModelSerializer(modelLoader)) {
             serializer.exportAll(FabricLoader.getInstance().getGameDir().resolve("debug_model_export").resolve("vanilla").normalize());
         } catch (Exception e) {
             throw new AssertionError(e);

@@ -57,7 +57,10 @@ dependencies {
     modApi fabricApi.module("fabric-lifecycle-events-v1", project.fabric_version)
     modApi fabricApi.module("fabric-resource-loader-v0", project.fabric_version)
 
-    modCompileOnly("com.terraformersmc:modmenu:${project.modmenu_version}")
+    // modmenu
+    modCompileOnly fabricApi.module("fabric-key-binding-api-v1", project.fabric_version)
+    modCompileOnly fabricApi.module("fabric-screen-api-v1", project.fabric_version)
+    modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {

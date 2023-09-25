@@ -78,7 +78,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         }
 
         if (MsonMod.DEBUG) {
-            Test.exportVanillaModels();
+            Test.exportVanillaModels(foundry.get());
         }
     }
 
