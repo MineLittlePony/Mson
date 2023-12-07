@@ -6,65 +6,37 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.minelittlepony.mson.api.model.Cube;
 import com.minelittlepony.mson.api.model.Rect;
 import com.minelittlepony.mson.api.model.Vert;
 import com.minelittlepony.mson.api.model.traversal.PartSkeleton;
-import com.minelittlepony.mson.api.model.traversal.Traversable;
-import com.minelittlepony.mson.impl.MsonModifyable;
+import com.minelittlepony.mson.impl.fast.PartAccessor;
 
 import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPart.Cuboid;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
 
 @Mixin(value = ModelPart.class, priority = 999)
-abstract class MixinModelPart implements PartSkeleton, MsonModifyable {
-    @Shadow
-    private @Final List<Cuboid> cuboids;
-
-    private boolean mson$Modified;
-
+abstract class MixinModelPart implements PartSkeleton, PartAccessor {
     @Override
     @Accessor("children")
     public abstract Map<String, ModelPart> getChildren();
 
     @Override
+    @Accessor("cuboids")
+    public abstract List<Cuboid> getCuboids();
+
+    @Override
     public int getTotalDirectCubes() {
-        return cuboids.size();
+        return getCuboids().size();
     }
 
     @Override
     public ModelPart getSelf() {
         return (ModelPart)(Object)this;
-    }
-
-    @Override
-    public void setMsonModified() {
-        mson$Modified = true;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Inject(method = "renderCuboids", at = @At("HEAD"), cancellable = true)
-    private void onRenderCuboids(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha, CallbackInfo info) {
-        if (vertexConsumer instanceof Traversable.Visitor) {
-            ((Traversable.Visitor<ModelPart>)vertexConsumer).visit(getSelf());
-        }
-
-        // https://github.com/CaffeineMC/sodium-fabric/issues/1627
-        if (mson$Modified) {
-            for (Cuboid cuboid : cuboids) {
-                cuboid.renderCuboid(entry, vertexConsumer, light, overlay, red, green, blue, alpha);
-            }
-            info.cancel();
-        }
     }
 }
 
@@ -96,10 +68,10 @@ abstract class MixinQuad implements Rect {
     @Shadow @Mutable
     private @Final ModelPart.Vertex[] vertices;
 
+    @Accessor("direction")
     @Override
-    public Vector3f getNormal() {
-        return ((ModelPart.Quad)(Object)this).direction;
-    }
+    public abstract Vector3f getNormal();
+
     @Override
     public Vert getVertex(int index) {
         return (Vert)vertices[index];
@@ -108,6 +80,7 @@ abstract class MixinQuad implements Rect {
     public void setVertex(int index, Vert value) {
         vertices[index] = (ModelPart.Vertex)value;
     }
+
     @Override
     public int vertexCount() {
         return vertices.length;
@@ -118,6 +91,7 @@ abstract class MixinQuad implements Rect {
         System.arraycopy(this.vertices, 0, vertices, 0, vertices.length);
         return vertices;
     }
+
     @Override
     public Rect setVertices(boolean reflect, Vert...vertices) {
         this.vertices = new ModelPart.Vertex[vertices.length];

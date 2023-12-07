@@ -13,6 +13,7 @@ public interface PartSkeleton extends Traversable<ModelPart> {
 
     Map<String, ModelPart> getChildren();
 
+    @Deprecated
     int getTotalDirectCubes();
 
     @Override

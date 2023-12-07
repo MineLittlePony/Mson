@@ -108,11 +108,6 @@ public interface QuadsBuilder {
      */
     static QuadsBuilder plane(Face face) {
         return of(PLANE, (pars, ctx, buffer) -> {
-
-            if (ctx.parameters.mirror[0]) {
-                pars.flip(Axis.X);
-            }
-
             final float[][] positionMatrix = {
                     pars.position,
                     { pars.position[0] + pars.size[0], pars.position[1] + pars.size[1], pars.position[2] + pars.size[2] }
@@ -148,19 +143,9 @@ public interface QuadsBuilder {
                     new float[3],
                     pars.uv
             );
-
-            if (pars.mirror[0]) {
-                pars.flip(Axis.X);
-            }
-
-            if (pars.mirror[1]) {
-                pars.flip(Axis.Y);
-            }
-
-            if (pars.mirror[2]) {
-                pars.flip(Axis.Z);
-            }
-
+            if (pars.mirror[0]) pars.flip(Axis.X);
+            if (pars.mirror[1]) pars.flip(Axis.Y);
+            if (pars.mirror[2]) pars.flip(Axis.Z);
             pars.uv = new Texture(
                     (int)((pars.uv.u() - pars.getBoxFrameUOffset(face.getNormal()))),
                     (int)((pars.uv.v() - pars.getBoxFrameVOffset(face.getNormal()))),

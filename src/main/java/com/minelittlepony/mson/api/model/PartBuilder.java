@@ -1,9 +1,8 @@
 package com.minelittlepony.mson.api.model;
 
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.model.ModelPart;
 
-import com.minelittlepony.mson.impl.MsonModifyable;
+import com.minelittlepony.mson.impl.fast.FastModelPart;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,15 +65,7 @@ public class PartBuilder {
     }
 
     public ModelPart build() {
-        ModelPart part = new ModelPart(cubes, children);
-        part.setAngles(rotate[0], rotate[1], rotate[2]);
-        part.setPivot(pivot[0], pivot[1], pivot[2]);
-        part.setDefaultTransform(part.getTransform());
-        part.visible = !hidden;
-        if (FabricLoader.getInstance().isModLoaded("sodium")) {
-            ((MsonModifyable)(Object)part).setMsonModified();
-        }
-        return part;
+        return new FastModelPart(cubes, children, rotate, pivot, hidden);
     }
 
 }

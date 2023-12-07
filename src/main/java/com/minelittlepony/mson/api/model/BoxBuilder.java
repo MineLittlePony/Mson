@@ -112,13 +112,13 @@ public final class BoxBuilder {
     }
 
     public Cuboid build() {
-        if (quads.getId() == QuadsBuilder.CUBE || quads.getId() == QuadsBuilder.PLANE) {
+        if (quads.getId() == QuadsBuilder.CUBE) {
             return quads.getBoxParameters(this).build(parent, quads.getFaces(this));
         }
 
         BoxParameters pars = quads.getBoxParameters(this);
         Cuboid box = pars.build(parent, quads.getFaces(this));
-        ((Cube)box).setSides(collectQuads().stream().map(Quad::rect).toArray(Rect[]::new));
+        ((Cube)box).setSides(collectQuads(pars).stream().map(Quad::rect).toArray(Rect[]::new));
         return box;
     }
 
