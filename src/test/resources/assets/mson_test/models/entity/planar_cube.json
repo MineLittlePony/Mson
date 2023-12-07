@@ -9,7 +9,7 @@
         {
           "type": "mson:plane",
           "texture": { "u": 0, "v": 0 },
-          "face": "north",
+          "face": "up",
           "size": [64, 64],
           "position": [18, -8, 8],
           "mirror": [false, false]

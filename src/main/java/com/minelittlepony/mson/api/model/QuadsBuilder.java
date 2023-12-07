@@ -117,7 +117,7 @@ public interface QuadsBuilder {
                     ctx.parameters.uv.u(), ctx.parameters.uv.v(),
                     ctx.parameters.size[vertexIndices[4]],
                     ctx.parameters.size[vertexIndices[5]],
-                    ctx.parameters.mirror[face.getAxis().ordinal()],
+                    false,
                     ctx.vert(VERTEX_MATRIX[vertexIndices[0]], positionMatrix),
                     ctx.vert(VERTEX_MATRIX[vertexIndices[1]], positionMatrix),
                     ctx.vert(VERTEX_MATRIX[vertexIndices[2]], positionMatrix),
@@ -143,9 +143,9 @@ public interface QuadsBuilder {
                     new float[3],
                     pars.uv
             );
-            if (pars.mirror[0]) pars.flip(Axis.X);
-            if (pars.mirror[1]) pars.flip(Axis.Y);
-            if (pars.mirror[2]) pars.flip(Axis.Z);
+            if (ctx.parameters.mirror[0]) pars.flip(Axis.X);
+            if (ctx.parameters.mirror[1]) pars.flip(Axis.Y);
+            if (ctx.parameters.mirror[2]) pars.flip(Axis.Z);
             pars.uv = new Texture(
                     (int)((pars.uv.u() - pars.getBoxFrameUOffset(face.getNormal()))),
                     (int)((pars.uv.v() - pars.getBoxFrameVOffset(face.getNormal()))),
