@@ -115,25 +115,25 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
 
         Map<Direction, List<JsonConvertable>> faces = new EnumMap<>(Direction.class);
 
-        float[] emptyDilation = new float[box.dilate.length];
-        boolean isAxisDilated = isUsingPerAxisDilation(box.dilate);
+        float[] emptyDilation = new float[box.parameters.dilation.length];
+        boolean isAxisDilated = isUsingPerAxisDilation(box.parameters.dilation);
 
-        float[] dilate = isAxisDilated ? box.dilate : emptyDilation;
-        float inflate = isAxisDilated ? 0 : box.dilate[0];
-        box.dilate = emptyDilation;
+        float[] dilate = isAxisDilated ? box.parameters.dilation : emptyDilation;
+        float inflate = isAxisDilated ? 0 : box.parameters.dilation[0];
+        box.parameters.dilation = emptyDilation;
         boolean[] mirroring = {false};
 
         QuadsBuilder.BOX.build(box, new QuadBuffer() {
             @Override
             public boolean getDefaultMirror() {
-                return box.mirror[0];
+                return box.parameters.mirror[0];
             }
 
             @Override
             public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert... vertices) {
                 mirroring[0] |= mirror;
                 faces.computeIfAbsent(direction, d -> new ArrayList<>()).add(buffer -> buffer.of(face -> {
-                    face.add("uv", buffer.of(u - box.u, v - box.v, w - box.u, h - box.v));
+                    face.add("uv", buffer.of(u - box.parameters.uv.u(), v - box.parameters.uv.v(), w - box.parameters.uv.u(), h - box.parameters.uv.v()));
                     face.addProperty("texture", 0);
                 }));
             }
@@ -160,16 +160,16 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
 
                     float[] pivot = part.pivot();
                     elementJson.add("from", buffer.of(
-                            box.pos[0] + pivot[0] - dilate[0],
-                           -box.pos[1] - box.size[1] - pivot[1] - dilate[1],
-                            box.pos[2] + pivot[2] - dilate[2]
+                            box.parameters.position[0] + pivot[0] - dilate[0],
+                           -box.parameters.position[1] - box.parameters.size[1] - pivot[1] - dilate[1],
+                            box.parameters.position[2] + pivot[2] - dilate[2]
                     ));
                     elementJson.add("to", buffer.of(
-                            box.pos[0] + box.size[0] + pivot[0] + dilate[0],
-                           -box.pos[1] - pivot[1] + dilate[1],
-                            box.pos[2] + box.size[2] + pivot[2] + dilate[2]
+                            box.parameters.position[0] + box.parameters.size[0] + pivot[0] + dilate[0],
+                           -box.parameters.position[1] - pivot[1] + dilate[1],
+                            box.parameters.position[2] + box.parameters.size[2] + pivot[2] + dilate[2]
                     ));
-                    elementJson.add("uv_offset", buffer.of(box.u, box.v));
+                    elementJson.add("uv_offset", buffer.of(box.parameters.uv.u(), box.parameters.uv.v()));
                     buffer.object(elementJson, "faces", buffer.of(facesJson -> {
                         BoxBuilder.ALL_DIRECTIONS.forEach(direction -> {
                             facesJson.add(direction.name().toLowerCase(Locale.ROOT), faces.getOrDefault(direction, List.of())
@@ -202,11 +202,11 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
         float[] pivot = part.pivot();
 
         // fix coordinates
-        float[] size = { box.size[0], box.size[1], box.size[2] };
+        float[] size = { box.parameters.size[0], box.parameters.size[1], box.parameters.size[2] };
         box.pos(
-                box.pos[0] + pivot[0],
-               -box.pos[1] - size[1] - pivot[1],
-                box.pos[2] + pivot[2]
+                box.parameters.position[0] + pivot[0],
+               -box.parameters.position[1] - size[1] - pivot[1],
+                box.parameters.position[2] + pivot[2]
         );
 
         var id = UUID.randomUUID();
@@ -225,7 +225,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             elementJson.addProperty("rescale", false);
             elementJson.addProperty("locked", false);
             elementJson.addProperty("visibility", !part.hidden());
-            elementJson.add("uv_offset", buffer.of(box.u, box.v));
+            elementJson.add("uv_offset", buffer.of(box.parameters.uv.u(), box.parameters.uv.v()));
 
             Map<Vert, UUID> verticesCache = quads.stream()
                 .flatMap(quad -> Arrays.stream(quad.rect().getVertices()))

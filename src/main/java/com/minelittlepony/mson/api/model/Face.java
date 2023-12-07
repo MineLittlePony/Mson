@@ -14,8 +14,8 @@ import java.util.stream.Stream;
 
 public enum Face {
     NONE (Axis.Y, Direction.UP),
-    UP   (Axis.Y, Direction.DOWN),
-    DOWN (Axis.Y, Direction.UP),
+    UP   (Axis.Y, Direction.UP),
+    DOWN (Axis.Y, Direction.DOWN),
     WEST (Axis.X, Direction.WEST),
     EAST (Axis.X, Direction.EAST),
     NORTH(Axis.Z, Direction.NORTH),
@@ -36,7 +36,7 @@ public enum Face {
         this.lighting = lighting;
     }
 
-    public Direction getLighting() {
+    public Direction getNormal() {
         return lighting;
     }
 
