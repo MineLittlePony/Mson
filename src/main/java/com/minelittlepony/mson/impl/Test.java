@@ -31,7 +31,9 @@ final class Test {
         var RAYMAN = playerRendererFactor(Mson.getInstance().registerModel(ID, MsonPlayer::new));
         //var PLANE = playerRendererFactor(Mson.getInstance().registerModel(new Identifier("mson_test", "plane"), MsonPlayer::new));
 
-        Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer(ID, player -> true, RAYMAN);
+        Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer(ID, player -> {
+            return true;
+        }, RAYMAN);
     }
 
     static void exportVanillaModels(ModelLoader modelLoader) {

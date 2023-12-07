@@ -12,6 +12,7 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.BoxBuilder;
+import com.minelittlepony.mson.api.model.BoxParameters;
 import com.minelittlepony.mson.api.model.Face;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Texture;
@@ -104,7 +105,6 @@ public class BbCube implements ModelComponent<Cuboid>, QuadsBuilder {
     }
 
     private BoxBuilder createBuilder(ModelContext context) {
-
         if (boxUv) {
             return new BoxBuilder(context)
                     .tex(texture)
@@ -121,16 +121,16 @@ public class BbCube implements ModelComponent<Cuboid>, QuadsBuilder {
     }
 
     @Override
-    public void build(BoxBuilder ctx, QuadBuffer buffer) {
-        float xMax = ctx.pos[0] + ctx.size[0] + ctx.dilate[0];
-        float yMax = ctx.pos[1] + ctx.size[1] + ctx.dilate[1];
-        float zMax = ctx.pos[2] + ctx.size[2] + ctx.dilate[2];
+    public void build(BoxParameters pars, BoxBuilder ctx, QuadBuffer buffer) {
+        float xMax = pars.position[0] + pars.size[0] + pars.dilation[0];
+        float yMax = pars.position[1] + pars.size[1] + pars.dilation[1];
+        float zMax = ctx.parameters.position[2] + pars.size[2] + pars.dilation[2];
 
-        float xMin = ctx.pos[0] - ctx.dilate[0];
-        float yMin = ctx.pos[1] - ctx.dilate[1];
-        float zMin = ctx.pos[2] - ctx.dilate[2];
+        float xMin = pars.position[0] - pars.dilation[0];
+        float yMin = pars.position[1] - pars.dilation[1];
+        float zMin = pars.position[2] - pars.dilation[2];
 
-        if (ctx.mirror[0]) {
+        if (ctx.parameters.mirror[0]) {
             float v = xMax;
             xMax = xMin;
             xMin = v;
@@ -171,7 +171,7 @@ public class BbCube implements ModelComponent<Cuboid>, QuadsBuilder {
         public void createRect(BoxBuilder builder, QuadsBuilder.QuadBuffer buffer, Vert a, Vert b, Vert c, Vert d) {
             Face.Axis axis = face.getAxis();
 
-            buffer.quad(uv[0], uv[1], uv[2], uv[3], face.getLighting(), builder.mirror[0], true, new Quaternionf().rotateXYZ(
+            buffer.quad(uv[0], uv[1], uv[2], uv[3], face.getNormal(), builder.parameters.mirror[0], true, new Quaternionf().rotateXYZ(
                 axis == Face.Axis.X ? rotation : 0,
                 axis == Face.Axis.Y ? rotation : 0,
                 axis == Face.Axis.Z ? rotation : 0

@@ -12,7 +12,9 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.BoxBuilder;
+import com.minelittlepony.mson.api.model.BoxParameters;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
+import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.model.Vert;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.FileContent;
@@ -55,22 +57,21 @@ public class JsonQuads implements ModelComponent<Cuboid>, QuadsBuilder {
 
     @Override
     public Cuboid export(ModelContext context) {
-        BoxBuilder builder = new BoxBuilder(context);
-        builder.u = texU;
-        builder.v = texV;
-        return builder.quads(this).build();
+        return new BoxBuilder(context)
+                .tex(new Texture(texU, texV, 0, 0))
+                .quads(this)
+                .build();
     }
 
     @Override
     public void write(ModelContext context, ModelFileWriter writer) {
-        BoxBuilder builder = new BoxBuilder(context);
-        builder.u = texU;
-        builder.v = texV;
-        writer.writeBox(builder.quads(this));
+        writer.writeBox(new BoxBuilder(context)
+                .tex(new Texture(texU, texV, 0, 0))
+                .quads(this));
     }
 
     @Override
-    public void build(BoxBuilder box, QuadBuffer buffer) {
+    public void build(BoxParameters pars, BoxBuilder box, QuadBuffer buffer) {
         quads.forEach(q -> q.build(box, buffer));
     }
 
@@ -95,7 +96,7 @@ public class JsonQuads implements ModelComponent<Cuboid>, QuadsBuilder {
         }
 
         void build(BoxBuilder builder, QuadBuffer buffer) {
-            buffer.quad(x, y, w, h, Direction.UP, builder.mirror[0], verts.stream().map(v -> v.build(builder)).toArray(Vert[]::new));
+            buffer.quad(Direction.UP, x, y, w, h, builder.parameters.mirror[0], verts.stream().map(v -> v.build(builder)).toArray(Vert[]::new));
         }
     }
 

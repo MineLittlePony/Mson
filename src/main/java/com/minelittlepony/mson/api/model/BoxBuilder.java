@@ -29,13 +29,7 @@ public final class BoxBuilder {
 
     public final PartBuilder parent;
 
-    public float[] pos = new float[3];
-    public float[] size = new float[3];
-    public float[] dilate = new float[3];
-
-    public int u, v;
-
-    public boolean[] mirror = new boolean[3];
+    public BoxParameters parameters = new BoxParameters();
 
     public CoordinateFixture fixture = CoordinateFixture.unfixed();
 
@@ -49,11 +43,9 @@ public final class BoxBuilder {
         this.parent = context.<PartBuilder>getThis();
 
         dilate(context.getLocals().getDilation());
+        tex(parent.texture);
 
-        u = parent.texture.u();
-        v = parent.texture.v();
-
-        System.arraycopy(parent.mirror, 0, mirror, 0, 3);
+        System.arraycopy(parent.mirror, 0, parameters.mirror, 0, 3);
     }
 
     public BoxBuilder fix(CoordinateFixture fixture) {
@@ -62,18 +54,17 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder pos(float... pos) {
-        System.arraycopy(pos, 0, this.pos, 0, 3);
+        System.arraycopy(pos, 0, parameters.position, 0, 3);
         return this;
     }
 
     public BoxBuilder tex(Texture tex) {
-        u = tex.u();
-        v = tex.v();
+        parameters.uv = tex;
         return this;
     }
 
     public BoxBuilder size(float... size) {
-        System.arraycopy(size, 0, this.size, 0, 3);
+        System.arraycopy(size, 0, parameters.size, 0, 3);
         return this;
     }
 
@@ -86,21 +77,21 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder dilate(float... dilate) {
-        this.dilate[0] += dilate[0];
-        this.dilate[1] += dilate[1];
-        this.dilate[2] += dilate[2];
+        parameters.dilation[0] += dilate[0];
+        parameters.dilation[1] += dilate[1];
+        parameters.dilation[2] += dilate[2];
         return this;
     }
 
     public BoxBuilder mirror(Axis axis, boolean... mirror) {
-        this.mirror[0] = axis.getWidth().getBoolean(mirror);
-        this.mirror[1] = axis.getHeight().getBoolean(mirror);
-        this.mirror[2] = axis.getDepth().getBoolean(mirror);
+        parameters.mirror[0] = axis.getWidth().getBoolean(mirror);
+        parameters.mirror[1] = axis.getHeight().getBoolean(mirror);
+        parameters.mirror[2] = axis.getDepth().getBoolean(mirror);
         return this;
     }
 
     public BoxBuilder mirror(Axis axis, Optional<Boolean> mirror) {
-        mirror.ifPresent(m -> this.mirror[axis.ordinal()] = m);
+        mirror.ifPresent(m -> parameters.mirror[axis.ordinal()] = m);
         return this;
     }
 
@@ -108,42 +99,42 @@ public final class BoxBuilder {
         return (Vert)new ModelPart.Vertex(x, y, z, u, v);
     }
 
+    public Vert vert(int[] parameters, float[][] positionMatrix) {
+        return (Vert)new ModelPart.Vertex(
+                positionMatrix[parameters[0]][0], positionMatrix[parameters[1]][1], positionMatrix[parameters[2]][2],
+                parameters[3], parameters[4]
+        );
+    }
+
     public BoxBuilder quads(QuadsBuilder quads) {
         this.quads = quads;
         return this;
     }
 
-    public Cuboid build(Set<Direction> enabledSides) {
-        return new Cuboid(
-                u, v,
-                pos[0], pos[1], pos[2],
-                size[0], size[1], size[2],
-                dilate[0], dilate[1], dilate[2],
-                mirror[0],
-                parent.texture.width(), parent.texture.height(),
-                enabledSides
-        );
-    }
-
     public Cuboid build() {
-        if (quads.getId() == QuadsBuilder.CUBE) {
-            return build(ALL_DIRECTIONS);
+        if (quads.getId() == QuadsBuilder.CUBE || quads.getId() == QuadsBuilder.PLANE) {
+            return quads.getBoxParameters(this).build(parent, quads.getFaces(this));
         }
 
-        Cuboid box = build(Set.of());
+        BoxParameters pars = quads.getBoxParameters(this);
+        Cuboid box = pars.build(parent, quads.getFaces(this));
         ((Cube)box).setSides(collectQuads().stream().map(Quad::rect).toArray(Rect[]::new));
         return box;
     }
 
     public List<Quad> collectQuads() {
+        return collectQuads(this.quads.getBoxParameters(this));
+    }
+
+    private List<Quad> collectQuads(BoxParameters pars) {
         List<Quad> quads = new ArrayList<>();
-        this.quads.build(this, new QuadsBuilder.QuadBuffer() {
+        this.quads.build(pars, this, new QuadsBuilder.QuadBuffer() {
             private final ModelPart.Vertex emptyVertex = new ModelPart.Vertex(0, 0, 0, 0, 0);
             private final ModelPart.Vertex[] defaultVertices = {emptyVertex, emptyVertex, emptyVertex, emptyVertex};
 
             @Override
             public boolean getDefaultMirror() {
-                return mirror[0];
+                return parameters.mirror[0];
             }
 
             @Override

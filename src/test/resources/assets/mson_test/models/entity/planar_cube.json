@@ -6,13 +6,14 @@
 		},
 		"body": {
 			"cubes": [
-				{
-					"type": "mson:plane",
-					"face": "west",
-					"size": [64, 64],
-					"position": [-32, -32, 0],
-					"mirror": [false, true]
-				}
+        {
+          "type": "mson:plane",
+          "texture": { "u": 0, "v": 0 },
+          "face": "north",
+          "size": [64, 64],
+          "position": [18, -8, 8],
+          "mirror": [false, false]
+        }
 			]
 		},
 		"left_arm": {
