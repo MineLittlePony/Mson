@@ -27,7 +27,7 @@ public interface EntityRendererRegistry {
      */
     @Deprecated
     default <T extends PlayerEntityRenderer> void registerPlayerRenderer(String skinType, Function<EntityRendererFactory.Context, T> constructor) {
-        registerPlayerRenderer(new Identifier(skinType), player -> player.method_52814().model().getName().equalsIgnoreCase(skinType), constructor);
+        registerPlayerRenderer(new Identifier(skinType), player -> player.getSkinTextures().model().getName().equalsIgnoreCase(skinType), constructor);
     }
     /**
      * Adds a custom player renderer.
