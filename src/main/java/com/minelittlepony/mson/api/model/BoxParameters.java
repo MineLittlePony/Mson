@@ -25,7 +25,7 @@ public class BoxParameters {
     public BoxParameters() {
         this(new float[3], new float[3], new float[3], Texture.EMPTY);
     }
-    
+
     public void flip(Face.Axis axis) {
         int o = axis.ordinal();
         position[o] += size[o];
@@ -50,9 +50,11 @@ public class BoxParameters {
 
     public float getBoxFrameUOffset(Direction direction) {
         return switch (direction) {
-            case WEST -> 0;
-            case DOWN, NORTH -> size[2];
-            case UP, EAST -> size[2] + size[0];
+            case DOWN -> 0;
+            case WEST -> size[2];
+            case EAST -> size[0];
+            case NORTH -> size[2];
+            case UP -> size[2] + size[0];
             case SOUTH -> size[2] + size[0] + size[2];
         };
     }
