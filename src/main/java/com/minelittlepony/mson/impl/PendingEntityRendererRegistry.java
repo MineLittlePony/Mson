@@ -27,17 +27,17 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
     public final PendingRegistrations<
                     Identifier,
                     Map.Entry<Predicate<AbstractClientPlayerEntity>, Function<EntityRendererFactory.Context, ? extends PlayerEntityRenderer>>
-                > player = new PendingRegistrations<>(new Identifier("mson", "renderers/player"), (registry, key, entry) -> {
+                > player = new PendingRegistrations<>(MsonImpl.id("renderers/player"), (registry, key, entry) -> {
                     registry.registerPlayerRenderer(key, entry.getKey(), entry.getValue());
                 });
     public final PendingRegistrations<
                     EntityType<?>,
                     Function<EntityRendererFactory.Context, ? extends EntityRenderer<?>>
-                > entity = new PendingRegistrations<>(new Identifier("mson", "renderers/entity"), EntityRendererRegistry::registerEntityRenderer);
+                > entity = new PendingRegistrations<>(MsonImpl.id("renderers/entity"), EntityRendererRegistry::registerEntityRenderer);
     public final PendingRegistrations<
                     BlockEntityType<?>,
                     Function<BlockEntityRendererFactory.Context, ? extends BlockEntityRenderer<?>>
-                > block = new PendingRegistrations<>(new Identifier("mson", "renderers/block"), EntityRendererRegistry::registerBlockRenderer);
+                > block = new PendingRegistrations<>(MsonImpl.id("renderers/block"), EntityRendererRegistry::registerBlockRenderer);
 
     @Override
     public <T extends PlayerEntityRenderer> void registerPlayerRenderer(Identifier skinType, Predicate<AbstractClientPlayerEntity> playerPredicate, Function<Context, T> constructor) {

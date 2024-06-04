@@ -40,7 +40,7 @@ public class FastModelPart extends ModelPart {
     }
 
     @Override
-    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
+    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
         computeContents();
 
         if (!visible || empty) {
@@ -51,10 +51,10 @@ public class FastModelPart extends ModelPart {
         rotate(matrices);
         if (!hidden) {
             MatrixStack.Entry entry = matrices.peek();
-            fastRenderCuboids(entry, vertices, light, overlay, red, green, blue, alpha);
+            fastRenderCuboids(entry, vertices, light, overlay, color);
         }
         for (ModelPart modelPart : parts) {
-            modelPart.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+            modelPart.render(matrices, vertices, light, overlay, color);
         }
         matrices.pop();
     }
@@ -89,7 +89,7 @@ public class FastModelPart extends ModelPart {
         compiled = true;
     }
 
-    private void fastRenderCuboids(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, float red, float green, float blue, float alpha) {
+    private void fastRenderCuboids(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color) {
         Matrix4f positionMatrix = entry.getPositionMatrix();
         Matrix3f normalMatrix = entry.getNormalMatrix();
         Vector4f position = new Vector4f();
@@ -103,7 +103,7 @@ public class FastModelPart extends ModelPart {
         for (Fragment frag : fragments) {
             var pos = frag.pos();
             var norm = frag.norm();
-            vertexConsumer.vertex(pos.x, pos.y, pos.z, red, green, blue, alpha, frag.u(), frag.v(), overlay, light, norm.x, norm.y, norm.z);
+            vertexConsumer.vertex(pos.x, pos.y, pos.z, color, frag.u(), frag.v(), overlay, light, norm.x, norm.y, norm.z);
         }
     }
 

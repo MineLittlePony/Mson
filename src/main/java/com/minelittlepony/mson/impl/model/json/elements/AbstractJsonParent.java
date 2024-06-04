@@ -14,6 +14,7 @@ import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.Local;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -26,7 +27,7 @@ import java.util.Set;
  * @author Sollace
  */
 public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
-    public static final Identifier ID = new Identifier("mson", "compound");
+    public static final Identifier ID = MsonImpl.id("compound");
     private static final float RADS_DEGS_FACTOR = (float)Math.PI / 180F;
 
     /**

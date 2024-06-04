@@ -52,7 +52,7 @@ public class MsonModelFormat implements ModelFormat<JsonElement> {
 
     @Override
     public Optional<FileContent<JsonElement>> loadModel(Identifier modelId, ModelLoader loader) {
-        Identifier file = new Identifier(modelId.getNamespace(), "models/" + modelId.getPath() + "." + getFileExtension());
+        Identifier file = modelId.withPath(p -> "models/" + p + "." + getFileExtension());
         return loader.getResourceManager().getResource(file).flatMap(resource -> {
             return loadModel(modelId, file, resource, true, loader);
         });
@@ -101,7 +101,7 @@ public class MsonModelFormat implements ModelFormat<JsonElement> {
 
             return Optional.ofNullable(componentTypes.get(JsonUtil.accept(o, "type")
                         .map(JsonElement::getAsString)
-                        .map(Identifier::new)
+                        .map(Identifier::of)
                         .orElse(defaultAs))
                     )
                     .map(c -> (ModelComponent<T>)c.load(context, fname, json));

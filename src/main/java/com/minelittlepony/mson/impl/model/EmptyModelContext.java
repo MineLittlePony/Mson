@@ -11,6 +11,7 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.EmptyContextException;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.impl.ModelContextImpl;
+import com.minelittlepony.mson.impl.MsonImpl;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -20,7 +21,7 @@ import java.util.function.Function;
 final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
 
     static ModelContextImpl INSTANCE = new EmptyModelContext();
-    static Identifier ID = new Identifier("mson", "null");
+    static Identifier ID = MsonImpl.id("null");
 
     private EmptyModelContext() {}
 

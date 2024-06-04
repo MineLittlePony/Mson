@@ -45,7 +45,11 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     public static final Logger LOGGER = LogManager.getLogger("Mson");
     public static final MsonImpl INSTANCE = new MsonImpl();
 
-    private static final Identifier ID = new Identifier("mson", "models");
+    private static final Identifier ID = id("models");
+
+    public static Identifier id(String name) {
+        return Identifier.of("mson", name);
+    }
 
     private final PendingEntityRendererRegistry renderers = new PendingEntityRendererRegistry();
 
@@ -71,7 +75,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         synchronized (vanillaModels) {
             vanillaModels.clear();
             modelParts.forEach((layer, vanilla) -> {
-                Identifier id = new Identifier(layer.getId().getNamespace(), String.format("mson/%s", layer.getId().getPath()));
+                Identifier id = Identifier.of(layer.getId().getNamespace(), String.format("mson/%s", layer.getId().getPath()));
                 ((MsonImpl.KeyHolder)vanilla).setKey(registeredModels.computeIfAbsent(id, VanillaKey::new));
                 vanillaModels.add(id);
             });

@@ -13,6 +13,7 @@ import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.Local;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -24,7 +25,7 @@ import java.util.Optional;
  * @author Sollace
  */
 public class JsonBox implements ModelComponent<Cuboid> {
-    public static final Identifier ID = new Identifier("mson", "box");
+    public static final Identifier ID = MsonImpl.id("box");
 
     /**
      * The 3D coordinate of where the box should begin.

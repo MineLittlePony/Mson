@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
  * }
  */
 public class BbCube implements ModelComponent<Cuboid>, QuadsBuilder {
-    public static final Identifier ID = new Identifier("blockbench", "cube");
+    public static final Identifier ID = Identifier.of("blockbench", "cube");
 
     private final boolean boxUv;
 

@@ -12,6 +12,7 @@ import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.parser.locals.Local;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
 
 /**
@@ -20,7 +21,7 @@ import com.minelittlepony.mson.api.model.QuadsBuilder;
  * @author Sollace
  */
 public class JsonCone extends JsonBox {
-    public static final Identifier ID = new Identifier("mson", "cone");
+    public static final Identifier ID = MsonImpl.id("cone");
 
     /**
      * The amount by which the box must taper.

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 
 import com.minelittlepony.mson.api.model.Face.Axis;
+import com.minelittlepony.mson.impl.MsonImpl;
 
 import java.util.Set;
 import java.util.function.Function;
@@ -15,9 +16,9 @@ import java.util.function.Function;
  * A builder for creating box quads.
  */
 public interface QuadsBuilder {
-    static Identifier CONE = new Identifier("mson", "cone");
-    static Identifier PLANE = new Identifier("mson", "plane");
-    static Identifier CUBE = new Identifier("mson", "cube");
+    static Identifier CONE = MsonImpl.id("cone");
+    static Identifier PLANE = MsonImpl.id("plane");
+    static Identifier CUBE = MsonImpl.id("cube");
 
     static int[][] FACE_VERTEX_OFFSETS = new int[][] {
         {}, //Face.NONE

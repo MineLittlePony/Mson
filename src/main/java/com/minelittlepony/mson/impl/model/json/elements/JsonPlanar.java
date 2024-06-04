@@ -15,6 +15,7 @@ import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.parser.locals.Local;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.impl.model.FixtureImpl;
 import com.minelittlepony.mson.api.model.Face;
 import com.minelittlepony.mson.api.model.PartBuilder;
@@ -37,7 +38,7 @@ import java.util.stream.Stream;
  * @credit killjoy for the suggestion
  */
 public class JsonPlanar extends JsonCompound {
-    public static final Identifier ID = new Identifier("mson", "planar");
+    public static final Identifier ID = MsonImpl.id("planar");
 
     private final Map<Face, JsonFaceSet> faces = new EnumMap<>(Face.class);
 

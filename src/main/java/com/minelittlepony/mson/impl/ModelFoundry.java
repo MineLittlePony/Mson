@@ -111,7 +111,7 @@ class ModelFoundry implements ModelLoader {
                 return loadedFiles.get(modelId);
             }
         }
-        Identifier file = new Identifier(modelId.getNamespace(), "models/entity/" + modelId.getPath());
+        Identifier file = Identifier.of(modelId.getNamespace(), "models/entity/" + modelId.getPath());
 
         Map<Identifier, Resource> resources = getResourceManager().findResources("models/entity", id -> {
             return id.getNamespace().equals(file.getNamespace())

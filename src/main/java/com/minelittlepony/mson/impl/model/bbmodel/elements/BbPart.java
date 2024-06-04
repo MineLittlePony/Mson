@@ -61,7 +61,7 @@ import java.util.concurrent.ExecutionException;
  * }
  */
 public class BbPart implements ModelComponent<ModelPart> {
-    public static final Identifier ID = new Identifier("blockbench", "part");
+    public static final Identifier ID = Identifier.of("blockbench", "part");
 
     private final float[] origin = new float[3];
     private final float[] rotation = new float[3];

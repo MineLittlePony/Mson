@@ -23,15 +23,6 @@ public interface EntityRendererRegistry {
     /**
      * Adds a custom player renderer.
      *
-     * @deprecated Use the more flexible predicate version instead.
-     */
-    @Deprecated
-    default <T extends PlayerEntityRenderer> void registerPlayerRenderer(String skinType, Function<EntityRendererFactory.Context, T> constructor) {
-        registerPlayerRenderer(new Identifier(skinType), player -> player.getSkinTextures().model().getName().equalsIgnoreCase(skinType), constructor);
-    }
-    /**
-     * Adds a custom player renderer.
-     *
      * @param playerPredicate Predicate to determine which players this renderer should be used for.
      * @param constructor The renderer factory
      */

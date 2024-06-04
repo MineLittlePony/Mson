@@ -11,6 +11,7 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.LocalBlock;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -26,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
  * @author Sollace
  */
 public class JsonImport implements ModelComponent<ModelPart> {
-    public static final Identifier ID = new Identifier("mson", "import");
+    public static final Identifier ID = MsonImpl.id("import");
 
     private final CompletableFuture<FileContent<?>> file;
 

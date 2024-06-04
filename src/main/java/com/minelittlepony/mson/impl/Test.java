@@ -8,6 +8,7 @@ import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.util.Identifier;
 
+import com.google.common.base.Predicates;
 import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.ModelView;
@@ -27,13 +28,11 @@ import java.util.function.Function;
 
 final class Test {
     static void init() {
-        var ID = new Identifier("mson_test", "planar_cube");
+        var ID = Identifier.of("mson_test", "planar_cube");
         var RAYMAN = playerRendererFactor(Mson.getInstance().registerModel(ID, MsonPlayer::new));
         //var PLANE = playerRendererFactor(Mson.getInstance().registerModel(new Identifier("mson_test", "plane"), MsonPlayer::new));
 
-        Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer(ID, player -> {
-            return true;
-        }, RAYMAN);
+        Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer(ID, Predicates.alwaysTrue(), RAYMAN);
     }
 
     static void exportVanillaModels(ModelLoader modelLoader) {

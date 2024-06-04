@@ -55,7 +55,7 @@ public class BBModelFormat implements ModelFormat<JsonElement> {
 
     @Override
     public Optional<FileContent<JsonElement>> loadModel(Identifier modelId, ModelLoader loader) {
-        Identifier file = new Identifier(modelId.getNamespace(), "models/" + modelId.getPath() + "." + getFileExtension());
+        Identifier file = modelId.withPath(p -> p + "." + getFileExtension());
         return loader.getResourceManager().getResource(file).flatMap(resource -> {
             return loadModel(modelId, file, resource, true, loader);
         });
@@ -96,11 +96,11 @@ public class BBModelFormat implements ModelFormat<JsonElement> {
         }
 
         JsonObject json = data.getAsJsonObject();
-        Identifier id = new Identifier(json.get("type").getAsString());
+        Identifier id = Identifier.of(json.get("type").getAsString());
         final String fname = Strings.nullToEmpty(name).trim();
 
         if (id.getNamespace().equalsIgnoreCase("minecraft")) {
-            id = new Identifier("blockbench", id.getPath());
+            id = Identifier.of("blockbench", id.getPath());
         }
 
         return Optional.ofNullable(componentTypes.get(id)).map(c -> (ModelComponent<T>)c.load(context, fname, json));

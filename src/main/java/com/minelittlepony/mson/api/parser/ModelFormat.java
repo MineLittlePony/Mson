@@ -4,6 +4,7 @@ import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 
 import com.minelittlepony.mson.api.export.ModelSerializer;
+import com.minelittlepony.mson.impl.MsonImpl;
 
 import java.util.Optional;
 
@@ -15,7 +16,7 @@ import java.util.Optional;
  * @param <Data> The type of data that this format consumes (typically json).
  */
 public interface ModelFormat<Data> {
-    Identifier MSON_V2 = new Identifier("mson", "json");
+    Identifier MSON_V2 = MsonImpl.id("json");
 
     /**
      * Mson *.json files
@@ -25,7 +26,7 @@ public interface ModelFormat<Data> {
     /**
      * BlockBench *.bbmodel files
      */
-    Identifier BBMODEL = new Identifier("blockbench", "bbmodel");
+    Identifier BBMODEL = Identifier.of("blockbench", "bbmodel");
 
     /**
      * The file extension that this format is capable of parsing.

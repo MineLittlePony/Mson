@@ -14,6 +14,7 @@ import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.LocalBlock;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -31,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
  * @author Sollace
  */
 public class JsonSlot<T> implements ModelComponent<T> {
-    public static final Identifier ID = new Identifier("mson", "slot");
+    public static final Identifier ID = MsonImpl.id("slot");
 
     /**
      * The object type produced by this slot.
@@ -70,7 +71,7 @@ public class JsonSlot<T> implements ModelComponent<T> {
         data = context.resolve(json.get("data"));
         this.name = name.isEmpty() ? JsonUtil.require(json, "name", ID, context.getLocals().getModelId()).getAsString() : name;
         texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
-        id = new Identifier("dynamic", context.getLocals().getModelId().getPath() + "/" + this.name);
+        id = Identifier.of("dynamic", context.getLocals().getModelId().getPath() + "/" + this.name);
         locals = LocalBlock.of(JsonUtil.accept(json, "locals"));
 
         context.addNamedComponent(this.name, this);

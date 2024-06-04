@@ -51,7 +51,7 @@ public class JsonFileContent implements JsonContext {
         this.format = format;
         parent = JsonUtil.accept(json, "parent")
             .map(JsonElement::getAsString)
-            .map(Identifier::new)
+            .map(Identifier::of)
             .map(parentId -> loader.loadModel(parentId, format))
             .orElseGet(() -> CompletableFuture.completedFuture(EmptyFileContent.INSTANCE));
 
@@ -120,11 +120,11 @@ public class JsonFileContent implements JsonContext {
     public CompletableFuture<FileContent<?>> resolve(JsonElement json) {
 
         if (json.isJsonPrimitive()) {
-            return loader.loadModel(new Identifier(json.getAsString()), format);
+            return loader.loadModel(Identifier.of(json.getAsString()), format);
         }
 
         Identifier id = getLocals().getModelId();
-        Identifier autoGen = new Identifier(id.getNamespace(), id.getPath() + "_dynamic");
+        Identifier autoGen = id.withSuffixedPath("_dynamic");
 
         if (json.getAsJsonObject().has("data")) {
             throw new JsonParseException("Dynamic model files should not have a nested data block");

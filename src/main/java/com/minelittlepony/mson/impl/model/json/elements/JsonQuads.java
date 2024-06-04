@@ -17,6 +17,7 @@ import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.model.Vert;
 import com.minelittlepony.mson.api.parser.ModelComponent;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -30,7 +31,7 @@ import java.util.List;
  */
 public class JsonQuads implements ModelComponent<Cuboid>, QuadsBuilder {
 
-    public static final Identifier ID = new Identifier("mson", "quads");
+    public static final Identifier ID = MsonImpl.id("quads");
 
     private final List<JsonQuad> quads;
 

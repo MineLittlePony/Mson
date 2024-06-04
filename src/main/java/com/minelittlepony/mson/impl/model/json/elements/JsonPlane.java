@@ -14,6 +14,7 @@ import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.Local;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -24,7 +25,7 @@ import com.minelittlepony.mson.util.JsonUtil;
  */
 public class JsonPlane implements ModelComponent<Cuboid> {
 
-    public static final Identifier ID = new Identifier("mson", "plane");
+    public static final Identifier ID = MsonImpl.id("plane");
 
     /**
      * The 3D position where this plane will appear.

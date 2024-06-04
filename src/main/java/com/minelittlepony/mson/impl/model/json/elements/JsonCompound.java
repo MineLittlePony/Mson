@@ -10,6 +10,7 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.parser.ModelComponent;
+import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.util.JsonUtil;
 
@@ -27,7 +28,7 @@ import java.util.stream.Stream;
  * @author Sollace
  */
 public class JsonCompound extends AbstractJsonParent {
-    public static final Identifier ID = new Identifier("mson", "compound");
+    public static final Identifier ID = MsonImpl.id("compound");
 
     /**
      * The child components of this part.
