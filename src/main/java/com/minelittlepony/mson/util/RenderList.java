@@ -1,0 +1,75 @@
+package com.minelittlepony.mson.util;
+
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.util.math.MatrixStack;
+
+import java.util.*;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+
+public interface RenderList {
+    void accept(MatrixStack stack, VertexConsumer vertices, int overlay, int light, int color);
+
+    default RenderList add(RenderList part) {
+        return this;
+    }
+
+    default RenderList add(Consumer<MatrixStack> action) {
+        return add((stack, vertices, overlay, light, color) -> action.accept(stack));
+    }
+
+    default RenderList add(ModelPart...parts) {
+        return add(of(parts));
+    }
+
+    default RenderList checked(BooleanSupplier check) {
+        final RenderList self = this;
+        return (stack, vertices, overlay, light, color) -> {
+            if (check.getAsBoolean()) {
+                self.accept(stack, vertices, overlay, light, color);
+            }
+        };
+    }
+
+    default void clear() {}
+
+    static RenderList of() {
+        return new Impl(List.of());
+    }
+
+    static RenderList of(ModelPart...parts) {
+        return new Impl(Arrays.stream(parts).map(part -> (RenderList)part::render).toList());
+    }
+
+    class Impl implements RenderList {
+        private RenderList[] parts;
+
+        Impl(List<RenderList> parts) {
+            this.parts = parts.toArray(RenderList[]::new);
+        }
+
+        @Override
+        public RenderList add(RenderList part) {
+            RenderList[] newArray = new RenderList[parts.length + 1];
+            System.arraycopy(parts, 0, newArray, 0, parts.length);
+            parts = newArray;
+            parts[parts.length - 1] = part;
+            return this;
+        }
+
+        @Override
+        public void clear() {
+            parts = new RenderList[0];
+        }
+
+        @Override
+        public void accept(MatrixStack stack, VertexConsumer vertices, int overlay, int light, int color) {
+            for (RenderList part : parts) {
+                part.accept(stack, vertices, overlay, light, color);
+            }
+        }
+    }
+}
+
+
