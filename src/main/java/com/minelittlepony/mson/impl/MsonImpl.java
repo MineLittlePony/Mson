@@ -8,7 +8,6 @@ import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -75,7 +74,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         synchronized (vanillaModels) {
             vanillaModels.clear();
             modelParts.forEach((layer, vanilla) -> {
-                Identifier id = Identifier.of(layer.getId().getNamespace(), String.format("mson/%s", layer.getId().getPath()));
+                Identifier id = layer.id().withPath(p -> String.format("mson/%s", p));
                 ((MsonImpl.KeyHolder)vanilla).setKey(registeredModels.computeIfAbsent(id, VanillaKey::new));
                 vanillaModels.add(id);
             });
@@ -86,27 +85,22 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         }
     }
 
-    private CompletableFuture<Void> requireVanillaModels(Synchronizer sync, ResourceManager sender,
-            Profiler prepareProfiler, Profiler applyProfiler,
-            Executor prepareExecutor, Executor applyExecutor) {
+    private CompletableFuture<Void> requireVanillaModels(ResourceManager sender, Executor prepareExecutor) {
         boolean hasVanillaModels;
         synchronized (vanillaModels) {
             hasVanillaModels = !vanillaModels.isEmpty();
         }
         if (!hasVanillaModels) {
-            return MinecraftClient.getInstance().getEntityModelLoader()
-                    .reload(sync, sender, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor);
+            return CompletableFuture.runAsync(() -> MinecraftClient.getInstance().getEntityModelLoader().reload(sender), prepareExecutor);
         }
         return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<Void> reload(Synchronizer sync, ResourceManager sender,
-            Profiler prepareProfiler, Profiler applyProfiler,
-            Executor prepareExecutor, Executor applyExecutor) {
-        ModelFoundry loadingFoundry = new ModelFoundry(this).setWorker(LoadWorker.async(prepareExecutor, prepareProfiler));
+    public CompletableFuture<Void> reload(Synchronizer sync, ResourceManager sender, Executor prepareExecutor, Executor applyExecutor) {
+        ModelFoundry loadingFoundry = new ModelFoundry(this).setWorker(LoadWorker.async(prepareExecutor));
 
-        return requireVanillaModels(sync, sender, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor)
+        return requireVanillaModels(sender, prepareExecutor)
                 .thenComposeAsync(v -> loadingFoundry.load(), prepareExecutor)
                 .thenCompose(sync::whenPrepared)
                 .thenRunAsync(() -> {

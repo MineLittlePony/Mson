@@ -2,7 +2,12 @@
 	"parent": "mson:alex",
 	"data": {
 		"head": {
-			"visible": false
+			"visible": false,
+      "children": {
+        "hat": {
+          "visible": false
+        }
+      }
 		},
 		"body": {
 			"cubes": [
@@ -13,19 +18,44 @@
 					"position": [-32, -32, 0],
 					"mirror": [false, true]
 				}
-			]
+			],
+      "children": {
+        "jacket": {
+          "visible": false
+        }
+      }
 		},
 		"left_arm": {
-			"visible": false
+			"visible": false,
+      "children": {
+        "left_sleeve": {
+          "visible": false
+        }
+      }
 		},
 		"left_leg": {
-			"visible": false
+			"visible": false,
+      "children": {
+        "left_pants": {
+          "visible": false
+        }
+      }
 		},
 		"right_arm": {
-			"visible": false
+			"visible": false,
+      "children": {
+        "right_sleeve": {
+          "visible": false
+        }
+      }
 		},
 		"right_leg": {
-			"visible": false
+			"visible": false,
+      "children": {
+        "right_pants": {
+          "visible": false
+        }
+      }
 		}
 	}
 }

@@ -1,13 +1,20 @@
 {
 	"parent": "mson:biped",
 	"data": {
-		"hat": {
-			"texture": { "u": 0, "v": 16 },
-			"pivot": [0, -14, 0],
-			"cubes": [
-				{ "from": [-4, -8, -4], "size": [ 8, 8, 8], "dilate": [-0.5, -0.5, -0.5] }
-			]
-		},
+    "head": {
+      "cubes": [
+        { "from": [-4, -8, -4], "size": [ 8,  8,  8] }
+      ],
+      "children": {
+        "hat": {
+          "texture": { "u": 0, "v": 16 },
+          "pivot": [0, -14, 0],
+          "cubes": [
+            { "from": [-4, -8, -4], "size": [ 8, 8, 8], "dilate": [-0.5, -0.5, -0.5] }
+          ]
+        }
+      }
+    },
 		"body": {
 			"texture": { "u": 32, "v": 16 },
 			"pivot": [0, -14, 0],

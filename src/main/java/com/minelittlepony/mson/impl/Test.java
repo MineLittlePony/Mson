@@ -2,7 +2,6 @@ package com.minelittlepony.mson.impl;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
@@ -72,7 +71,7 @@ final class Test {
         });
     }
 
-    static Function<EntityRendererFactory.Context, PlayerEntityRenderer> playerRendererFactor(ModelKey<? extends PlayerEntityModel<AbstractClientPlayerEntity>> key) {
+    static Function<EntityRendererFactory.Context, PlayerEntityRenderer> playerRendererFactor(ModelKey<? extends PlayerEntityModel> key) {
         return r -> new PlayerEntityRenderer(r, false) {{
             this.model = key.createModel();
         }};

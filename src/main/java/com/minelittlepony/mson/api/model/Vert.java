@@ -1,14 +1,22 @@
 package com.minelittlepony.mson.api.model;
 
+import net.minecraft.client.model.ModelPart;
+
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public interface Vert {
-    Vector3f getPos();
+    default Vector3f getPos() {
+        return ((ModelPart.Vertex)this).pos();
+    }
 
-    float getU();
+    default float getU() {
+        return ((ModelPart.Vertex)this).u();
+    }
 
-    float getV();
+    default float getV() {
+        return ((ModelPart.Vertex)this).v();
+    }
 
     default Vert rotate(float x, float y, float z) {
         return rotate(new Quaternionf().rotateXYZ(x, y, z));

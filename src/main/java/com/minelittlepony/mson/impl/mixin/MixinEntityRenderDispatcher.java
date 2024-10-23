@@ -32,7 +32,7 @@ import java.util.function.Predicate;
 @Mixin(EntityRenderDispatcher.class)
 abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     @Shadow
-    private Map<EntityType<?>, EntityRenderer<? extends Entity>> renderers;
+    private Map<EntityType<?>, EntityRenderer<? extends Entity, ?>> renderers;
     private Map<Identifier, Map.Entry<Predicate<AbstractClientPlayerEntity>, PlayerEntityRenderer>> customModelRenderers;
     @Shadow
     private @Final EntityModelLoader modelLoader;
@@ -48,9 +48,11 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
         EntityRenderDispatcher self = (EntityRenderDispatcher)(Object)this;
         return new EntityRendererFactory.Context(self,
                 mc.getItemRenderer(),
+                mc.getMapRenderer(),
                 mc.getBlockRenderManager(),
-                mc.getEntityRenderDispatcher().getHeldItemRenderer(), mc.getResourceManager(),
+                mc.getResourceManager(),
                 modelLoader,
+                mc.getEquipmentModelLoader(),
                 mc.textRenderer
         );
     }
@@ -68,7 +70,7 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     }
 
     @Override
-    public <T extends Entity, R extends EntityRenderer<?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRendererFactory.Context, R> constructor) {
+    public <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRendererFactory.Context, R> constructor) {
         try {
             if (renderers instanceof ImmutableMap) {
                 renderers = new HashMap<>(renderers);
@@ -84,7 +86,7 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
             at = @At("HEAD"),
             cancellable = true
     )
-    private void onGetRenderer(Entity entity, CallbackInfoReturnable<EntityRenderer<?>> info) {
+    private void onGetRenderer(Entity entity, CallbackInfoReturnable<EntityRenderer<?, ?>> info) {
         if (entity instanceof AbstractClientPlayerEntity player) {
             customModelRenderers.values().stream()
                 .filter(entry -> entry.getKey().test(player))

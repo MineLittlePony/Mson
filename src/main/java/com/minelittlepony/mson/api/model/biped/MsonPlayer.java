@@ -9,18 +9,13 @@ import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.util.PartUtil;
 
 public class MsonPlayer<T extends LivingEntity>
-    extends PlayerEntityModel<T>
+    extends PlayerEntityModel
     implements MsonModel {
-
-    protected ModelPart cape;
-    protected ModelPart deadmsEars;
 
     private boolean empty;
 
     public MsonPlayer(ModelPart tree) {
         super(tree, false);
-        cape = tree.getChild("cloak");
-        deadmsEars = tree.getChild("ear");
         empty = tree.traverse().noneMatch(p -> !p.isEmpty());
     }
 

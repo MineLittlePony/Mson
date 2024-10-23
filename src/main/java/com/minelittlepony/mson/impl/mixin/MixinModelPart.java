@@ -51,11 +51,11 @@ abstract class MixinCuboid implements Cube {
     }
     @Override
     public Rect getSide(int index) {
-        return (Rect)sides[index];
+        return (Rect)(Object)sides[index];
     }
     @Override
     public void setSide(int index, Rect value) {
-        sides[index] = (ModelPart.Quad)value;
+        sides[index] = (ModelPart.Quad)(Object)value;
     }
     @Override
     public int sideCount() {
@@ -74,11 +74,11 @@ abstract class MixinQuad implements Rect {
 
     @Override
     public Vert getVertex(int index) {
-        return (Vert)vertices[index];
+        return (Vert)(Object)vertices[index];
     }
     @Override
     public void setVertex(int index, Vert value) {
-        vertices[index] = (ModelPart.Vertex)value;
+        vertices[index] = (ModelPart.Vertex)(Object)value;
     }
 
     @Override
@@ -112,10 +112,4 @@ abstract class MixinQuad implements Rect {
 
 @Mixin(ModelPart.Vertex.class)
 abstract class MixinVertex implements Vert {
-    @Accessor("pos") @Override
-    public abstract Vector3f getPos();
-    @Accessor("u") @Override
-    public abstract float getU();
-    @Accessor("v") @Override
-    public abstract float getV();
 }

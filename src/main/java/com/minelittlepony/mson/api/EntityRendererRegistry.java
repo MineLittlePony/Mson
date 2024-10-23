@@ -31,7 +31,7 @@ public interface EntityRendererRegistry {
     /**
      * Adds a custom entity renderer.
      */
-    <T extends Entity, R extends EntityRenderer<?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRendererFactory.Context, R> constructor);
+    <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRendererFactory.Context, R> constructor);
 
     /**
      * Adds a custom block entity renderer.

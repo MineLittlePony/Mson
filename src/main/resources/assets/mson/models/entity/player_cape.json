@@ -1,0 +1,15 @@
+{
+	"parent": "mson:biped",
+	"texture": {
+		"w": 64, "h": 64
+	},
+	"data": {
+		"cape": {
+			"texture": { "u": 0, "v": 0, "w": 64, "h": 32 },
+			"visible": false,
+			"cubes": [
+				{ "from": [-5, 0, -1], "size": [10, 16, 1] }
+			]
+		}
+	}
+}

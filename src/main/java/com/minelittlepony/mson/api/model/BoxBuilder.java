@@ -96,11 +96,11 @@ public final class BoxBuilder {
     }
 
     public Vert vert(float x, float y, float z, int u, int v) {
-        return (Vert)new ModelPart.Vertex(x, y, z, u, v);
+        return (Vert)(Object)new ModelPart.Vertex(x, y, z, u, v);
     }
 
     public Vert vert(int[] parameters, float[][] positionMatrix) {
-        return (Vert)new ModelPart.Vertex(
+        return (Vert)(Object)new ModelPart.Vertex(
                 positionMatrix[parameters[0]][0], positionMatrix[parameters[1]][1], positionMatrix[parameters[2]][2],
                 parameters[3], parameters[4]
         );
@@ -142,7 +142,7 @@ public final class BoxBuilder {
                 ModelPart.Vertex[] verts = new ModelPart.Vertex[vertices.length];
                 System.arraycopy(vertices, 0, verts, 0, vertices.length);
 
-                Rect rect = (Rect)new ModelPart.Quad(
+                Rect rect = (Rect)(Object)new ModelPart.Quad(
                         remap ? verts : defaultVertices,
                         u,         v,
                         u + w, v + h,

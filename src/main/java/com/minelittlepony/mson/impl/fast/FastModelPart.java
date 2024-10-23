@@ -73,12 +73,12 @@ public class FastModelPart extends ModelPart {
         for (Cuboid cube : accessor.getCuboids()) {
             Cube cu = ((Cube)cube);
             for (int i = 0; i < cu.sideCount(); i++) {
-                Quad quad = (Quad)cu.getSide(i);
-                for (Vertex vert : quad.vertices) {
+                Quad quad = (Quad)(Object)cu.getSide(i);
+                for (Vertex vert : quad.vertices()) {
                     fragments.add(new Fragment(
-                        vert.u, vert.v,
-                        vertices.computeIfAbsent(vert.pos, Function.identity()),
-                        normals.computeIfAbsent(quad.direction, Function.identity())
+                        vert.u(), vert.v(),
+                        vertices.computeIfAbsent(vert.pos(), Function.identity()),
+                        normals.computeIfAbsent(quad.direction(), Function.identity())
                     ));
                 }
             }

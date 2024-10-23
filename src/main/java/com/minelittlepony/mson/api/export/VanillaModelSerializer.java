@@ -31,15 +31,15 @@ public class VanillaModelSerializer extends ModelSerializer<TexturedModelData> {
     public void exportAll(Path root) {
         ((ModelList)MinecraftClient.getInstance().getEntityModelLoader()).getModelParts().forEach((id, model) -> {
             try {
-                Path path = root.resolve(id.getId().getNamespace()).resolve(id.getId().getPath() + ".json");
+                Path path = root.resolve(id.id().getNamespace()).resolve(id.id().getPath() + ".json");
                 writeToFile(path, model);
 
                 if (modelLoader != null) {
-                    ((MsonModelFormat)MsonModelFormat.INSTANCE).loadModel(id.getId(), path, modelLoader).ifPresent(content -> {
+                    ((MsonModelFormat)MsonModelFormat.INSTANCE).loadModel(id.id(), path, modelLoader).ifPresent(content -> {
                         BBModelFormat.INSTANCE.createSerializer().ifPresent(serializer -> {
                             try (serializer) {
                                 serializer.writeToFile(
-                                        root.resolve(id.getId().getNamespace()).resolve(id.getId().getPath() + ".bbmodel").normalize(),
+                                        root.resolve(id.id().getNamespace()).resolve(id.id().getPath() + ".bbmodel").normalize(),
                                         content
                                 );
                             } catch (Exception ex) {

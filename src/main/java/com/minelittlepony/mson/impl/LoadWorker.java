@@ -1,6 +1,7 @@
 package com.minelittlepony.mson.impl;
 
 import net.minecraft.util.profiler.Profiler;
+import net.minecraft.util.profiler.Profilers;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -11,9 +12,10 @@ public interface LoadWorker<T> {
 
     CompletableFuture<T> load(Supplier<T> loadFunc, String loadMessage);
 
-    public static <T> LoadWorker<T> async(Executor executor, Profiler profiler) {
+    public static <T> LoadWorker<T> async(Executor executor) {
         return (loadFunc, loadMessage) -> {
             return CompletableFuture.supplyAsync(() -> {
+                Profiler profiler = Profilers.get();
                 profiler.startTick();
                 profiler.push(loadMessage);
                 try {

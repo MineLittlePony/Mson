@@ -32,7 +32,7 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
                 });
     public final PendingRegistrations<
                     EntityType<?>,
-                    Function<EntityRendererFactory.Context, ? extends EntityRenderer<?>>
+                    Function<EntityRendererFactory.Context, ? extends EntityRenderer<?, ?>>
                 > entity = new PendingRegistrations<>(MsonImpl.id("renderers/entity"), EntityRendererRegistry::registerEntityRenderer);
     public final PendingRegistrations<
                     BlockEntityType<?>,
@@ -45,7 +45,7 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
     }
 
     @Override
-    public <T extends Entity, R extends EntityRenderer<?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRendererFactory.Context, R> constructor) {
+    public <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRendererFactory.Context, R> constructor) {
         entity.register(type, constructor);
     }
 
