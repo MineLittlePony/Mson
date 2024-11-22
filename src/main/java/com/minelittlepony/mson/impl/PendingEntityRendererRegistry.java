@@ -35,11 +35,11 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
     @SuppressWarnings("unchecked")
     public final PendingRegistrations<
                     EntityType<?>,
-                    Map.Entry<Either<Unit, Predicate<? extends Entity>>, Function<EntityRendererFactory.Context, ? extends EntityRenderer<?, ?>>>
+                    Map.Entry<Either<Unit, Predicate<Entity>>, Function<EntityRendererFactory.Context, ? extends EntityRenderer<?, ?>>>
                 > entity = new PendingRegistrations<>(MsonImpl.id("renderers/entity"), (registry, key, entry) -> {
                     entry.getKey()
                         .ifLeft(unit -> registry.registerEntityRenderer(key, entry.getValue()))
-                       .ifRight(condition -> registry.registerEntityRenderer((EntityType<Entity>)key, (Predicate<Entity>)condition, entry.getValue()));
+                       .ifRight(condition -> registry.registerEntityRenderer((EntityType<Entity>)key, condition, entry.getValue()));
                 });
     public final PendingRegistrations<
                     BlockEntityType<?>,
@@ -56,9 +56,10 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
         entity.register(type, Map.entry(Either.left(Unit.INSTANCE), constructor));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Predicate<T> condition, Function<Context, R> constructor) {
-        entity.register(type, Map.entry(Either.right(condition), constructor));
+    public <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Predicate<? super T> condition, Function<Context, R> constructor) {
+        entity.register(type, Map.entry(Either.right((Predicate<Entity>)condition), constructor));
     }
 
     @Override

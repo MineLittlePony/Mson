@@ -40,7 +40,7 @@ public interface EntityRendererRegistry {
      * @param condition   Predicate to determine when to use this renderer.
      * @param constructor The renderer factory
      */
-    <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Predicate<T> condition, Function<EntityRendererFactory.Context, R> constructor);
+    <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Predicate<? super T> condition, Function<EntityRendererFactory.Context, R> constructor);
 
     /**
      * Adds a custom block entity renderer.

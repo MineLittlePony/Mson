@@ -87,7 +87,7 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Predicate<T> condition, Function<Context, R> constructor) {
+    public <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Predicate<? super T> condition, Function<Context, R> constructor) {
         try {
             if (customEntityRenderers == null) {
                 customEntityRenderers = new HashMap<>();
