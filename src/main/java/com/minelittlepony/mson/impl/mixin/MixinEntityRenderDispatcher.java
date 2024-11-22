@@ -6,6 +6,7 @@ import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
+import net.minecraft.client.render.entity.EntityRendererFactory.Context;
 import net.minecraft.client.render.entity.model.EntityModelLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -33,12 +34,15 @@ import java.util.function.Predicate;
 abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     @Shadow
     private Map<EntityType<?>, EntityRenderer<? extends Entity, ?>> renderers;
+    private Map<EntityType<?>, Map<Predicate<Entity>, EntityRenderer<? extends Entity, ?>>> customEntityRenderers;
     private Map<Identifier, Map.Entry<Predicate<AbstractClientPlayerEntity>, PlayerEntityRenderer>> customModelRenderers;
     @Shadow
     private @Final EntityModelLoader modelLoader;
 
     @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
     private void onRegisterRenderers(ResourceManager manager, CallbackInfo info) {
+        customEntityRenderers = null;
+        customModelRenderers = null;
         MsonImpl.INSTANCE.getEntityRendererRegistry().player.publish(this);
         MsonImpl.INSTANCE.getEntityRendererRegistry().entity.publish(this);
     }
@@ -81,6 +85,19 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Predicate<T> condition, Function<Context, R> constructor) {
+        try {
+            if (customEntityRenderers == null) {
+                customEntityRenderers = new HashMap<>();
+            }
+            customEntityRenderers.computeIfAbsent(type, t -> new HashMap<>()).put((Predicate<Entity>)condition, constructor.apply(createContext()));
+        } catch (Exception e) {
+            MsonImpl.LOGGER.error("Error whilst updating entity renderer with custom condition for entity type " + EntityType.getId(type) + ": " + e.getMessage(), e);
+        }
+    }
+
     @Inject(
             method = "getRenderer(Lnet/minecraft/entity/Entity;)Lnet/minecraft/client/render/entity/EntityRenderer;",
             at = @At("HEAD"),
@@ -88,8 +105,16 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     )
     private void onGetRenderer(Entity entity, CallbackInfoReturnable<EntityRenderer<?, ?>> info) {
         if (entity instanceof AbstractClientPlayerEntity player) {
-            customModelRenderers.values().stream()
-                .filter(entry -> entry.getKey().test(player))
+            if (customModelRenderers != null) {
+                customModelRenderers.values().stream()
+                    .filter(entry -> entry.getKey().test(player))
+                    .findFirst()
+                    .map(Map.Entry::getValue)
+                    .ifPresent(info::setReturnValue);
+            }
+        } else if (customEntityRenderers != null) {
+            customEntityRenderers.getOrDefault(entity.getType(), Map.of()).entrySet().stream()
+                .filter(entry -> entry.getKey().test(entity))
                 .findFirst()
                 .map(Map.Entry::getValue)
                 .ifPresent(info::setReturnValue);

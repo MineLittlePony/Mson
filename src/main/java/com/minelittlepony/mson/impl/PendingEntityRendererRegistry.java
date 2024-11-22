@@ -12,9 +12,11 @@ import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Unit;
 
 import com.google.common.base.Preconditions;
 import com.minelittlepony.mson.api.EntityRendererRegistry;
+import com.mojang.datafixers.util.Either;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -30,10 +32,15 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
                 > player = new PendingRegistrations<>(MsonImpl.id("renderers/player"), (registry, key, entry) -> {
                     registry.registerPlayerRenderer(key, entry.getKey(), entry.getValue());
                 });
+    @SuppressWarnings("unchecked")
     public final PendingRegistrations<
                     EntityType<?>,
-                    Function<EntityRendererFactory.Context, ? extends EntityRenderer<?, ?>>
-                > entity = new PendingRegistrations<>(MsonImpl.id("renderers/entity"), EntityRendererRegistry::registerEntityRenderer);
+                    Map.Entry<Either<Unit, Predicate<? extends Entity>>, Function<EntityRendererFactory.Context, ? extends EntityRenderer<?, ?>>>
+                > entity = new PendingRegistrations<>(MsonImpl.id("renderers/entity"), (registry, key, entry) -> {
+                    entry.getKey()
+                        .ifLeft(unit -> registry.registerEntityRenderer(key, entry.getValue()))
+                       .ifRight(condition -> registry.registerEntityRenderer((EntityType<Entity>)key, (Predicate<Entity>)condition, entry.getValue()));
+                });
     public final PendingRegistrations<
                     BlockEntityType<?>,
                     Function<BlockEntityRendererFactory.Context, ? extends BlockEntityRenderer<?>>
@@ -46,7 +53,12 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
 
     @Override
     public <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRendererFactory.Context, R> constructor) {
-        entity.register(type, constructor);
+        entity.register(type, Map.entry(Either.left(Unit.INSTANCE), constructor));
+    }
+
+    @Override
+    public <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Predicate<T> condition, Function<Context, R> constructor) {
+        entity.register(type, Map.entry(Either.right(condition), constructor));
     }
 
     @Override

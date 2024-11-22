@@ -34,6 +34,15 @@ public interface EntityRendererRegistry {
     <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRendererFactory.Context, R> constructor);
 
     /**
+     * Adds a custom entity renderer.
+     *
+     * @param type        Type type of entity
+     * @param condition   Predicate to determine when to use this renderer.
+     * @param constructor The renderer factory
+     */
+    <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Predicate<T> condition, Function<EntityRendererFactory.Context, R> constructor);
+
+    /**
      * Adds a custom block entity renderer.
      */
     <P extends BlockEntity, R extends BlockEntityRenderer<?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererFactory.Context, R> constructor);
