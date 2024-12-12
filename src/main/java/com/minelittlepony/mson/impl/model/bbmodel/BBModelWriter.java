@@ -229,6 +229,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
 
             Map<Vert, UUID> verticesCache = quads.stream()
                 .flatMap(quad -> Arrays.stream(quad.rect().getVertices()))
+                .distinct()
                 .collect(Collectors.toMap(Function.identity(), vv -> UUID.randomUUID()));
 
             buffer.object(elementJson, "faces", buffer.of(facesJson -> {
