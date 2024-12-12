@@ -4,8 +4,6 @@ import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.model.TexturedModelData;
-import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 
@@ -24,6 +22,7 @@ import com.minelittlepony.mson.api.parser.ModelFormat;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.Mson;
 import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
+import com.minelittlepony.mson.impl.mixin.ModelListAccessor;
 import com.minelittlepony.mson.impl.model.RootContext;
 import com.minelittlepony.mson.impl.model.bbmodel.BBModelFormat;
 import com.minelittlepony.mson.impl.model.json.MsonModelFormat;
@@ -70,10 +69,10 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         return handlersByExtension.getOrDefault(extension, Set.of()).stream();
     }
 
-    public void registerVanillaModels(Map<EntityModelLayer, TexturedModelData> modelParts) {
+    public void registerVanillaModels() {
         synchronized (vanillaModels) {
             vanillaModels.clear();
-            modelParts.forEach((layer, vanilla) -> {
+            ((ModelListAccessor)MinecraftClient.getInstance().getLoadedEntityModels()).getModelParts().forEach((layer, vanilla) -> {
                 Identifier id = layer.id().withPath(p -> String.format("mson/%s", p));
                 ((MsonImpl.KeyHolder)vanilla).setKey(registeredModels.computeIfAbsent(id, VanillaKey::new));
                 vanillaModels.add(id);
@@ -85,13 +84,14 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         }
     }
 
-    private CompletableFuture<Void> requireVanillaModels(ResourceManager sender, Executor prepareExecutor) {
+    private CompletableFuture<Void> requireVanillaModels(Synchronizer sync, ResourceManager sender, Executor prepareExecutor, Executor applyExecutor) {
         boolean hasVanillaModels;
         synchronized (vanillaModels) {
             hasVanillaModels = !vanillaModels.isEmpty();
         }
         if (!hasVanillaModels) {
-            return CompletableFuture.runAsync(() -> MinecraftClient.getInstance().getEntityModelLoader().reload(sender), prepareExecutor);
+            LOGGER.info("Vanilla models are not ready, preparing them ourselves...");
+            return CompletableFuture.runAsync(() -> MinecraftClient.getInstance().getBakedModelManager().reload(sync, sender, prepareExecutor, applyExecutor), prepareExecutor);
         }
         return CompletableFuture.completedFuture(null);
     }
@@ -100,7 +100,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     public CompletableFuture<Void> reload(Synchronizer sync, ResourceManager sender, Executor prepareExecutor, Executor applyExecutor) {
         ModelFoundry loadingFoundry = new ModelFoundry(this).setWorker(LoadWorker.async(prepareExecutor));
 
-        return requireVanillaModels(sender, prepareExecutor)
+        return requireVanillaModels(sync, sender, prepareExecutor, applyExecutor)
                 .thenComposeAsync(v -> loadingFoundry.load(), prepareExecutor)
                 .thenCompose(sync::whenPrepared)
                 .thenRunAsync(() -> {

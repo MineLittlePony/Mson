@@ -7,7 +7,8 @@ import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory.Context;
-import net.minecraft.client.render.entity.model.EntityModelLoader;
+import net.minecraft.client.render.entity.equipment.EquipmentModelLoader;
+import net.minecraft.client.render.entity.model.LoadedEntityModels;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.resource.ResourceManager;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @Mixin(EntityRenderDispatcher.class)
 abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
@@ -37,7 +39,9 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     private Map<EntityType<?>, Map<Predicate<Entity>, EntityRenderer<? extends Entity, ?>>> customEntityRenderers;
     private Map<Identifier, Map.Entry<Predicate<AbstractClientPlayerEntity>, PlayerEntityRenderer>> customModelRenderers;
     @Shadow
-    private @Final EntityModelLoader modelLoader;
+    private @Final Supplier<LoadedEntityModels> entityModelsGetter;
+    @Shadow
+    private @Final EquipmentModelLoader equipmentModelLoader;
 
     @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
     private void onRegisterRenderers(ResourceManager manager, CallbackInfo info) {
@@ -49,14 +53,14 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
 
     private EntityRendererFactory.Context createContext() {
         MinecraftClient mc = MinecraftClient.getInstance();
-        EntityRenderDispatcher self = (EntityRenderDispatcher)(Object)this;
-        return new EntityRendererFactory.Context(self,
-                mc.getItemRenderer(),
+        return new EntityRendererFactory.Context(
+                (EntityRenderDispatcher)(Object)this,
+                mc.getItemModelManager(),
                 mc.getMapRenderer(),
                 mc.getBlockRenderManager(),
                 mc.getResourceManager(),
-                modelLoader,
-                mc.getEquipmentModelLoader(),
+                entityModelsGetter.get(),
+                equipmentModelLoader,
                 mc.textRenderer
         );
     }

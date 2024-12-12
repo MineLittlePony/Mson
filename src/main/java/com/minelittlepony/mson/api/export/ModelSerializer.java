@@ -3,6 +3,7 @@ package com.minelittlepony.mson.api.export;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.gson.JsonElement;
+import com.google.gson.Strictness;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonWriter;
 
@@ -47,7 +48,7 @@ public abstract class ModelSerializer<T> implements AutoCloseable {
 
         public JsWriter(Writer out) {
             super(out);
-            setLenient(true);
+            setStrictness(Strictness.LENIENT);
             setIndent(currentIndent);
         }
 

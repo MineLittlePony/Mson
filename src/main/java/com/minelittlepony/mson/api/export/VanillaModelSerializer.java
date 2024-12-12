@@ -2,18 +2,17 @@ package com.minelittlepony.mson.api.export;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.TexturedModelData;
-import net.minecraft.client.render.entity.model.EntityModelLayer;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.parser.ModelLoader;
+import com.minelittlepony.mson.impl.mixin.ModelListAccessor;
 import com.minelittlepony.mson.impl.model.bbmodel.BBModelFormat;
 import com.minelittlepony.mson.impl.model.json.MsonModelFormat;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 
 public class VanillaModelSerializer extends ModelSerializer<TexturedModelData> {
 
@@ -29,7 +28,7 @@ public class VanillaModelSerializer extends ModelSerializer<TexturedModelData> {
     }
 
     public void exportAll(Path root) {
-        ((ModelList)MinecraftClient.getInstance().getEntityModelLoader()).getModelParts().forEach((id, model) -> {
+        ((ModelListAccessor)MinecraftClient.getInstance().getLoadedEntityModels()).getModelParts().forEach((id, model) -> {
             try {
                 Path path = root.resolve(id.id().getNamespace()).resolve(id.id().getPath() + ".json");
                 writeToFile(path, model);
@@ -57,10 +56,6 @@ public class VanillaModelSerializer extends ModelSerializer<TexturedModelData> {
     @Override
     public JsonElement writeToJsonElement(TexturedModelData content) {
         return JsonBuffer.INSTANCE.write(content);
-    }
-
-    public interface ModelList {
-        Map<EntityModelLayer, TexturedModelData> getModelParts();
     }
 
     @Override
