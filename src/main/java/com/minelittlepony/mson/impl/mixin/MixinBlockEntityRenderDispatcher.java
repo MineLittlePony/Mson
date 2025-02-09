@@ -69,5 +69,4 @@ abstract class MixinBlockEntityRenderDispatcher implements EntityRendererRegistr
             MsonImpl.LOGGER.error("Error whilst updating entity renderer " + BlockEntityType.getId(type) + ": " + e.getMessage());
         }
     }
-
 }

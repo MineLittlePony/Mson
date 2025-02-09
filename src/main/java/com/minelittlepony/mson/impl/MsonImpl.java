@@ -9,6 +9,7 @@ import net.minecraft.util.Identifier;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
@@ -58,7 +59,8 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
 
     private final AtomicReference<ModelFoundry> foundry = new AtomicReference<>(new ModelFoundry(this));
 
-    private final Set<Identifier> vanillaModels = new HashSet<>();
+    @Nullable
+    private volatile CompletableFuture<Void> vanillaModelsReloadTask = null;
 
     private MsonImpl() {
         registerModelFormatHandler(ModelFormat.MSON, MsonModelFormat.INSTANCE);
@@ -69,40 +71,50 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         return handlersByExtension.getOrDefault(extension, Set.of()).stream();
     }
 
-    public void registerVanillaModels() {
-        synchronized (vanillaModels) {
-            vanillaModels.clear();
+    public void onVanillaModelsPrepared(CompletableFuture<Void> reloadTask) {
+        synchronized (this) {
+            vanillaModelsReloadTask = reloadTask;
+        }
+    }
+
+    public void onVanillaModelsApplied() {
+        synchronized (this) {
             ((ModelListAccessor)MinecraftClient.getInstance().getLoadedEntityModels()).getModelParts().forEach((layer, vanilla) -> {
                 Identifier id = layer.id().withPath(p -> String.format("mson/%s", p));
                 ((MsonImpl.KeyHolder)vanilla).setKey(registeredModels.computeIfAbsent(id, VanillaKey::new));
-                vanillaModels.add(id);
             });
-        }
 
-        if (MsonMod.DEBUG) {
-            Test.exportVanillaModels(foundry.get());
+            if (MsonMod.DEBUG) {
+                Test.exportVanillaModels(foundry.get());
+            }
         }
     }
 
     private CompletableFuture<Void> requireVanillaModels(Synchronizer sync, ResourceManager sender, Executor prepareExecutor, Executor applyExecutor) {
-        boolean hasVanillaModels;
-        synchronized (vanillaModels) {
-            hasVanillaModels = !vanillaModels.isEmpty();
+        synchronized (this) {
+            if (vanillaModelsReloadTask == null) {
+                LOGGER.info("Vanilla models are not ready, preparing them ourselves...");
+                MinecraftClient.getInstance().getBakedModelManager().reload(sync, sender, prepareExecutor, applyExecutor);
+                if (vanillaModelsReloadTask == null) {
+                    LOGGER.info("Vanilla models did not prepare. Some errors may occur");
+                    return CompletableFuture.completedFuture((Void)null);
+                }
+            }
+            if (vanillaModelsReloadTask.isDone()) {
+                return CompletableFuture.completedFuture((Void)null);
+            }
+            LOGGER.info("Vanilla models are still preparing. Apply stage will be delayed until vanilla models are ready.");
+            return vanillaModelsReloadTask;
         }
-        if (!hasVanillaModels) {
-            LOGGER.info("Vanilla models are not ready, preparing them ourselves...");
-            return CompletableFuture.runAsync(() -> MinecraftClient.getInstance().getBakedModelManager().reload(sync, sender, prepareExecutor, applyExecutor), prepareExecutor);
-        }
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override
     public CompletableFuture<Void> reload(Synchronizer sync, ResourceManager sender, Executor prepareExecutor, Executor applyExecutor) {
         ModelFoundry loadingFoundry = new ModelFoundry(this).setWorker(LoadWorker.async(prepareExecutor));
 
-        return requireVanillaModels(sync, sender, prepareExecutor, applyExecutor)
-                .thenComposeAsync(v -> loadingFoundry.load(), prepareExecutor)
+        return loadingFoundry.load()
                 .thenCompose(sync::whenPrepared)
+                .thenComposeAsync(v -> requireVanillaModels(sync, sender, prepareExecutor, applyExecutor), prepareExecutor)
                 .thenRunAsync(() -> {
                     foundry.set(loadingFoundry.setWorker(LoadWorker.sync()));
                     renderers.initialize();
