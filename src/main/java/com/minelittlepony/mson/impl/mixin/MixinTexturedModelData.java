@@ -69,7 +69,7 @@ abstract class MixinModelPartData implements JsonBuffer.JsonConvertable {
                 children.forEach((key, value) -> js.add(key, exporter.write(value)));
             }));
             if (rotationData != ModelTransform.NONE) {
-                exporter.array(json, "pivot", rotationData.pivotX(), rotationData.pivotY(), rotationData.pivotZ());
+                exporter.array(json, "pivot", rotationData.x(), rotationData.y(), rotationData.z());
                 exporter.array(json, "rotate", rotationData.pitch(), rotationData.yaw(), rotationData.roll());
             }
         });

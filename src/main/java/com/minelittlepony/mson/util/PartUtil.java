@@ -22,7 +22,7 @@ public class PartUtil {
      * Shifts this model to align its center with the center of another.
      */
     public static ModelPart copyPivot(ModelPart from, ModelPart to) {
-        to.setPivot(from.pivotX, from.pivotY, from.pivotZ);
+        to.setOrigin(from.originX, from.originY, from.originZ);
         return to;
     }
 
@@ -30,9 +30,9 @@ public class PartUtil {
      * Adjusts the pivot of the given renderer by the given amounts in each direction.
      */
     public static ModelPart shift(ModelPart part, float x, float y, float z) {
-        part.pivotX += x;
-        part.pivotY += y;
-        part.pivotZ += z;
+        part.originX += x;
+        part.originY += y;
+        part.originZ += z;
         return part;
     }
 }

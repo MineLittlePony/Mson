@@ -34,7 +34,7 @@ public class FastModelPart extends ModelPart {
     public FastModelPart(List<Cuboid> cuboids, Map<String, ModelPart> children, float[] rotate, float[] pivot, boolean hidden) {
         super(cuboids, children);
         setAngles(rotate[0], rotate[1], rotate[2]);
-        setPivot(pivot[0], pivot[1], pivot[2]);
+        setOrigin(pivot[0], pivot[1], pivot[2]);
         setDefaultTransform(getTransform());
         visible = !hidden;
     }
@@ -48,7 +48,7 @@ public class FastModelPart extends ModelPart {
         }
 
         matrices.push();
-        rotate(matrices);
+        applyTransform(matrices);
         if (!hidden) {
             MatrixStack.Entry entry = matrices.peek();
             fastRenderCuboids(entry, vertices, light, overlay, color);
