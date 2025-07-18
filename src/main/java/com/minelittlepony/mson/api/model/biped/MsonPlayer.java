@@ -16,7 +16,7 @@ public class MsonPlayer<T extends LivingEntity>
 
     public MsonPlayer(ModelPart tree) {
         super(tree, false);
-        empty = tree.traverse().noneMatch(p -> !p.isEmpty());
+        empty = tree.traverse().stream().noneMatch(p -> !p.isEmpty());
     }
 
     @Override
