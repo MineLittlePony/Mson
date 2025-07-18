@@ -9,6 +9,8 @@ import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory.Context;
 import net.minecraft.client.render.entity.equipment.EquipmentModelLoader;
 import net.minecraft.client.render.entity.model.LoadedEntityModels;
+import net.minecraft.client.render.entity.state.EntityRenderState;
+import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.resource.ResourceManager;
@@ -37,7 +39,9 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     @Shadow
     private Map<EntityType<?>, EntityRenderer<? extends Entity, ?>> renderers;
     private Map<EntityType<?>, Map<Predicate<Entity>, EntityRenderer<? extends Entity, ?>>> customEntityRenderers;
+    private Map<EntityType<?>, Map<Predicate<EntityRenderState>, EntityRenderer<? extends Entity, ?>>> customEntityStateRenderers;
     private Map<Identifier, Map.Entry<Predicate<AbstractClientPlayerEntity>, PlayerEntityRenderer>> customModelRenderers;
+    private Map<Identifier, Map.Entry<Predicate<PlayerEntityRenderState>, PlayerEntityRenderer>> customStateRenderers;
     @Shadow
     private @Final Supplier<LoadedEntityModels> entityModelsGetter;
     @Shadow
@@ -47,8 +51,9 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
     private void onRegisterRenderers(ResourceManager manager, CallbackInfo info) {
         customEntityRenderers = null;
         customModelRenderers = null;
-        MsonImpl.INSTANCE.getEntityRendererRegistry().player.publish(this);
-        MsonImpl.INSTANCE.getEntityRendererRegistry().entity.publish(this);
+        customEntityStateRenderers = null;
+        customStateRenderers = null;
+        MsonImpl.INSTANCE.getEntityRendererRegistry().publishEntities(this);
     }
 
     private EntityRendererFactory.Context createContext() {
@@ -72,6 +77,18 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
                 customModelRenderers = new HashMap<>();
             }
             customModelRenderers.put(id, Map.entry(playerPredicate, constructor.apply(createContext())));
+        } catch (Exception e) {
+            MsonImpl.LOGGER.error("Error whilst updating adding player renderer with id " + id + ": " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public <T extends PlayerEntityRenderer> void registerPlayerStateRenderer(Identifier id, Predicate<PlayerEntityRenderState> statePredicate, Function<EntityRendererFactory.Context, T> constructor) {
+        try {
+            if (customStateRenderers == null) {
+                customStateRenderers = new HashMap<>();
+            }
+            customStateRenderers.put(id, Map.entry(statePredicate, constructor.apply(createContext())));
         } catch (Exception e) {
             MsonImpl.LOGGER.error("Error whilst updating adding player renderer with id " + id + ": " + e.getMessage(), e);
         }
@@ -102,6 +119,18 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
         }
     }
 
+    @Override
+    public <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityStateRenderer(EntityType<T> type, Predicate<EntityRenderState> condition, Function<Context, R> constructor) {
+        try {
+            if (customEntityStateRenderers == null) {
+                customEntityStateRenderers = new HashMap<>();
+            }
+            customEntityStateRenderers.computeIfAbsent(type, t -> new HashMap<>()).put(condition, constructor.apply(createContext()));
+        } catch (Exception e) {
+            MsonImpl.LOGGER.error("Error whilst updating entity renderer with custom condition for entity type " + EntityType.getId(type) + ": " + e.getMessage(), e);
+        }
+    }
+
     @Inject(
             method = "getRenderer(Lnet/minecraft/entity/Entity;)Lnet/minecraft/client/render/entity/EntityRenderer;",
             at = @At("HEAD"),
@@ -119,6 +148,29 @@ abstract class MixinEntityRenderDispatcher implements EntityRendererRegistry {
         } else if (customEntityRenderers != null) {
             customEntityRenderers.getOrDefault(entity.getType(), Map.of()).entrySet().stream()
                 .filter(entry -> entry.getKey().test(entity))
+                .findFirst()
+                .map(Map.Entry::getValue)
+                .ifPresent(info::setReturnValue);
+        }
+    }
+
+    @Inject(
+            method = "getRenderer(Lnet/minecraft/client/render/entity/state/EntityRenderState;)Lnet/minecraft/client/render/entity/EntityRenderer;",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private <S extends EntityRenderState> void onGetRenderer(S state, CallbackInfoReturnable<EntityRenderer<?, ?>> info) {
+        if (state instanceof PlayerEntityRenderState player) {
+            if (customStateRenderers != null) {
+                customStateRenderers.values().stream()
+                    .filter(entry -> entry.getKey().test(player))
+                    .findFirst()
+                    .map(Map.Entry::getValue)
+                    .ifPresent(info::setReturnValue);
+            }
+        } else if (customEntityRenderers != null) {
+            customEntityStateRenderers.getOrDefault(state.entityType, Map.of()).entrySet().stream()
+                .filter(entry -> entry.getKey().test(state))
                 .findFirst()
                 .map(Map.Entry::getValue)
                 .ifPresent(info::setReturnValue);

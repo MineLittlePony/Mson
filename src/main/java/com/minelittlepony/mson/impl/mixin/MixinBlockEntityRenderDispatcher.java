@@ -47,7 +47,7 @@ abstract class MixinBlockEntityRenderDispatcher implements EntityRendererRegistr
 
     @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
     private void onInit(CallbackInfo info) {
-        MsonImpl.INSTANCE.getEntityRendererRegistry().block.publish(this);
+        MsonImpl.INSTANCE.getEntityRendererRegistry().publishBlocks(this);
     }
 
     @Override
