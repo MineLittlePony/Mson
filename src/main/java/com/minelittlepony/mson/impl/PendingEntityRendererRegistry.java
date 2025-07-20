@@ -16,7 +16,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 
-import com.google.common.base.Preconditions;
 import com.minelittlepony.mson.api.EntityRendererRegistry;
 import com.mojang.datafixers.util.Either;
 
@@ -24,44 +23,26 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public final class PendingEntityRendererRegistry implements EntityRendererRegistry {
-    private final PendingRegistrations<
-                    Identifier,
+final class PendingEntityRendererRegistry implements EntityRendererRegistry {
+    final PendingRegistrations<Identifier,
                     Map.Entry<Predicate<AbstractClientPlayerEntity>, Function<EntityRendererFactory.Context, ? extends PlayerEntityRenderer>>
-                > player = new PendingRegistrations<>(MsonImpl.id("renderers/player"), (registry, key, entry) -> {
-                    registry.registerPlayerRenderer(key, entry.getKey(), entry.getValue());
-                });
-    private final PendingRegistrations<
-                    Identifier,
+                > player = new PendingRegistrations<>(MsonImpl.id("renderers/player"));
+    final PendingRegistrations<Identifier,
                     Map.Entry<Predicate<PlayerEntityRenderState>, Function<EntityRendererFactory.Context, ? extends PlayerEntityRenderer>>
-                > playerState = new PendingRegistrations<>(MsonImpl.id("renderers/player_render_state"), (registry, key, entry) -> {
-                    registry.registerPlayerStateRenderer(key, entry.getKey(), entry.getValue());
-                });
-    @SuppressWarnings("unchecked")
-    private final PendingRegistrations<
-                    EntityType<?>,
+                > playerState = new PendingRegistrations<>(MsonImpl.id("renderers/player_render_state"));
+    final PendingRegistrations<EntityType<?>,
                     Map.Entry<Either<Unit, Predicate<Entity>>, Function<EntityRendererFactory.Context, ? extends EntityRenderer<?, ?>>>
-                > entity = new PendingRegistrations<>(MsonImpl.id("renderers/entity"), (registry, key, entry) -> {
-                    entry.getKey()
-                        .ifLeft(unit -> registry.registerEntityRenderer(key, entry.getValue()))
-                       .ifRight(condition -> registry.registerEntityRenderer((EntityType<Entity>)key, condition, entry.getValue()));
-                });
-    @SuppressWarnings("unchecked")
-    private final PendingRegistrations<
-                    EntityType<?>,
-                    Map.Entry<Either<Unit, Predicate<EntityRenderState>>, Function<EntityRendererFactory.Context, ? extends EntityRenderer<?, ?>>>
-                > entityState = new PendingRegistrations<>(MsonImpl.id("renderers/entity_render_state"), (registry, key, entry) -> {
-                    entry.getKey()
-                        .ifLeft(unit -> registry.registerEntityRenderer(key, entry.getValue()))
-                       .ifRight(condition -> registry.registerEntityStateRenderer((EntityType<Entity>)key, condition, entry.getValue()));
-                });
-    private final PendingRegistrations<
-                    BlockEntityType<?>,
+                > entity = new PendingRegistrations<>(MsonImpl.id("renderers/entity"));
+    final PendingRegistrations<EntityType<?>,
+                    Map.Entry<Predicate<EntityRenderState>, Function<EntityRendererFactory.Context, ? extends EntityRenderer<?, ?>>>
+                > entityState = new PendingRegistrations<>(MsonImpl.id("renderers/entity_render_state"));
+    final PendingRegistrations<BlockEntityType<?>,
                     Function<BlockEntityRendererFactory.Context, ? extends BlockEntityRenderer<?>>
-                > block = new PendingRegistrations<>(MsonImpl.id("renderers/block"), EntityRendererRegistry::registerBlockRenderer);
+                > block = new PendingRegistrations<>(MsonImpl.id("renderers/block"));
 
     @Override
     public <T extends PlayerEntityRenderer> void registerPlayerRenderer(Identifier skinType, Predicate<AbstractClientPlayerEntity> playerPredicate, Function<Context, T> constructor) {
@@ -86,7 +67,7 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
 
     @Override
     public <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityStateRenderer(EntityType<T> type, Predicate<EntityRenderState> condition, Function<Context, R> constructor) {
-        entityState.register(type, Map.entry(Either.right(condition), constructor));
+        entityState.register(type, Map.entry(condition, constructor));
     }
 
     @Override
@@ -102,38 +83,24 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
         block.reload();
     }
 
-    public void publishEntities(EntityRendererRegistry target) {
-        player.publish(target);
-        playerState.publish(target);
-        entity.publish(target);
-        entityState.publish(target);
-    }
-
-    public void publishBlocks(EntityRendererRegistry target) {
-        block.publish(target);
-    }
-
     public class PendingRegistrations<Key, Entry> {
         private final HashMap<Key, Entry> entries = new HashMap<>();
-
-        private final Registerable<Key, Entry> registerable;
 
         private boolean waiting;
 
         @Nullable
-        private EntityRendererRegistry runtimeRegistry;
+        private BiConsumer<Key, Entry> runtimeRegistry;
 
         private final Identifier registryId;
 
-        public PendingRegistrations(Identifier registryId, Registerable<Key, Entry> registerable) {
+        public PendingRegistrations(Identifier registryId) {
             this.registryId = registryId;
-            this.registerable = registerable;
         }
 
         public void register(Key key, Entry entry) {
             entries.put(key, entry);
             if (runtimeRegistry != null && !waiting) {
-                registerable.register(runtimeRegistry, key, entry);
+                runtimeRegistry.accept(key, entry);
             }
         }
 
@@ -142,15 +109,14 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
             waiting = false;
             if (runtimeRegistry != null) {
                 MsonImpl.LOGGER.info(delayed ? "Running delayed initialization for registry '{}'" : "Initializing registry '{}'", registryId);
-                entries.forEach((k, v) -> registerable.register(runtimeRegistry, k, v));
+                entries.forEach(runtimeRegistry);
             } else {
                 MsonImpl.LOGGER.info("Registry '{}' queued for delayed initialization", registryId);
                 waiting = true;
             }
         }
 
-        public void publish(EntityRendererRegistry runtimeRegistry) {
-            Preconditions.checkArgument(!(runtimeRegistry instanceof PendingEntityRendererRegistry), "Uh oh");
+        public void publish(BiConsumer<Key, Entry> runtimeRegistry) {
             this.runtimeRegistry = runtimeRegistry;
             if (waiting) {
                 reload();
@@ -158,7 +124,7 @@ public final class PendingEntityRendererRegistry implements EntityRendererRegist
         }
 
         interface Registerable<Key, Entry> {
-            void register(EntityRendererRegistry registry, Key key, Entry entry);
+            void register(BiConsumer<Key, Entry> registry, Key key, Entry entry);
         }
     }
 }
