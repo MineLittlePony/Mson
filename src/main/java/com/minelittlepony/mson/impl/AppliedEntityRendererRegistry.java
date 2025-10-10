@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerLikeEntity;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
@@ -8,6 +8,7 @@ import net.minecraft.client.render.entity.state.EntityRenderState;
 import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.PlayerLikeEntity;
 import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
@@ -17,10 +18,10 @@ import java.util.function.Predicate;
 
 public class AppliedEntityRendererRegistry {
     private final Map<EntityType<?>, Map<Predicate<EntityRenderState>, EntityRenderer<? extends Entity, ?>>> customEntityStateRenderers = new HashMap<>();
-    private final Map<Identifier, Map.Entry<Predicate<PlayerEntityRenderState>, PlayerEntityRenderer>> customStateRenderers = new HashMap<>();
+    private final Map<Identifier, Map.Entry<Predicate<?>, PlayerEntityRenderer<?>>> customStateRenderers = new HashMap<>();
 
     private final Map<EntityType<?>, Map<Predicate<Entity>, EntityRenderer<? extends Entity, ?>>> customEntityRenderers = new HashMap<>();
-    private final Map<Identifier, Map.Entry<Predicate<AbstractClientPlayerEntity>, PlayerEntityRenderer>> customModelRenderers = new HashMap<>();
+    private final Map<Identifier, Map.Entry<Predicate<? super ClientPlayerLikeEntity>, PlayerEntityRenderer<?>>> customModelRenderers = new HashMap<>();
 
     public AppliedEntityRendererRegistry(Map<EntityType<?>, EntityRenderer<? extends Entity, ?>> renderers, EntityRendererFactory.Context context) {
         var pendingRegistrations = MsonImpl.INSTANCE.getEntityRendererRegistry();
@@ -59,10 +60,10 @@ public class AppliedEntityRendererRegistry {
     }
 
     public Optional<EntityRenderer<?, ?>> getRenderer(Entity entity) {
-        if (entity instanceof AbstractClientPlayerEntity player) {
+        if (entity instanceof PlayerLikeEntity player && player instanceof ClientPlayerLikeEntity p) {
             if (!customModelRenderers.isEmpty()) {
                 return customModelRenderers.values().stream()
-                    .filter(entry -> entry.getKey().test(player))
+                    .filter(entry -> entry.getKey().test(p))
                     .findFirst()
                     .map(Map.Entry::getValue);
             }
@@ -75,11 +76,12 @@ public class AppliedEntityRendererRegistry {
         return Optional.empty();
     }
 
+    @SuppressWarnings("unchecked")
     public <S extends EntityRenderState> Optional<EntityRenderer<?, ?>> getRenderer(S state) {
-        if (state instanceof PlayerEntityRenderState player) {
+        if (state instanceof PlayerEntityRenderState) {
             if (!customStateRenderers.isEmpty()) {
                 return customStateRenderers.values().stream()
-                    .filter(entry -> entry.getKey().test(player))
+                    .filter(entry -> ((Predicate<EntityRenderState>)entry.getKey()).test(state))
                     .findFirst()
                     .map(Map.Entry::getValue);
             }

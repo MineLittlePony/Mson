@@ -4,12 +4,14 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.item.ItemModelManager;
 import net.minecraft.client.render.block.BlockRenderManager;
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
+import net.minecraft.client.render.block.entity.BlockEntityRenderManager;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
+import net.minecraft.client.render.entity.EntityRenderManager;
 import net.minecraft.client.render.entity.model.LoadedEntityModels;
 import net.minecraft.client.render.item.ItemRenderer;
+import net.minecraft.client.texture.PlayerSkinCache;
+import net.minecraft.client.texture.SpriteHolder;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,10 +26,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-@Mixin(BlockEntityRenderDispatcher.class)
+@Mixin(BlockEntityRenderManager.class)
 abstract class MixinBlockEntityRenderDispatcher {
     @Shadow
-    private Map<BlockEntityType<?>, BlockEntityRenderer<?>> renderers;
+    private Map<BlockEntityType<?>, BlockEntityRenderer<?, ?>> renderers;
     @Shadow
     private @Final TextRenderer textRenderer;
     @Shadow
@@ -39,19 +41,25 @@ abstract class MixinBlockEntityRenderDispatcher {
     @Shadow
     private @Final ItemRenderer itemRenderer;
     @Shadow
-    private @Final EntityRenderDispatcher entityRenderDispatcher;
+    private @Final EntityRenderManager entityRenderDispatcher;
+    @Shadow
+    private @Final SpriteHolder spriteHolder;
+    @Shadow
+    private @Final PlayerSkinCache playerSkinCache;
 
     @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
     private void onInit(CallbackInfo info) {
         renderers = new HashMap<>(renderers);
         AppliedBlockEntityRendererRegistry.reload(renderers, new BlockEntityRendererFactory.Context(
-                (BlockEntityRenderDispatcher)(Object)this,
+                (BlockEntityRenderManager)(Object)this,
                 blockRenderManager,
                 itemModelManager,
                 itemRenderer,
                 entityRenderDispatcher,
                 entityModelsGetter.get(),
-                textRenderer
+                textRenderer,
+                spriteHolder,
+                playerSkinCache
         ));
     }
 }

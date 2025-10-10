@@ -155,7 +155,7 @@ class BlockBenchFileContent implements JsonContext {
     }
 
     @Override
-    public ModelContext createContext(Model model, Object thisObj, ModelContext.Locals locals) {
+    public ModelContext createContext(Model<?> model, Object thisObj, ModelContext.Locals locals) {
         return new RootContext(model, thisObj, (ModelContextImpl)FileContent.empty().createContext(model, thisObj, locals), elements, locals);
     }
 

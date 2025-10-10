@@ -35,7 +35,7 @@ class SubContext implements ModelContextImpl {
 
     @Nullable
     @Override
-    public <T extends Model> T getModel() {
+    public <T extends Model<?>> T getModel() {
         return parent.getModel();
     }
 

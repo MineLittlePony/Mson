@@ -1,10 +1,9 @@
 package com.minelittlepony.mson.impl;
 
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.ResourceReloader;
 import net.minecraft.util.Identifier;
 
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +16,6 @@ import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
-import com.minelittlepony.mson.api.model.traversal.PartSkeleton;
 import com.minelittlepony.mson.api.model.traversal.SkeletonisedModel;
 import com.minelittlepony.mson.api.parser.ModelFormat;
 import com.minelittlepony.mson.api.parser.FileContent;
@@ -40,11 +38,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
+public class MsonImpl implements Mson, ResourceReloader {
     public static final Logger LOGGER = LogManager.getLogger("Mson");
     public static final MsonImpl INSTANCE = new MsonImpl();
 
-    private static final Identifier ID = id("models");
+    public static final Identifier RELOADER_ID = id("models");
 
     public static Identifier id(String name) {
         return Identifier.of("mson", name);
@@ -90,11 +88,11 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         }
     }
 
-    private CompletableFuture<Void> requireVanillaModels(Synchronizer sync, ResourceManager sender, Executor prepareExecutor, Executor applyExecutor) {
+    private CompletableFuture<Void> requireVanillaModels(ResourceReloader.Store store, Executor computeExecutor, Synchronizer sync, Executor applyExecutor) {
         synchronized (this) {
             if (vanillaModelsReloadTask == null) {
                 LOGGER.info("Vanilla models are not ready, preparing them ourselves...");
-                MinecraftClient.getInstance().getBakedModelManager().reload(sync, sender, prepareExecutor, applyExecutor);
+                MinecraftClient.getInstance().getBakedModelManager().reload(store, computeExecutor, sync, applyExecutor);
                 if (vanillaModelsReloadTask == null) {
                     LOGGER.info("Vanilla models did not prepare. Some errors may occur");
                     return CompletableFuture.completedFuture((Void)null);
@@ -109,12 +107,12 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     }
 
     @Override
-    public CompletableFuture<Void> reload(Synchronizer sync, ResourceManager sender, Executor prepareExecutor, Executor applyExecutor) {
-        ModelFoundry loadingFoundry = new ModelFoundry(this).setWorker(LoadWorker.async(prepareExecutor));
+    public CompletableFuture<Void> reload(ResourceReloader.Store store, Executor computeExecutor, Synchronizer sync, Executor applyExecutor) {
+        ModelFoundry loadingFoundry = new ModelFoundry(this).setWorker(LoadWorker.async(computeExecutor));
 
         return loadingFoundry.load()
                 .thenCompose(sync::whenPrepared)
-                .thenComposeAsync(v -> requireVanillaModels(sync, sender, prepareExecutor, applyExecutor), prepareExecutor)
+                .thenComposeAsync(v -> requireVanillaModels(store, computeExecutor, sync, applyExecutor), computeExecutor)
                 .thenRunAsync(() -> {
                     foundry.set(loadingFoundry.setWorker(LoadWorker.sync()));
                     renderers.initialize();
@@ -127,18 +125,13 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
     }
 
     @Override
-    public Identifier getFabricId() {
-        return ID;
-    }
-
-    @Override
     public PendingEntityRendererRegistry getEntityRendererRegistry() {
         return renderers;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends Model> ModelKey<T> registerModel(Identifier id, MsonModel.Factory<T> constructor) {
+    public <T extends Model<?>> ModelKey<T> registerModel(Identifier id, MsonModel.Factory<T> constructor) {
         Objects.requireNonNull(id, "Id must not be null");
         Objects.requireNonNull(constructor, "Implementation class must not be null");
         checkNamespace(id.getNamespace());
@@ -185,7 +178,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         void setKey(ModelKey<?> key);
     }
 
-    private final class VanillaKey<T extends Model> extends Key<T> {
+    private final class VanillaKey<T extends Model<?>> extends Key<T> {
         VanillaKey(Identifier id) {
             super(id, null);
         }
@@ -196,7 +189,7 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
         }
     }
 
-    private class Key<T extends Model> extends AbstractModelKeyImpl<T> {
+    private class Key<T extends Model<?>> extends AbstractModelKeyImpl<T> {
         private final MsonModel.Factory<T> constr;
 
         public Key(Identifier id, MsonModel.Factory<T> constr) {
@@ -227,16 +220,14 @@ public class MsonImpl implements Mson, IdentifiableResourceReloadListener {
                 ModelPart root = ctx.toTree();
                 V t = factory.create(root);
 
-                if (t instanceof SkeletonisedModel) {
-                    ((SkeletonisedModel)t).setSkeleton(context.getSkeleton()
-                            .map(s -> PartSkeleton.of(root, s))
-                            .orElseGet(() -> PartSkeleton.of(root)));
+                if (t instanceof SkeletonisedModel sk) {
+                    sk.setSkeleton(context.getSkeleton().map(root::ordered).orElse(root));
                 }
-                if (t instanceof MsonModel) {
-                    if (ctx instanceof RootContext) {
-                        ((RootContext)ctx).setModel(t);
+                if (t instanceof MsonModel mm) {
+                    if (ctx instanceof RootContext c) {
+                        c.setModel(t);
                     }
-                    ((MsonModel)t).init(ctx);
+                    mm.init(ctx);
                 }
                 return t;
             })

@@ -7,7 +7,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import java.util.Map;
 
 public class AppliedBlockEntityRendererRegistry {
-    public static void reload(Map<BlockEntityType<?>, BlockEntityRenderer<?>> renderers, BlockEntityRendererFactory.Context context) {
+    public static void reload(Map<BlockEntityType<?>, BlockEntityRenderer<?, ?>> renderers, BlockEntityRendererFactory.Context context) {
         MsonImpl.INSTANCE.getEntityRendererRegistry().block.publish((type, constructor) -> {
             try {
                 renderers.put(type, constructor.apply(context));

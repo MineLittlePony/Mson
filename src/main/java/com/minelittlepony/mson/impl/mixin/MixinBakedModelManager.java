@@ -1,9 +1,7 @@
 package com.minelittlepony.mson.impl.mixin;
 
 import net.minecraft.client.render.model.BakedModelManager;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.ResourceReloader.Synchronizer;
-import net.minecraft.util.profiler.Profiler;
+import net.minecraft.resource.ResourceReloader;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,14 +18,13 @@ import java.util.concurrent.Executor;
 @Mixin(BakedModelManager.class)
 abstract class MixinBakedModelManager {
     @Inject(method = "reload", at = @At("RETURN"))
-    private void onReload(Synchronizer sync, ResourceManager manager, Executor prepareExecutor, Executor applyExecutor,
+    private void onReload(ResourceReloader.Store store, Executor computeExecutor, ResourceReloader.Synchronizer synchronizer, Executor applyExecutor,
             CallbackInfoReturnable<CompletableFuture<Void>> info) {
         MsonImpl.INSTANCE.onVanillaModelsPrepared(info.getReturnValue());
     }
 
-    @Inject(method = "upload(Lnet/minecraft/client/render/model/BakedModelManager$BakingResult;Lnet/minecraft/util/profiler/Profiler;)V", at = @At("TAIL"))
-    private void upload(@Coerce Object bakingResult, Profiler profiler, CallbackInfo info) {
-        System.out.println("BakedModelManager reloading completed");
+    @Inject(method = "upload(Lnet/minecraft/client/render/model/BakedModelManager$BakingResult;)V", at = @At("TAIL"))
+    private void onUpload(@Coerce Object bakingResult, CallbackInfo info) {
         MsonImpl.INSTANCE.onVanillaModelsApplied();
     }
 }

@@ -1,14 +1,23 @@
 package com.minelittlepony.mson.impl.mixin;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.item.ItemModelManager;
+import net.minecraft.client.network.ClientPlayerLikeEntity;
+import net.minecraft.client.render.MapRenderer;
+import net.minecraft.client.render.block.BlockRenderManager;
+import net.minecraft.client.render.entity.EntityRenderManager;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.equipment.EquipmentModelLoader;
 import net.minecraft.client.render.entity.model.LoadedEntityModels;
 import net.minecraft.client.render.entity.state.EntityRenderState;
+import net.minecraft.client.texture.AtlasManager;
+import net.minecraft.client.texture.PlayerSkinCache;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.PlayerLikeEntity;
+import net.minecraft.entity.player.PlayerSkinType;
 import net.minecraft.resource.ResourceManager;
 
 import org.jetbrains.annotations.Nullable;
@@ -26,32 +35,45 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-@Mixin(EntityRenderDispatcher.class)
+@Mixin(EntityRenderManager.class)
 abstract class MixinEntityRenderDispatcher {
     @Shadow
     private Map<EntityType<?>, EntityRenderer<? extends Entity, ?>> renderers;
 
     @Shadow
+    private @Final ItemModelManager itemModelManager;
+    @Shadow
+    private @Final MapRenderer mapRenderer;
+    @Shadow
+    private @Final BlockRenderManager blockRenderManager;
+    @Shadow
+    private @Final AtlasManager atlasManager;
+    @Shadow
+    private @Final TextRenderer textRenderer;
+    @Shadow
     private @Final Supplier<LoadedEntityModels> entityModelsGetter;
     @Shadow
     private @Final EquipmentModelLoader equipmentModelLoader;
+    @Shadow
+    private @Final PlayerSkinCache skinCache;
 
     @Nullable
     private AppliedEntityRendererRegistry mson_registry;
 
     @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
     private void onRegisterRenderers(ResourceManager manager, CallbackInfo info) {
-        MinecraftClient mc = MinecraftClient.getInstance();
         renderers = new HashMap<>(renderers);
         mson_registry = new AppliedEntityRendererRegistry(renderers, new EntityRendererFactory.Context(
-                (EntityRenderDispatcher)(Object)this,
-                mc.getItemModelManager(),
-                mc.getMapRenderer(),
-                mc.getBlockRenderManager(),
-                mc.getResourceManager(),
+                (EntityRenderManager)(Object)this,
+                itemModelManager,
+                mapRenderer,
+                blockRenderManager,
+                manager,
                 entityModelsGetter.get(),
                 equipmentModelLoader,
-                mc.textRenderer
+                atlasManager,
+                textRenderer,
+                skinCache
         ));
     }
 
@@ -66,6 +88,20 @@ abstract class MixinEntityRenderDispatcher {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    @Inject(method = "getPlayerRenderer(Ljava/util/Map;Lnet/minecraft/entity/PlayerLikeEntity;)Lnet/minecraft/client/render/entity/PlayerEntityRenderer;",
+            at = @At("HEAD"),
+            cancellable = true)
+    private <T extends PlayerLikeEntity & ClientPlayerLikeEntity> void onGetPlayerRenderer(
+            Map<PlayerSkinType, PlayerEntityRenderer<T>> skinTypeToRenderer, T player,
+            CallbackInfoReturnable<PlayerEntityRenderer<T>> info
+        ) {
+        mson_registry.getRenderer(player).ifPresent(renderer -> {
+            if (renderer instanceof PlayerEntityRenderer p) {
+                info.setReturnValue(p);
+            }
+        });
+    }
     @Inject(
             method = "getRenderer(Lnet/minecraft/client/render/entity/state/EntityRenderState;)Lnet/minecraft/client/render/entity/EntityRenderer;",
             at = @At("HEAD"),

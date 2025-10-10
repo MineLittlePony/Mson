@@ -44,7 +44,7 @@ public interface ModelView {
      * Gets the currently-active model instance.
      */
     @Nullable
-    <T extends Model> T getModel();
+    <T extends Model<?>> T getModel();
 
     /**
      * Gets a value from this context's local variable table.

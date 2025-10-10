@@ -77,8 +77,8 @@ public class FastModelPart extends ModelPart {
                 for (Vertex vert : quad.vertices()) {
                     fragments.add(new Fragment(
                         vert.u(), vert.v(),
-                        vertices.computeIfAbsent(vert.pos(), Function.identity()),
-                        normals.computeIfAbsent(quad.direction(), Function.identity())
+                        vertices.computeIfAbsent(new Vector3f(vert.getPos()), Function.identity()),
+                        normals.computeIfAbsent(new Vector3f(quad.direction()), Function.identity())
                     ));
                 }
             }

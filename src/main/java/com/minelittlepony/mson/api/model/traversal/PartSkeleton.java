@@ -5,36 +5,47 @@ import net.minecraft.client.model.ModelPart;
 import java.util.Map;
 
 public interface PartSkeleton extends Traversable<ModelPart> {
+    /**
+     * @deprecated Will be removed in MC1.22
+     */
+    @Deprecated(forRemoval = true)
     static PartSkeleton of(ModelPart part) {
-        return (PartSkeleton)(Object)part;
+        return part;
     }
 
     ModelPart getSelf();
 
     Map<String, ModelPart> getChildren();
 
-    @Deprecated
+    /**
+     * @deprecated Will be removed in MC1.22
+     */
+    @Deprecated(forRemoval = true)
     int getTotalDirectCubes();
 
     @Override
     default void traverse(Traverser<ModelPart> traverser) {
         getChildren().forEach((key, value) -> {
             traverser.accept(getSelf(), value);
-            of(value).traverse(traverser);
+            value.traverse(traverser);
         });
     }
 
-    static Traversable<ModelPart> of(ModelPart tree, Traversable<String> traversalOrder) {
-        Map<String, ModelPart> elements = PartSkeleton.of(tree).getChildren();
+    default Traversable<ModelPart> ordered(Traversable<String> traversalOrder) {
+        Map<String, ModelPart> elements = getChildren();
         return traverser -> {
             traversalOrder.traverse((parent, child) -> {
                 ModelPart p = elements.get(parent);
                 ModelPart c = elements.get(child);
                 if (p != null && c != null) {
                     traverser.accept(p, c);
-                    PartSkeleton.of(c).traverse(traverser);
+                    c.traverse(traverser);
                 }
             });
         };
+    }
+
+    static Traversable<ModelPart> of(PartSkeleton tree, Traversable<String> traversalOrder) {
+        return tree.ordered(traversalOrder);
     }
 }

@@ -26,7 +26,7 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
     private EmptyModelContext() {}
 
     @Override
-    public <T extends Model> T getModel() {
+    public <T extends Model<?>> T getModel() {
         throw new EmptyContextException("getModel");
     }
 

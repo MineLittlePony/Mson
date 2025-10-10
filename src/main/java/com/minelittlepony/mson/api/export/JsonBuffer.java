@@ -5,7 +5,7 @@ import net.minecraft.client.model.ModelData;
 import net.minecraft.client.model.ModelPartData;
 import net.minecraft.client.model.TexturedModelData;
 
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -54,14 +54,14 @@ public final class JsonBuffer {
         return arr;
     }
 
-    public JsonObject array(JsonObject json, String name, Vector3f vec) {
+    public JsonObject array(JsonObject json, String name, Vector3fc vec) {
         if (vec != null && vec.length() != 0) {
             json.add(name, of(vec));
         }
         return json;
     }
 
-    public JsonArray of(Vector3f vec) {
+    public JsonArray of(Vector3fc vec) {
         return of(vec.x(), vec.y(), vec.z());
     }
 

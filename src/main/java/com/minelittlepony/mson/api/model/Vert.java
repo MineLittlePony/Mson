@@ -4,10 +4,11 @@ import net.minecraft.client.model.ModelPart;
 
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public interface Vert {
-    default Vector3f getPos() {
-        return ((ModelPart.Vertex)this).pos();
+    default Vector3fc getPos() {
+        return new Vector3f(((ModelPart.Vertex)this).x(), ((ModelPart.Vertex)this).y(), ((ModelPart.Vertex)this).z());
     }
 
     default float getU() {
@@ -23,7 +24,7 @@ public interface Vert {
     }
 
     default Vert rotate(Quaternionf rotation) {
-        getPos().rotate(rotation);
-        return this;
+        Vector3f pos = new Vector3f(((ModelPart.Vertex)this).x(), ((ModelPart.Vertex)this).y(), ((ModelPart.Vertex)this).z()).rotate(rotation);
+        return new ModelPart.Vertex(pos.x, pos.y, pos.z, getU(), getV());
     }
 }

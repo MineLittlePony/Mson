@@ -2,7 +2,7 @@ package com.minelittlepony.mson.impl;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerLikeEntity;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.entity.EntityRenderer;
@@ -13,6 +13,7 @@ import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.PlayerLikeEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 
@@ -29,10 +30,10 @@ import java.util.function.Predicate;
 
 final class PendingEntityRendererRegistry implements EntityRendererRegistry {
     final PendingRegistrations<Identifier,
-                    Map.Entry<Predicate<AbstractClientPlayerEntity>, Function<EntityRendererFactory.Context, ? extends PlayerEntityRenderer>>
+                    Map.Entry<Predicate<ClientPlayerLikeEntity>, Function<EntityRendererFactory.Context, ? extends PlayerEntityRenderer<?>>>
                 > player = new PendingRegistrations<>(MsonImpl.id("renderers/player"));
     final PendingRegistrations<Identifier,
-                    Map.Entry<Predicate<PlayerEntityRenderState>, Function<EntityRendererFactory.Context, ? extends PlayerEntityRenderer>>
+                    Map.Entry<Predicate<PlayerEntityRenderState>, Function<EntityRendererFactory.Context, ? extends PlayerEntityRenderer<?>>>
                 > playerState = new PendingRegistrations<>(MsonImpl.id("renderers/player_render_state"));
     final PendingRegistrations<EntityType<?>,
                     Map.Entry<Either<Unit, Predicate<Entity>>, Function<EntityRendererFactory.Context, ? extends EntityRenderer<?, ?>>>
@@ -41,16 +42,17 @@ final class PendingEntityRendererRegistry implements EntityRendererRegistry {
                     Map.Entry<Predicate<EntityRenderState>, Function<EntityRendererFactory.Context, ? extends EntityRenderer<?, ?>>>
                 > entityState = new PendingRegistrations<>(MsonImpl.id("renderers/entity_render_state"));
     final PendingRegistrations<BlockEntityType<?>,
-                    Function<BlockEntityRendererFactory.Context, ? extends BlockEntityRenderer<?>>
+                    Function<BlockEntityRendererFactory.Context, ? extends BlockEntityRenderer<?, ?>>
                 > block = new PendingRegistrations<>(MsonImpl.id("renderers/block"));
 
+    @SuppressWarnings("unchecked")
     @Override
-    public <T extends PlayerEntityRenderer> void registerPlayerRenderer(Identifier skinType, Predicate<AbstractClientPlayerEntity> playerPredicate, Function<Context, T> constructor) {
-        player.register(skinType, Map.entry(playerPredicate, constructor));
+    public <E extends PlayerLikeEntity & ClientPlayerLikeEntity, T extends PlayerEntityRenderer<E>> void registerPlayerRenderer(Identifier skinType, Predicate<? super E> playerPredicate, Function<Context, T> constructor) {
+        player.register(skinType, Map.entry((Predicate<ClientPlayerLikeEntity>)playerPredicate, constructor));
     }
 
     @Override
-    public <T extends PlayerEntityRenderer> void registerPlayerStateRenderer(Identifier skinType, Predicate<PlayerEntityRenderState> statePredicate, Function<EntityRendererFactory.Context, T> constructor) {
+    public <E extends PlayerLikeEntity & ClientPlayerLikeEntity, T extends PlayerEntityRenderer<E>> void registerPlayerStateRenderer(Identifier skinType, Predicate<PlayerEntityRenderState> statePredicate, Function<EntityRendererFactory.Context, T> constructor) {
         playerState.register(skinType, Map.entry(statePredicate, constructor));
     }
 
@@ -71,7 +73,7 @@ final class PendingEntityRendererRegistry implements EntityRendererRegistry {
     }
 
     @Override
-    public <P extends BlockEntity, R extends BlockEntityRenderer<?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererFactory.Context, R> constructor) {
+    public <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererFactory.Context, R> constructor) {
         block.register(type, constructor);
     }
 

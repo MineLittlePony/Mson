@@ -20,7 +20,7 @@ import java.util.function.Function;
 
 public class RootContext implements ModelContextImpl {
 
-    private Model model;
+    private Model<?> model;
     private Object thisObj;
 
     private final Map<String, Object> objectCache = new HashMap<>();
@@ -30,7 +30,7 @@ public class RootContext implements ModelContextImpl {
 
     private final Map<String, ModelComponent<?>> elements;
 
-    public RootContext(Model model, Object thisObj, ModelContextImpl inherited, Map<String, ModelComponent<?>> elements, Locals locals) {
+    public RootContext(Model<?> model, Object thisObj, ModelContextImpl inherited, Map<String, ModelComponent<?>> elements, Locals locals) {
         this.model = model;
         this.thisObj = thisObj;
         this.inherited = inherited;
@@ -45,11 +45,11 @@ public class RootContext implements ModelContextImpl {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends Model> T getModel() {
+    public <T extends Model<?>> T getModel() {
         return (T)model;
     }
 
-    public void setModel(Model model) {
+    public void setModel(Model<?> model) {
         this.model = model;
     }
 

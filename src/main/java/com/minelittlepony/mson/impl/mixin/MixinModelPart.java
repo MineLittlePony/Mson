@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.impl.mixin;
 
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -28,11 +28,6 @@ abstract class MixinModelPart implements PartSkeleton, PartAccessor {
     @Override
     @Accessor("cuboids")
     public abstract List<Cuboid> getCuboids();
-
-    @Override
-    public int getTotalDirectCubes() {
-        return getCuboids().size();
-    }
 
     @Override
     public ModelPart getSelf() {
@@ -70,15 +65,15 @@ abstract class MixinQuad implements Rect {
 
     @Accessor("direction")
     @Override
-    public abstract Vector3f getNormal();
+    public abstract Vector3fc getNormal();
 
     @Override
     public Vert getVertex(int index) {
-        return (Vert)(Object)vertices[index];
+        return vertices[index];
     }
     @Override
     public void setVertex(int index, Vert value) {
-        vertices[index] = (ModelPart.Vertex)(Object)value;
+        vertices[index] = (ModelPart.Vertex)value;
     }
 
     @Override
@@ -87,14 +82,16 @@ abstract class MixinQuad implements Rect {
     }
     @Override
     public Vert[] getVertices() {
-        Vert[] vertices = new Vert[this.vertices.length];
+        ModelPart.Vertex[] vertices = new ModelPart.Vertex[this.vertices.length];
         System.arraycopy(this.vertices, 0, vertices, 0, vertices.length);
         return vertices;
     }
 
     @Override
     public Rect setVertices(boolean reflect, Vert...vertices) {
-        this.vertices = new ModelPart.Vertex[vertices.length];
+        if (this.vertices.length != vertices.length) {
+            this.vertices = new ModelPart.Vertex[vertices.length];
+        }
         System.arraycopy(vertices, 0, this.vertices, 0, vertices.length);
 
         if (reflect) {
@@ -112,4 +109,5 @@ abstract class MixinQuad implements Rect {
 
 @Mixin(ModelPart.Vertex.class)
 abstract class MixinVertex implements Vert {
+
 }

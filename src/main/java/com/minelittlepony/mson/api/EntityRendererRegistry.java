@@ -2,7 +2,7 @@ package com.minelittlepony.mson.api;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerLikeEntity;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.entity.EntityRenderer;
@@ -12,6 +12,7 @@ import net.minecraft.client.render.entity.state.EntityRenderState;
 import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.PlayerLikeEntity;
 import net.minecraft.util.Identifier;
 
 import java.util.function.Function;
@@ -28,7 +29,7 @@ public interface EntityRendererRegistry {
      * @param playerPredicate Predicate to determine which players this renderer should be used for.
      * @param constructor The renderer factory
      */
-    <T extends PlayerEntityRenderer> void registerPlayerRenderer(Identifier skinType, Predicate<AbstractClientPlayerEntity> playerPredicate, Function<EntityRendererFactory.Context, T> constructor);
+    <E extends PlayerLikeEntity & ClientPlayerLikeEntity, T extends PlayerEntityRenderer<E>> void registerPlayerRenderer(Identifier skinType, Predicate<? super E> playerPredicate, Function<EntityRendererFactory.Context, T> constructor);
 
     /**
      * Adds a custom player renderer.
@@ -36,7 +37,7 @@ public interface EntityRendererRegistry {
      * @param playerPredicate Predicate to determine which players this renderer should be used for.
      * @param constructor The renderer factory
      */
-    <T extends PlayerEntityRenderer> void registerPlayerStateRenderer(Identifier skinType, Predicate<PlayerEntityRenderState> statePredicate, Function<EntityRendererFactory.Context, T> constructor);
+    <E extends PlayerLikeEntity & ClientPlayerLikeEntity, T extends PlayerEntityRenderer<E>> void registerPlayerStateRenderer(Identifier skinType, Predicate<PlayerEntityRenderState> statePredicate, Function<EntityRendererFactory.Context, T> constructor);
 
     /**
      * Adds a custom entity renderer.
@@ -64,5 +65,5 @@ public interface EntityRendererRegistry {
     /**
      * Adds a custom block entity renderer.
      */
-    <P extends BlockEntity, R extends BlockEntityRenderer<?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererFactory.Context, R> constructor);
+    <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererFactory.Context, R> constructor);
 }

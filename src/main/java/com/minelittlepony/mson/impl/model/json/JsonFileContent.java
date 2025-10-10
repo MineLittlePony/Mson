@@ -137,7 +137,7 @@ public class JsonFileContent implements JsonContext {
     }
 
     @Override
-    public ModelContext createContext(Model model, Object thisObj, ModelContext.Locals locals) {
+    public ModelContext createContext(Model<?> model, Object thisObj, ModelContext.Locals locals) {
         return new RootContext(model, thisObj, (ModelContextImpl)parent.getNow(EmptyFileContent.INSTANCE).createContext(model, thisObj, locals), elements, locals);
     }
 

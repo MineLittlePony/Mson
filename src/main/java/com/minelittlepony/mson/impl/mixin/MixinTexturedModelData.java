@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.impl.mixin;
 
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -59,7 +59,7 @@ abstract class MixinTexturedModelData implements MsonImpl.KeyHolder, JsonBuffer.
 @Mixin(ModelPartData.class)
 abstract class MixinModelPartData implements JsonBuffer.JsonConvertable {
     @Shadow private @Final List<ModelCuboidData> cuboidData;
-    @Shadow private @Final ModelTransform rotationData;
+    @Shadow private @Final ModelTransform transform;
     @Shadow private @Final Map<String, ModelPartData> children;
     @Override
     public JsonObject toJson(JsonBuffer exporter) {
@@ -68,17 +68,17 @@ abstract class MixinModelPartData implements JsonBuffer.JsonConvertable {
             if (!children.isEmpty()) json.add("children", exporter.of(js -> {
                 children.forEach((key, value) -> js.add(key, exporter.write(value)));
             }));
-            if (rotationData != ModelTransform.NONE) {
-                exporter.array(json, "pivot", rotationData.x(), rotationData.y(), rotationData.z());
-                exporter.array(json, "rotate", rotationData.pitch(), rotationData.yaw(), rotationData.roll());
+            if (transform != ModelTransform.NONE) {
+                exporter.array(json, "pivot", transform.x(), transform.y(), transform.z());
+                exporter.array(json, "rotate", transform.pitch(), transform.yaw(), transform.roll());
             }
         });
     }
 }
 @Mixin(ModelCuboidData.class)
 abstract class MixinModelCuboidData implements JsonBuffer.JsonConvertable {
-    @Shadow private @Final Vector3f offset;
-    @Shadow private @Final Vector3f dimensions;
+    @Shadow private @Final Vector3fc offset;
+    @Shadow private @Final Vector3fc dimensions;
     @Shadow private @Final Dilation extraSize;
     @Shadow private @Final boolean mirror;
     @Shadow private @Final Vector2f textureUV;

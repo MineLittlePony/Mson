@@ -38,6 +38,7 @@
       }
     },
     "loom:injected_interfaces": {
+      "net/minecraft/class_630": ["com/minelittlepony/mson/api/model/traversal/PartSkeleton"],
       "net/minecraft/class_630$class_618": ["com/minelittlepony/mson/api/model/Vert"],
       "net/minecraft/class_630$class_593": ["com/minelittlepony/mson/api/model/Rect"]
     }

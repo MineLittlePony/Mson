@@ -2,9 +2,11 @@ package com.minelittlepony.mson.impl;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.network.ClientPlayerLikeEntity;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
+import net.minecraft.entity.PlayerLikeEntity;
 import net.minecraft.util.Identifier;
 
 import com.google.common.base.Predicates;
@@ -32,6 +34,7 @@ final class Test {
         //var PLANE = playerRendererFactor(Mson.getInstance().registerModel(new Identifier("mson_test", "plane"), MsonPlayer::new));
 
         Mson.getInstance().getEntityRendererRegistry().registerPlayerRenderer(ID, Predicates.alwaysTrue(), RAYMAN);
+        Mson.getInstance().getEntityRendererRegistry().registerPlayerStateRenderer(ID, Predicates.alwaysTrue(), RAYMAN);
     }
 
     static void exportVanillaModels(ModelLoader modelLoader) {
@@ -71,8 +74,8 @@ final class Test {
         });
     }
 
-    static Function<EntityRendererFactory.Context, PlayerEntityRenderer> playerRendererFactor(ModelKey<? extends PlayerEntityModel> key) {
-        return r -> new PlayerEntityRenderer(r, false) {{
+    static <AvatarlikeEntity extends PlayerLikeEntity & ClientPlayerLikeEntity> Function<EntityRendererFactory.Context, PlayerEntityRenderer<AvatarlikeEntity>> playerRendererFactor(ModelKey<? extends PlayerEntityModel> key) {
+        return r -> new PlayerEntityRenderer<>(r, false) {{
             this.model = key.createModel();
         }};
     }
