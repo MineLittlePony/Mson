@@ -32,21 +32,29 @@ public interface RenderList {
         };
     }
 
+    default <T> void pose(T state) {
+
+    }
+
     default void clear() {}
 
     static RenderList of() {
-        return new Impl(List.of());
+        return new Impl(new RenderList[0]);
+    }
+
+    static RenderList of(ModelPart part) {
+        return new Impl(new RenderList[] { part::render });
     }
 
     static RenderList of(ModelPart...parts) {
-        return new Impl(Arrays.stream(parts).map(part -> (RenderList)part::render).toList());
+        return new Impl(Arrays.stream(parts).map(part -> (RenderList)part::render).toArray(RenderList[]::new));
     }
 
     class Impl implements RenderList {
         private RenderList[] parts;
 
-        Impl(List<RenderList> parts) {
-            this.parts = parts.toArray(RenderList[]::new);
+        Impl(RenderList[] parts) {
+            this.parts = parts;
         }
 
         @Override
@@ -67,6 +75,13 @@ public interface RenderList {
         public void accept(MatrixStack stack, VertexConsumer vertices, int overlay, int light, int color) {
             for (RenderList part : parts) {
                 part.accept(stack, vertices, overlay, light, color);
+            }
+        }
+
+        @Override
+        public <T> void pose(T state) {
+            for (RenderList part : parts) {
+                part.pose(state);
             }
         }
     }
