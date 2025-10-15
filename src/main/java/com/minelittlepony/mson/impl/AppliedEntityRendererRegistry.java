@@ -78,7 +78,7 @@ public class AppliedEntityRendererRegistry {
 
     @SuppressWarnings("unchecked")
     public <S extends EntityRenderState> Optional<EntityRenderer<?, ?>> getRenderer(S state) {
-        if (state instanceof PlayerEntityRenderState && state.entityType == EntityType.PLAYER) {
+        if (state instanceof PlayerEntityRenderState && (state.entityType == EntityType.PLAYER || state.entityType == EntityType.MANNEQUIN)) {
             if (!customStateRenderers.isEmpty()) {
                 return customStateRenderers.values().stream()
                     .filter(entry -> ((Predicate<EntityRenderState>)entry.getKey()).test(state))
