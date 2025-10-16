@@ -37,7 +37,7 @@ public enum Face {
     }
 
     public Direction getNormal() {
-        return axis == Axis.Y ? lighting.getOpposite() : lighting;
+        return lighting;
     }
 
     public float applyFixtures(float stretch) {
