@@ -47,16 +47,13 @@ import java.util.concurrent.ExecutionException;
  *  }
  * }
  */
-public class JsonLink implements ModelComponent<Object> {
-
-    private final String linkName;
-
-    public JsonLink(String name) {
-        if (!name.startsWith("#")) {
+public record JsonLink (String linkName) implements ModelComponent<Object> {
+    public JsonLink {
+        if (!linkName.startsWith("#")) {
             throw new JsonParseException("link name should begin with a `#`.");
         }
 
-        linkName = name.substring(1);
+        linkName = linkName.substring(1);
     }
 
     @Override

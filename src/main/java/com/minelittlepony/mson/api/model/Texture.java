@@ -25,4 +25,8 @@ public record Texture(
      * A blank texture. Contains the default parameters to be used when no other exist to override them.
      */
     public static final Texture EMPTY = new Texture(0, 0, 64, 32);
+
+    public Texture(float[] uv) {
+        this((int)uv[0], (int)uv[1], 0, 0);
+    }
 }

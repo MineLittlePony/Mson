@@ -31,48 +31,45 @@ import java.util.concurrent.CompletableFuture;
  *
  * @author Sollace
  */
-public class JsonSlot<T> implements ModelComponent<T> {
+public record JsonSlot<T> (
+        /**
+         * The object type produced by this slot.
+         */
+        Optional<InstanceCreator<T>> implementation,
+        /**
+         * The contents of this slot either expressed at a map of child elements, or a string pointing to a file.
+         */
+        CompletableFuture<FileContent<?>> data,
+        /**
+         * The optional locals block.
+         */
+        LocalBlock locals,
+        /**
+         * The optional texture with parameters inherited from the slot's outer context.
+         * This texture is applied <b>instead of</b> the texture defined in the imported file.
+         */
+        Optional<Texture> texture,
+        /**
+         * The name that this slot is to be exposed as.
+         */
+        String name,
+        Identifier id
+    ) implements ModelComponent<T> {
     public static final Identifier ID = MsonImpl.id("slot");
-
-    /**
-     * The object type produced by this slot.
-     */
-    private final Optional<InstanceCreator<T>> implementation;
-
-    /**
-     * The contents of this slot either expressed at a map of child elements, or a string pointing to a file.
-     */
-    private final CompletableFuture<FileContent<?>> data;
-
-    /**
-     * The optional locals block.
-     */
-    private final LocalBlock locals;
-
-    /**
-     * The optional texture with parameters inherited from the slot's outer context.
-     * This texture is applied <b>instead of</b> the texture defined in the imported file.
-     */
-    private final Optional<Texture> texture;
-
-    /**
-     * The name that this slot is to be exposed as.
-     */
-    private final String name;
-
-    private final Identifier id;
 
     public JsonSlot(FileContent<JsonElement> context, String name, JsonElement json) {
         this(context, name, json.getAsJsonObject());
     }
 
     public JsonSlot(FileContent<JsonElement> context, String name, JsonObject json) {
-        implementation = JsonUtil.accept(json, "implementation").map(JsonElement::getAsString).map(InstanceCreator::byName);
-        data = context.resolve(json.get("data"));
-        this.name = name.isEmpty() ? JsonUtil.require(json, "name", ID, context.getLocals().getModelId()).getAsString() : name;
-        texture = JsonUtil.accept(json, "texture").map(JsonTexture::of);
-        id = Identifier.of("dynamic", context.getLocals().getModelId().getPath() + "/" + this.name);
-        locals = LocalBlock.of(JsonUtil.accept(json, "locals"));
+        this(
+            JsonUtil.accept(json, "implementation").map(JsonElement::getAsString).map(InstanceCreator::byName),
+            context.resolve(json.get("data")),
+            LocalBlock.of(JsonUtil.accept(json, "locals")),
+            JsonUtil.accept(json, "texture").map(JsonTexture::of),
+            name.isEmpty() ? (name = JsonUtil.require(json, "name", ID, context.locals().modelId()).getAsString()) : name,
+            Identifier.of("dynamic", context.locals().modelId().getPath() + "/" + name)
+        );
 
         context.addNamedComponent(this.name, this);
     }

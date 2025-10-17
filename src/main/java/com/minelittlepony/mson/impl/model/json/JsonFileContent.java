@@ -55,7 +55,7 @@ public class JsonFileContent implements JsonContext {
             .map(parentId -> loader.loadModel(parentId, format))
             .orElseGet(() -> CompletableFuture.completedFuture(EmptyFileContent.INSTANCE));
 
-        variables = new RootVariables(id, json, parent.thenApplyAsync(FileContent::getLocals));
+        variables = new RootVariables(id, json, parent.thenApplyAsync(FileContent::locals));
 
         elements.putAll(getChildren(json).collect(Collectors.toMap(
                 Map.Entry::getKey,
@@ -77,7 +77,7 @@ public class JsonFileContent implements JsonContext {
     }
 
     @Override
-    public ModelFormat<JsonElement> getFormat() {
+    public ModelFormat<JsonElement> format() {
         return format;
     }
 
@@ -112,8 +112,8 @@ public class JsonFileContent implements JsonContext {
     }
 
     @Override
-    public Optional<Traversable<String>> getSkeleton() {
-        return skeleton.or(() -> parent.getNow(EmptyFileContent.INSTANCE).getSkeleton());
+    public Optional<Traversable<String>> skeleton() {
+        return skeleton.or(() -> parent.getNow(EmptyFileContent.INSTANCE).skeleton());
     }
 
     @Override
@@ -123,7 +123,7 @@ public class JsonFileContent implements JsonContext {
             return loader.loadModel(Identifier.of(json.getAsString()), format);
         }
 
-        Identifier id = getLocals().getModelId();
+        Identifier id = locals().modelId();
         Identifier autoGen = id.withSuffixedPath("_dynamic");
 
         if (json.getAsJsonObject().has("data")) {
@@ -142,41 +142,26 @@ public class JsonFileContent implements JsonContext {
     }
 
     @Override
-    public FileContent.Locals getLocals() {
+    public FileContent.Locals locals() {
         return variables;
     }
 
-    public static class RootVariables implements FileContentLocalsImpl {
-        private final Identifier id;
-        private final CompletableFuture<FileContent.Locals> parent;
-        private final CompletableFuture<Texture> texture;
-        private final CompletableFuture<float[]> dilate;
-
-        private final LocalBlock locals;
+    public static record RootVariables(
+            Identifier modelId,
+            CompletableFuture<FileContent.Locals> parent,
+            CompletableFuture<Texture> texture,
+            CompletableFuture<float[]> dilation,
+            LocalBlock locals
+        ) implements FileContentLocalsImpl {
 
         RootVariables(Identifier id, JsonObject json, CompletableFuture<FileContent.Locals> parent) {
-            this.id = id;
-            this.parent = parent;
-            texture = JsonTexture.unlocalized(JsonUtil.accept(json, "texture"), parent.thenComposeAsync(Locals::getTexture));
-            locals = LocalBlock.of(JsonUtil.accept(json, "locals"));
-            dilate = JsonUtil.acceptFloats(json, "dilate", new float[3])
+            this(id, parent,
+                JsonTexture.unlocalized(JsonUtil.accept(json, "texture"), parent.thenComposeAsync(Locals::texture)),
+                JsonUtil.acceptOptionalFloats(json, "dilate", 3)
                     .map(CompletableFuture::completedFuture)
-                    .orElseGet(() -> parent.thenComposeAsync(FileContent.Locals::getDilation));
-        }
-
-        @Override
-        public Identifier getModelId() {
-            return id;
-        }
-
-        @Override
-        public CompletableFuture<float[]> getDilation() {
-            return dilate;
-        }
-
-        @Override
-        public CompletableFuture<Texture> getTexture() {
-            return texture;
+                    .orElseGet(() -> parent.thenComposeAsync(FileContent.Locals::dilation)),
+                LocalBlock.of(JsonUtil.accept(json, "locals"))
+            );
         }
 
         @Override

@@ -48,20 +48,20 @@ public interface FileContentLocalsImpl extends FileContent.Locals {
         }
 
         @Override
-        public Identifier getModelId() {
+        public Identifier modelId() {
             return id;
         }
 
         @Override
-        public CompletableFuture<float[]> getDilation() {
-            return parent.getDilation();
+        public CompletableFuture<float[]> dilation() {
+            return parent.dilation();
         }
 
         @Override
-        public CompletableFuture<Texture> getTexture() {
+        public CompletableFuture<Texture> texture() {
             return texture
                     .map(CompletableFuture::completedFuture)
-                    .orElseGet(parent::getTexture);
+                    .orElseGet(parent::texture);
         }
 
         @Override

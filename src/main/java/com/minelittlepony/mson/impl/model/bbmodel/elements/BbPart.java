@@ -63,8 +63,8 @@ import java.util.concurrent.ExecutionException;
 public class BbPart implements ModelComponent<ModelPart> {
     public static final Identifier ID = Identifier.of("blockbench", "part");
 
-    private final float[] origin = new float[3];
-    private final float[] rotation = new float[3];
+    private final float[] origin;
+    private final float[] rotation;
     private final boolean visibility;
 
     private final Map<String, ModelComponent<?>> children = new TreeMap<>();
@@ -79,8 +79,8 @@ public class BbPart implements ModelComponent<ModelPart> {
 
     public BbPart(FileContent<JsonElement> context, String name, JsonObject json) {
         this.name = JsonHelper.getString(json, "name", name);
-        JsonUtil.acceptFloats(json, "origin", origin);
-        JsonUtil.acceptFloats(json, "rotation", rotation);
+        origin = JsonUtil.acceptFloats(json, "origin", 3);
+        rotation = JsonUtil.acceptFloats(json, "rotation", 3);
         visibility = JsonHelper.getBoolean(json, "visibility", true);
 
         JsonUtil.accept(json, "children").map(JsonElement::getAsJsonArray)
@@ -104,6 +104,8 @@ public class BbPart implements ModelComponent<ModelPart> {
     public BbPart(Collection<ModelComponent<?>> cubes, String name) {
         this.name = name;
         this.visibility = true;
+        this.origin = new float[3];
+        this.rotation = new float[3];
         this.cubes.addAll(cubes);
     }
 

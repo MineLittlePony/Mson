@@ -56,8 +56,8 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
                 meta.addProperty("box_uv", true);
             }));
             root.addProperty("modded_entity_flip_y", true);
-            root.addProperty("name", content.getLocals().getModelId().toString());
-            ModelContext context = content.createContext(null, null, content.getLocals().bake());
+            root.addProperty("name", content.locals().modelId().toString());
+            ModelContext context = content.createContext(null, null, content.locals().bake());
             buffer.object(root, "resolution", buffer.of(resolution -> {
                 resolution.addProperty("width", context.getLocals().getTexture().width());
                 resolution.addProperty("height", context.getLocals().getTexture().height());

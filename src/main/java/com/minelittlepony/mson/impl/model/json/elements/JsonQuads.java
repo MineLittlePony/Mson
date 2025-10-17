@@ -29,46 +29,43 @@ import java.util.List;
  * @author Sollace
  * @apiNote Experimental. This feature may disappear in the future.
  */
-public class JsonQuads implements ModelComponent<Cuboid>, QuadsBuilder {
-
+public record JsonQuads (List<JsonQuad> quads, int texU, int texV) implements ModelComponent<Cuboid>, QuadsBuilder {
     public static final Identifier ID = MsonImpl.id("quads");
-
-    private final List<JsonQuad> quads;
-
-    private final int texU;
-    private final int texV;
 
     public JsonQuads(FileContent<JsonElement> context, String name, JsonElement json) {
         this(context, name, json.getAsJsonObject());
     }
 
     public JsonQuads(FileContent<JsonElement> context, String name, JsonObject json) {
-        texU = JsonUtil.require(json, "u", ID, context.getLocals().getModelId()).getAsInt();
-        texV = JsonUtil.require(json, "v", ID, context.getLocals().getModelId()).getAsInt();
+        this(context, name, json,
+            Streams.stream(JsonUtil.require(json, "vertices", ID, context.locals().modelId()).getAsJsonArray()).map(JsonVertex::fromJson).toList(),
+            JsonUtil.require(json, "u", ID, context.locals().modelId()).getAsInt(),
+            JsonUtil.require(json, "v", ID, context.locals().modelId()).getAsInt()
+        );
+    }
 
-        List<JsonVertex> vertices = Streams.stream(JsonUtil.require(json, "vertices", ID, context.getLocals().getModelId())
-                .getAsJsonArray())
-                .map(JsonVertex::fromJson)
-                .toList();
+    public JsonQuads(FileContent<JsonElement> context, String name, JsonObject json, List<JsonVertex> vertices, int texU, int texV) {
+        this(
+            Streams.stream(JsonUtil.require(json, "faces", ID, context.locals().modelId()).getAsJsonArray()).map(v -> JsonQuad.fromJson(context, vertices, v)).toList(),
+            texU,
+            texV
+        );
+    }
 
-        quads = Streams.stream(JsonUtil.require(json, "faces", ID, context.getLocals().getModelId()).getAsJsonArray())
-            .map(v -> JsonQuad.fromJson(context, vertices, v))
-            .toList();
+    public BoxBuilder builder(ModelContext context) {
+        return new BoxBuilder(context)
+                .tex(new Texture(texU, texV, 0, 0))
+                .quads(this);
     }
 
     @Override
     public Cuboid export(ModelContext context) {
-        return new BoxBuilder(context)
-                .tex(new Texture(texU, texV, 0, 0))
-                .quads(this)
-                .build();
+        return builder(context).build();
     }
 
     @Override
     public void write(ModelContext context, ModelFileWriter writer) {
-        writer.writeBox(new BoxBuilder(context)
-                .tex(new Texture(texU, texV, 0, 0))
-                .quads(this));
+        writer.writeBox(builder(context));
     }
 
     @Override
@@ -89,7 +86,7 @@ public class JsonQuads implements ModelComponent<Cuboid>, QuadsBuilder {
                 JsonUtils.getIntOr("y", o, 0),
                 JsonUtils.getIntOr("w", o, 0),
                 JsonUtils.getIntOr("h", o, 0),
-                Streams.stream(JsonUtil.require(o, "vertices", ID, context.getLocals().getModelId()).getAsJsonArray())
+                Streams.stream(JsonUtil.require(o, "vertices", ID, context.locals().modelId()).getAsJsonArray())
                     .map(JsonElement::getAsInt)
                     .map(vertices::get)
                     .toList()

@@ -25,17 +25,17 @@ public final class EmptyFileContent implements FileContent<Object>, FileContentL
     private EmptyFileContent() {}
 
     @Override
-    public ModelFormat<Object> getFormat() {
+    public ModelFormat<Object> format() {
         return Mson.getInstance().getFormatHandler(ModelFormat.MSON).get();
     }
 
     @Override
-    public Locals getLocals() {
+    public Locals locals() {
         return this;
     }
 
     @Override
-    public Identifier getModelId() {
+    public Identifier modelId() {
         return EmptyModelContext.ID;
     }
 
@@ -69,7 +69,7 @@ public final class EmptyFileContent implements FileContent<Object>, FileContentL
     }
 
     @Override
-    public Optional<Traversable<String>> getSkeleton() {
+    public Optional<Traversable<String>> skeleton() {
         return Optional.empty();
     }
 
@@ -79,7 +79,7 @@ public final class EmptyFileContent implements FileContent<Object>, FileContentL
     }
 
     @Override
-    public CompletableFuture<Texture> getTexture() {
+    public CompletableFuture<Texture> texture() {
         return CompletableFuture.completedFuture(Texture.EMPTY);
     }
 
@@ -89,7 +89,7 @@ public final class EmptyFileContent implements FileContent<Object>, FileContentL
     }
 
     @Override
-    public CompletableFuture<float[]> getDilation() {
+    public CompletableFuture<float[]> dilation() {
         return CompletableFuture.completedFuture(new float[] { 0, 0, 0 });
     }
 }

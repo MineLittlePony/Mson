@@ -73,21 +73,16 @@ public class JsonPlanar extends JsonCompound {
             .forEach(writer::writeBox);
     }
 
-    class JsonFaceSet {
-
-        private final Face face;
-
-        private final List<JsonFace> elements = new ArrayList<>();
-
+    record JsonFaceSet(Face face, List<JsonFace> elements) {
         public JsonFaceSet(FileContent<JsonElement> context, JsonArray json, Face face) {
-            this.face = face;
+            this(face, new ArrayList<>());
 
             if (json.get(0).isJsonArray()) {
                 for (int i = 0; i < json.size(); i++) {
-                    elements.add(new JsonFace(context, json.get(i).getAsJsonArray()));
+                    elements.add(new JsonFace(face, context, json.get(i).getAsJsonArray()));
                 }
             } else {
-                elements.add(new JsonFace(context, json));
+                elements.add(new JsonFace(face, context, json));
             }
         }
 
@@ -133,43 +128,27 @@ public class JsonPlanar extends JsonCompound {
             }
         }
 
-        class JsonFace {
+        record JsonFace (
+                Face face,
+                Incomplete<float[]> position,
+                Incomplete<float[]> size,
+                Incomplete<Texture> texture,
+                boolean[] mirror
+        ) {
 
-            final Incomplete<float[]> position;
-            final Incomplete<float[]> size;
-
-            private final Incomplete<Texture> texture;
-
-            private final boolean[] mirror;
-
-            public JsonFace(FileContent<JsonElement> context, JsonArray json) {
-                position = Local.array(
-                        json.get(0).getAsJsonPrimitive(),
-                        json.get(1).getAsJsonPrimitive(),
-                        json.get(2).getAsJsonPrimitive()
+            public JsonFace(Face face, FileContent<JsonElement> context, JsonArray json) {
+                this(face,
+                    Local.array(json.get(0).getAsJsonPrimitive(), json.get(1).getAsJsonPrimitive(), json.get(2).getAsJsonPrimitive()),
+                    Local.array(json.get(3).getAsJsonPrimitive(), json.get(4).getAsJsonPrimitive()),
+                    json.size() > 6 ? createTexture(
+                            Local.ref(json.get(5).getAsJsonPrimitive()),
+                            Local.ref(json.get(6).getAsJsonPrimitive())
+                        ) : JsonTexture::fromParent,
+                    json.size() > 8 ? new boolean[] {
+                            json.get(7).getAsBoolean(),
+                            json.get(8).getAsBoolean()
+                        } : new boolean[2]
                 );
-                size = Local.array(
-                        json.get(3).getAsJsonPrimitive(),
-                        json.get(4).getAsJsonPrimitive()
-                );
-
-                if (json.size() > 6) {
-                    texture = createTexture(
-                        Local.ref(json.get(5).getAsJsonPrimitive()),
-                        Local.ref(json.get(6).getAsJsonPrimitive())
-                    );
-                } else {
-                    texture = JsonTexture::fromParent;
-                }
-
-                if (json.size() > 8) {
-                    mirror = new boolean[] {
-                        json.get(7).getAsBoolean(),
-                        json.get(8).getAsBoolean()
-                    };
-                } else {
-                    mirror = new boolean[2];
-                }
             }
 
             public BoxBuilder builder(ModelContext context, Fixtures fixtures) {

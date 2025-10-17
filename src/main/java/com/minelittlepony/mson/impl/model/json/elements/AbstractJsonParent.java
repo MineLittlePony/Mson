@@ -50,7 +50,7 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
      * The 3D mirroring of this part's textures along each of the major axis.
      * This value is inherited by  all of this part's children that do not define their own mirroring.
      */
-    private final boolean[] mirror = new boolean[3];
+    private final boolean[] mirror;
 
     /**
      * The visibility of this part.
@@ -70,11 +70,10 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
     protected final String name;
 
     public AbstractJsonParent(FileContent<JsonElement> context, String name, JsonObject json) {
-        pivot = Local.array(json, "pivot", 3, context.getLocals().getModelId());
-        dilate = Local.array(json, "dilate", 3, context.getLocals().getModelId());
-
-        rotate = Local.array(json, "rotate", 3, context.getLocals().getModelId());
-        JsonUtil.acceptBooleans(json, "mirror", mirror);
+        pivot = Local.array(json, "pivot", 3, context.locals().modelId());
+        dilate = Local.array(json, "dilate", 3, context.locals().modelId());
+        rotate = Local.array(json, "rotate", 3, context.locals().modelId());
+        mirror = JsonUtil.acceptBooleans(json, "mirror", 3);
         visible = JsonUtils.getBooleanOr("visible", json, true);
         texture = JsonTexture.incomplete(JsonUtil.accept(json, "texture"));
         this.name = JsonUtil.accept(json, "name").map(JsonElement::getAsString).map(n -> {
@@ -131,8 +130,8 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
         }
 
         @Override
-        public Identifier getModelId() {
-            return parent.getModelId();
+        public Identifier modelId() {
+            return parent.modelId();
         }
 
         @Override

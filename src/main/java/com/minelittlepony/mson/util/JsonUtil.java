@@ -25,12 +25,21 @@ public class JsonUtil {
         return accept(json, member).map(JsonElement::getAsBoolean);
     }
 
-    public static Optional<float[]> acceptFloats(JsonObject json, String member, float[] output) {
-        return accept(json, member).map(el -> getAsFloats(el, output));
+    public static Optional<float[]> acceptOptionalFloats(JsonObject json, String member, int count) {
+        return accept(json, member).map(el -> getAsFloats(el, new float[count]));
     }
 
-    public static Optional<boolean[]> acceptBooleans(JsonObject json, String member, boolean[] output) {
-        return accept(json, member).map(el -> getAsBooleans(el, output));
+    public static float[] acceptFloats(JsonObject json, String member, int count) {
+        return acceptOptionalFloats(json, member, count).orElseGet(() -> new float[count]);
+    }
+
+    public static Optional<boolean[]> acceptOptionalBooleans(JsonObject json, String member, int count) {
+        return accept(json, member).map(el -> getAsBooleans(el, new boolean[count]));
+    }
+
+
+    public static boolean[] acceptBooleans(JsonObject json, String member, int count) {
+        return acceptOptionalBooleans(json, member, count).orElseGet(() -> new boolean[count]);
     }
 
     public static float getFloatOr(String member, JsonObject json, float def) {

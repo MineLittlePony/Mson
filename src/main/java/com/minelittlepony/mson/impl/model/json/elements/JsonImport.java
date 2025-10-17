@@ -26,22 +26,18 @@ import java.util.concurrent.CompletableFuture;
  *
  * @author Sollace
  */
-public class JsonImport implements ModelComponent<ModelPart> {
+public record JsonImport(
+        CompletableFuture<FileContent<?>> file,
+        /**
+         * The optional locals block.
+         */
+        Optional<LocalBlock> locals,
+        String name
+    ) implements ModelComponent<ModelPart> {
     public static final Identifier ID = MsonImpl.id("import");
 
-    private final CompletableFuture<FileContent<?>> file;
-
-    /**
-     * The optional locals block.
-     */
-    private final Optional<LocalBlock> locals;
-
-    private final String name;
-
     public JsonImport(FileContent<JsonElement> context, String name, JsonPrimitive file) {
-        this.name = name;
-        this.file = context.resolve(file);
-        this.locals = Optional.empty();
+        this(context.resolve(file), Optional.empty(), name);
     }
 
     public JsonImport(FileContent<JsonElement> context, String name, JsonElement json) {
@@ -49,17 +45,18 @@ public class JsonImport implements ModelComponent<ModelPart> {
     }
 
     public JsonImport(FileContent<JsonElement> context, String name, JsonObject json) {
-        this.name = name.isEmpty() ? JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("") : name;
-        file = context.resolve(json.get("data"));
-        locals = Optional.of(LocalBlock.of(JsonUtil.accept(json, "locals")));
-
+        this(
+            context.resolve(json.get("data")),
+            Optional.of(LocalBlock.of(JsonUtil.accept(json, "locals"))),
+            name.isEmpty() ? JsonUtil.accept(json, "name").map(JsonElement::getAsString).orElse("") : name
+        );
         context.addNamedComponent(this.name, this);
     }
 
     @Override
     public ModelPart export(ModelContext context) {
         return context.computeIfAbsent(name, key -> convertContextToTree(context.extendWith(file.get(),
-            parent -> parent.extendWith(parent.getModelId(), locals.map(l -> l.bind(context.getLocals())), Optional.empty())
+            parent -> parent.extendWith(parent.modelId(), locals.map(l -> l.bind(context.getLocals())), Optional.empty())
         )));
     }
 
@@ -76,7 +73,7 @@ public class JsonImport implements ModelComponent<ModelPart> {
             String name = components.stream().findFirst().get();
 
             var boundContext = context.extendWith(file.get(),
-                parent -> parent.extendWith(parent.getModelId(), locals.map(l -> l.bind(context.getLocals())), Optional.empty())
+                parent -> parent.extendWith(parent.modelId(), locals.map(l -> l.bind(context.getLocals())), Optional.empty())
             );
 
             writer.write(name, boundContext, fileContent.getComponent(name).get());

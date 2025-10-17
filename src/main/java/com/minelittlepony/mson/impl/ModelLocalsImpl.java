@@ -25,14 +25,14 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
     }
 
     @Override
-    public Identifier getModelId() {
-        return context.getModelId();
+    public Identifier modelId() {
+        return context.modelId();
     }
 
     @Override
     public float[] getDilation() {
         try {
-            return context.getDilation().get();
+            return context.dilation().get();
         } catch (InterruptedException | ExecutionException e) {
             throw new FutureAwaitException(e);
         }
@@ -41,7 +41,7 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
     @Override
     public Texture getTexture() {
         try {
-            return context.getTexture().get();
+            return context.texture().get();
         } catch (InterruptedException | ExecutionException e) {
             throw new FutureAwaitException(e);
         }
@@ -71,7 +71,7 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
 
     @Override
     public String toString() {
-        return "[ModelLocalsImpl id=" + context.getModelId().toString() + "]";
+        return "[ModelLocalsImpl id=" + context.modelId().toString() + "]";
     }
 
     private static final class StackFrame implements ModelContext.Locals {
@@ -85,8 +85,8 @@ public final class ModelLocalsImpl implements ModelContext.Locals {
         }
 
         @Override
-        public Identifier getModelId() {
-            return parent.getModelId();
+        public Identifier modelId() {
+            return parent.modelId();
         }
 
         @Override

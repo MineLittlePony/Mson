@@ -35,7 +35,21 @@ public interface FileContent<Data> {
     /**
      * The data format of this file.
      */
-    ModelFormat<Data> getFormat();
+    ModelFormat<Data> format();
+
+    /**
+     * Gets the local variable resolver for this context.
+     */
+    Locals locals();
+
+    /**
+     * Gets the model's declared skeleton.
+     * <p>
+     * This is optional metadata that can be used by mods who need to know how to put the model together for animations.
+     */
+    default Optional<Traversable<String>> skeleton() {
+        return Optional.empty();
+    }
 
     /**
      * Exposes a component to the parent scope so they can be retrieved using ModelContext#findByName
@@ -66,7 +80,7 @@ public interface FileContent<Data> {
      * @param defaultAs The default type to assume when the supplied json structure does not define one.
      */
     default <T> Optional<ModelComponent<T>> loadComponent(String name, Data data, Identifier defaultAs) {
-        return getFormat().loadComponent(name, data, defaultAs, this);
+        return format().loadComponent(name, data, defaultAs, this);
     }
 
     /**
@@ -105,20 +119,6 @@ public interface FileContent<Data> {
     CompletableFuture<FileContent<?>> resolve(Data data);
 
     /**
-     * Gets the local variable resolver for this context.
-     */
-    Locals getLocals();
-
-    /**
-     * Gets the model's declared skeleton.
-     * <p>
-     * This is optional metadata that can be used by mods who need to know how to put the model together for animations.
-     */
-    default Optional<Traversable<String>> getSkeleton() {
-        return Optional.empty();
-    }
-
-    /**
      * Interface for accessing contextual values.
      * <p>
      * This typically includes variables and other things that only become available
@@ -130,12 +130,12 @@ public interface FileContent<Data> {
         /**
          * Gets the texture information from the enclosing context or its parent.
          */
-        CompletableFuture<Texture> getTexture();
+        CompletableFuture<Texture> texture();
 
         /**
          * Gets the local dilation to be applied for a component.
          */
-        CompletableFuture<float[]> getDilation();
+        CompletableFuture<float[]> dilation();
 
         /**
          * Gets a set containing the names of all the variables available in this scope.

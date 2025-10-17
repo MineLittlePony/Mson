@@ -206,7 +206,7 @@ public class MsonImpl implements Mson, ResourceReloader {
         @Override
         public Optional<ModelPart> createTree() {
             return getModelData().map(context -> {
-                return context.createContext(null, null, context.getLocals().bake()).toTree();
+                return context.createContext(null, null, context.locals().bake()).toTree();
             });
         }
 
@@ -215,13 +215,13 @@ public class MsonImpl implements Mson, ResourceReloader {
             Preconditions.checkNotNull(factory, "Factory should not be null");
 
             return getModelData().map(context -> {
-                ModelContext ctx = context.createContext(null, null, context.getLocals().bake());
+                ModelContext ctx = context.createContext(null, null, context.locals().bake());
 
                 ModelPart root = ctx.toTree();
                 V t = factory.create(root);
 
                 if (t instanceof SkeletonisedModel sk) {
-                    sk.setSkeleton(context.getSkeleton().map(root::ordered).orElse(root));
+                    sk.setSkeleton(context.skeleton().map(root::ordered).orElse(root));
                 }
                 if (t instanceof MsonModel mm) {
                     if (ctx instanceof RootContext c) {

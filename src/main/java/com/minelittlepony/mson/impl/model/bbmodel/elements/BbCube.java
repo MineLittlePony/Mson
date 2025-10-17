@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.impl.model.bbmodel.elements;
 
-import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.MathHelper;
@@ -10,7 +9,6 @@ import org.joml.Quaternionf;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.BoxParameters;
 import com.minelittlepony.mson.api.model.Face;
@@ -18,7 +16,7 @@ import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.model.Vert;
 import com.minelittlepony.mson.api.parser.FileContent;
-import com.minelittlepony.mson.api.parser.ModelComponent;
+import com.minelittlepony.mson.api.parser.ModelBoxComponent;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.EnumMap;
@@ -54,57 +52,51 @@ import java.util.stream.Collectors;
  *   "uuid": "b38e15fc-748d-c7fa-fa9d-2ac7b265d63e"
  * }
  */
-public class BbCube implements ModelComponent<Cuboid>, QuadsBuilder {
+public record BbCube (
+        boolean boxUv,
+
+        float[] from,
+        float[] to,
+        float[] origin,
+
+        Optional<UUID> uuid,
+        Texture texture,
+
+        Map<Face, CubeFace> faces
+    ) implements ModelBoxComponent, QuadsBuilder {
     public static final Identifier ID = Identifier.of("blockbench", "cube");
-
-    private final boolean boxUv;
-
-    private final float[] from = new float[3];
-    private final float[] to = new float[3];
-    private final float[] origin = new float[3];
-
-    private final Map<Face, CubeFace> faces;
-
-    private final Texture texture;
-
-    public final Optional<UUID> uuid;
 
     public BbCube(FileContent<JsonElement> context, String name, JsonElement json) {
         this(context, name, json.getAsJsonObject());
     }
 
     public BbCube(FileContent<JsonElement> context, String name, JsonObject json) {
-        boxUv = JsonHelper.getBoolean(json, "box_uv", true);
-        JsonUtil.acceptFloats(json, "from", from);
-        JsonUtil.acceptFloats(json, "to", to);
-        JsonUtil.acceptFloats(json, "origin", origin);
+        this(
+            JsonHelper.getBoolean(json, "box_uv", true),
+            JsonUtil.acceptFloats(json, "from", 3),
+            JsonUtil.acceptFloats(json, "to", 3),
+            JsonUtil.acceptFloats(json, "origin", 3),
+            JsonUtil.accept(json, "uuid").map(JsonElement::getAsString).map(UUID::fromString),
+            new Texture(JsonUtil.acceptFloats(json, "uv_offset", 2)),
+            readFaces(JsonHelper.getObject(json, "faces", new JsonObject()))
+        );
+    }
 
-        float[] uvOffset = new float[2];
-        JsonUtil.acceptFloats(json, "uv_offset", uvOffset);
-
-        uuid = JsonUtil.accept(json, "uuid").map(JsonElement::getAsString).map(UUID::fromString);
-
-        JsonObject faces = JsonHelper.getObject(json, "faces", new JsonObject());
-        this.faces = Face.VALUES.stream()
+    private static Map<Face, CubeFace> readFaces(JsonObject faces) {
+        return Face.VALUES.stream()
                 .filter(face -> face != Face.NONE)
                 .collect(Collectors.toMap(Function.identity(), face -> {
                     return new CubeFace(face, JsonHelper.getObject(faces, face.name().toLowerCase(Locale.ROOT)));
                 }, (a, b) -> b, () -> new EnumMap<>(Face.class)));
-
-        texture = new Texture((int)uvOffset[0], (int)uvOffset[1], 0, 0);
     }
 
     @Override
-    public Cuboid export(ModelContext context) {
-        return createBuilder(context).build();
+    public Identifier getId() {
+        return ID;
     }
 
     @Override
-    public void write(ModelContext context, ModelFileWriter writer) {
-        writer.writeBox(createBuilder(context));
-    }
-
-    private BoxBuilder createBuilder(ModelContext context) {
+    public BoxBuilder builder(ModelContext context) {
         if (boxUv) {
             return new BoxBuilder(context)
                     .tex(texture)
@@ -154,18 +146,13 @@ public class BbCube implements ModelComponent<Cuboid>, QuadsBuilder {
         faces.get(Face.SOUTH).createRect(ctx, buffer, wdn, edn, eun, wun);
     }
 
-    @Override
-    public Identifier getId() {
-        return ID;
-    }
-
     record CubeFace(Face face, float[] uv, int texture, float rotation) {
         CubeFace(Face face, JsonObject json) {
-            this(face, new float[4],
-                    json.get("texture").getAsInt(),
-                    json.get("rotation").getAsFloat() * MathHelper.RADIANS_PER_DEGREE
-                );
-            JsonUtil.acceptFloats(json, "uv", uv());
+            this(face,
+                JsonUtil.acceptFloats(json, "uv", 4),
+                json.get("texture").getAsInt(),
+                json.get("rotation").getAsFloat() * MathHelper.RADIANS_PER_DEGREE
+            );
         }
 
         public void createRect(BoxBuilder builder, QuadsBuilder.QuadBuffer buffer, Vert a, Vert b, Vert c, Vert d) {

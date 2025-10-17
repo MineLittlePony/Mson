@@ -70,7 +70,7 @@ final class EmptyModelContext implements ModelContextImpl, ModelContext.Locals {
     }
 
     @Override
-    public Identifier getModelId() {
+    public Identifier modelId() {
         return ID;
     }
 

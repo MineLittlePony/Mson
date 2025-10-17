@@ -83,9 +83,7 @@ class BlockBenchFileContent implements JsonContext {
         JsonUtil.require(json, "elements", id).getAsJsonArray().asList().stream().forEach(element -> {
             loadComponent(element, BbCube.ID).ifPresent(component -> {
                 if (((ModelComponent<?>)component) instanceof BbCube cube) {
-                    cube.uuid.ifPresent(uuid -> {
-                        cubes.put(uuid, cube);
-                    });
+                    cube.uuid().ifPresent(uuid -> cubes.put(uuid, cube));
                 }
             });
         });
@@ -112,7 +110,7 @@ class BlockBenchFileContent implements JsonContext {
     }
 
     @Override
-    public ModelFormat<JsonElement> getFormat() {
+    public ModelFormat<JsonElement> format() {
         return format;
     }
 
@@ -160,44 +158,31 @@ class BlockBenchFileContent implements JsonContext {
     }
 
     @Override
-    public FileContent.Locals getLocals() {
+    public FileContent.Locals locals() {
         return locals;
     }
 
-    public static class RootVariables implements FileContentLocalsImpl {
-        private final Identifier id;
-        private final CompletableFuture<Texture> texture;
-        private final CompletableFuture<float[]> dilate = CompletableFuture.completedFuture(new float[] {1,1,1});
-
+    public record RootVariables (
+            Identifier modelId,
+            CompletableFuture<Texture> texture,
+            CompletableFuture<float[]> dilation
+        ) implements FileContentLocalsImpl {
         RootVariables(Identifier id, JsonObject json) {
-            this.id = id;
-            texture = CompletableFuture.completedFuture(JsonUtil.accept(json, "resolution")
-                    .map(JsonElement::getAsJsonObject)
-                    .map(resolution -> {
-                return new Texture(
-                        0,
-                        0,
-                        JsonHelper.getInt(resolution, "width", 64),
-                        JsonHelper.getInt(resolution, "height", 64)
-                );
-            }).orElse(Texture.EMPTY));
+            this(
+                    id,
+                    CompletableFuture.completedFuture(JsonUtil.accept(json, "resolution")
+                            .map(JsonElement::getAsJsonObject)
+                            .map(resolution -> {
+                        return new Texture(
+                                0,
+                                0,
+                                JsonHelper.getInt(resolution, "width", 64),
+                                JsonHelper.getInt(resolution, "height", 64)
+                        );
+                    }).orElse(Texture.EMPTY)),
+                    CompletableFuture.completedFuture(new float[] {1,1,1})
+            );
         }
-
-        @Override
-        public Identifier getModelId() {
-            return id;
-        }
-
-        @Override
-        public CompletableFuture<float[]> getDilation() {
-            return dilate;
-        }
-
-        @Override
-        public CompletableFuture<Texture> getTexture() {
-            return texture;
-        }
-
         @Override
         public CompletableFuture<Incomplete<Float>> getLocal(String name, float defaultValue) {
             return CompletableFuture.completedFuture(Incomplete.completed(defaultValue));

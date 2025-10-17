@@ -1,20 +1,18 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
-import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.model.Face.Axis;
-import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.api.parser.locals.Local;
 import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.api.parser.FileContent;
+import com.minelittlepony.mson.api.parser.ModelBoxComponent;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.Optional;
@@ -24,7 +22,7 @@ import java.util.Optional;
  *
  * @author Sollace
  */
-public class JsonBox implements ModelComponent<Cuboid> {
+public class JsonBox implements ModelBoxComponent {
     public static final Identifier ID = MsonImpl.id("box");
 
     /**
@@ -60,31 +58,20 @@ public class JsonBox implements ModelComponent<Cuboid> {
     }
 
     public JsonBox(FileContent<JsonElement> context, String name, JsonObject json) {
-        from = Local.array(json, "from", 3, context.getLocals().getModelId());
-        size = Local.array(json, "size", 3, context.getLocals().getModelId());
+        from = Local.array(json, "from", 3, context.locals().modelId());
+        size = Local.array(json, "size", 3, context.locals().modelId());
         texture = JsonTexture.incomplete(JsonUtil.accept(json, "texture"));
         mirror = JsonUtil.acceptBoolean(json, "mirror");
-        dilate = Local.array(json, "dilate", 3, context.getLocals().getModelId());
+        dilate = Local.array(json, "dilate", 3, context.locals().modelId());
     }
 
     @Override
-    public Cuboid export(ModelContext context) {
+    public BoxBuilder builder(ModelContext context) {
         return new BoxBuilder(context)
             .tex(texture.complete(context))
             .pos(from.complete(context))
             .size(size.complete(context))
             .dilate(dilate.complete(context))
-            .mirror(Axis.X, mirror)
-            .build();
-    }
-
-    @Override
-    public void write(ModelContext context, ModelFileWriter writer) {
-        writer.writeBox(new BoxBuilder(context)
-                .tex(texture.complete(context))
-                .pos(from.complete(context))
-                .size(size.complete(context))
-                .dilate(dilate.complete(context))
-                .mirror(Axis.X, mirror));
+            .mirror(Axis.X, mirror);
     }
 }
