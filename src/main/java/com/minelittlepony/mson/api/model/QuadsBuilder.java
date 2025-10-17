@@ -148,9 +148,9 @@ public interface QuadsBuilder {
                     new float[3],
                     pars.uv
             );
-            if (ctx.parameters.mirror[0]) pars.flip(Axis.X);
+            if (ctx.parameters.mirror[0]) pars.flip(Axis.Z);
             if (ctx.parameters.mirror[1]) pars.flip(Axis.Y);
-            if (ctx.parameters.mirror[2]) pars.flip(Axis.Z);
+            if (ctx.parameters.mirror[2]) pars.flip(Axis.X);
 
             pars.uv = new Texture(
                     (int)((pars.uv.u() - pars.getBoxFrameUOffset(face.getNormal()))),

@@ -60,7 +60,7 @@ public enum Face {
     }
 
     public Face mirrored(boolean x, boolean y) {
-        return this;
+        return x != y ? getOpposite() : this;
     }
 
     /**
