@@ -94,6 +94,6 @@ public class JsonPlane implements ModelComponent<Cuboid> {
             .pos(position.complete(context))
             .size(face.getAxis(), size.complete(context))
             .dilate(dilate.complete(context))
-            .quads(QuadsBuilder.plane(face)));
+            .quads(QuadsBuilder.plane(mirror[0] != mirror[1] ? face.getOpposite() : face)));
     }
 }

@@ -45,6 +45,21 @@ public enum Face {
     }
 
     /**
+     * Gets the opposite face to this one
+     */
+    public Face getOpposite() {
+        return switch (this) {
+            case NONE -> NONE;
+            case UP -> DOWN;
+            case DOWN -> UP;
+            case EAST -> WEST;
+            case WEST -> EAST;
+            case NORTH -> SOUTH;
+            case SOUTH -> NORTH;
+        };
+    }
+
+    /**
      * The perpendicular axis of the plane parallel to this face.
      */
     public Axis getAxis() {
