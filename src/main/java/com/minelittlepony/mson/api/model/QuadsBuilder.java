@@ -114,11 +114,15 @@ public interface QuadsBuilder {
                     { pars.position[0] + pars.size[0], pars.position[1] + pars.size[1], pars.position[2] + pars.size[2] }
             };
             final int[] vertexIndices = FACE_VERTEX_OFFSETS[face.ordinal()];
+            boolean mirror = false;
+            if (ctx.parameters.mirror[0]) mirror = !mirror;
+            if (ctx.parameters.mirror[1]) mirror = !mirror;
+            if (ctx.parameters.mirror[2]) mirror = !mirror;
             buffer.quad(face.getNormal(),
                     ctx.parameters.uv.u(), ctx.parameters.uv.v(),
                     ctx.parameters.size[vertexIndices[4]],
                     ctx.parameters.size[vertexIndices[5]],
-                    false,
+                    mirror,
                     ctx.vert(VERTEX_MATRIX[vertexIndices[0]], positionMatrix),
                     ctx.vert(VERTEX_MATRIX[vertexIndices[1]], positionMatrix),
                     ctx.vert(VERTEX_MATRIX[vertexIndices[2]], positionMatrix),
@@ -147,6 +151,7 @@ public interface QuadsBuilder {
             if (ctx.parameters.mirror[0]) pars.flip(Axis.X);
             if (ctx.parameters.mirror[1]) pars.flip(Axis.Y);
             if (ctx.parameters.mirror[2]) pars.flip(Axis.Z);
+
             pars.uv = new Texture(
                     (int)((pars.uv.u() - pars.getBoxFrameUOffset(face.getNormal()))),
                     (int)((pars.uv.v() - pars.getBoxFrameVOffset(face.getNormal()))),
