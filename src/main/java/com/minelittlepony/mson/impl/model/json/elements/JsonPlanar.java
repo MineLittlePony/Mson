@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
-import net.minecraft.client.model.ModelPart.Cuboid;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 
@@ -68,10 +67,13 @@ public class JsonPlanar extends JsonCompound {
     @Override
     protected void write(ModelContext context, PartBuilder builder, ModelFileWriter writer) {
         super.write(context, builder, writer);
-        faces.values().forEach(face -> writer.write(context, face));
+        faces.values()
+            .stream()
+            .flatMap(face -> face.export(context))
+            .forEach(writer::writeBox);
     }
 
-    class JsonFaceSet implements ModelFileWriter.Writeable {
+    class JsonFaceSet {
 
         private final Face face;
 
@@ -89,17 +91,9 @@ public class JsonPlanar extends JsonCompound {
             }
         }
 
-        Stream<Cuboid> export(ModelContext subContext) {
+        Stream<BoxBuilder> export(ModelContext subContext) {
             Fixtures fixtures = new Fixtures(subContext);
-            return elements.stream().map(face -> face.export(subContext, fixtures));
-        }
-
-        @Override
-        public void write(ModelContext context, ModelFileWriter writer) {
-            Fixtures fixtures = new Fixtures(context);
-            for (var face : elements) {
-                face.write(context, fixtures, writer);
-            }
+            return elements.stream().map(face -> face.builder(subContext, fixtures));
         }
 
         class Fixtures extends FixtureImpl {
@@ -178,25 +172,14 @@ public class JsonPlanar extends JsonCompound {
                 }
             }
 
-            public Cuboid export(ModelContext context, Fixtures fixtures) {
+            public BoxBuilder builder(ModelContext context, Fixtures fixtures) {
                 return new BoxBuilder(context)
                     .fix(fixtures)
                     .tex(texture.complete(context))
                     .mirror(face.getAxis(), mirror)
                     .pos(position.complete(context))
                     .size(face.getAxis(), size.complete(context))
-                    .quads(QuadsBuilder.plane(face))
-                    .build();
-            }
-
-            public void write(ModelContext context, Fixtures fixtures, ModelFileWriter writer) {
-                writer.writeBox(new BoxBuilder(context)
-                    .fix(fixtures)
-                    .tex(texture.complete(context))
-                    .mirror(face.getAxis(), mirror)
-                    .pos(position.complete(context))
-                    .size(face.getAxis(), size.complete(context))
-                    .quads(QuadsBuilder.plane(face)));
+                    .quads(QuadsBuilder.plane(mirror[0] != mirror[1] ? face.getOpposite() : face));
             }
 
             private static Incomplete<Texture> createTexture(Incomplete<Float> u, Incomplete<Float> v) {

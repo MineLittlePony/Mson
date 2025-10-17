@@ -28,9 +28,17 @@ public class PartBuilder {
         return this;
     }
 
+    public PartBuilder addChild(String name, PartBuilder child) {
+        return addChild(name, child.build());
+    }
+
     public PartBuilder addCube(ModelPart.Cuboid cube) {
         cubes.add(cube);
         return this;
+    }
+
+    public PartBuilder addCube(BoxBuilder cube) {
+        return addCube(cube.build());
     }
 
     public PartBuilder hidden(boolean hidden) {
