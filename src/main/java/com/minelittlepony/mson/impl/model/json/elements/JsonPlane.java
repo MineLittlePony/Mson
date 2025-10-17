@@ -74,26 +74,23 @@ public class JsonPlane implements ModelComponent<Cuboid> {
         face = Face.valueOf(JsonUtil.require(json, "face", ID, context.getLocals().getModelId()).getAsString().toUpperCase());
     }
 
-    @Override
-    public Cuboid export(ModelContext context) {
+    public BoxBuilder builder(ModelContext context) {
         return new BoxBuilder(context)
             .tex(texture.complete(context))
             .mirror(face.getAxis(), mirror)
             .pos(position.complete(context))
             .size(face.getAxis(), size.complete(context))
             .dilate(dilate.complete(context))
-            .quads(QuadsBuilder.plane(face))
-            .build();
+            .quads(QuadsBuilder.plane(mirror[0] != mirror[1] ? face.getOpposite() : face));
+    }
+
+    @Override
+    public Cuboid export(ModelContext context) {
+        return builder(context).build();
     }
 
     @Override
     public void write(ModelContext context, ModelFileWriter writer) {
-        writer.writeBox(new BoxBuilder(context)
-            .tex(texture.complete(context))
-            .mirror(face.getAxis(), mirror)
-            .pos(position.complete(context))
-            .size(face.getAxis(), size.complete(context))
-            .dilate(dilate.complete(context))
-            .quads(QuadsBuilder.plane(face)));
+        writer.writeBox(builder(context));
     }
 }
