@@ -5,6 +5,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.network.ClientPlayerLikeEntity;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
+import net.minecraft.client.render.block.entity.state.BlockEntityRenderState;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
@@ -66,4 +67,22 @@ public interface EntityRendererRegistry {
      * Adds a custom block entity renderer.
      */
     <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererFactory.Context, R> constructor);
+
+    /**
+     * Adds a custom block entity renderer.
+     *
+     * @param type        The type of block entity
+     * @param condition   Predicate to determine when to use this renderer.
+     * @param constructor The renderer factory
+     */
+    <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockRenderer(BlockEntityType<P> type, Predicate<? super P> condition, Function<BlockEntityRendererFactory.Context, R> constructor);
+
+    /**
+     * Adds a custom block entity renderer.
+     *
+     * @param type        The type of block entity
+     * @param condition   Predicate to determine when to use this renderer.
+     * @param constructor The renderer factory
+     */
+    <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockStateRenderer(BlockEntityType<P> type, Predicate<BlockEntityRenderState> condition, Function<BlockEntityRendererFactory.Context, R> constructor);
 }

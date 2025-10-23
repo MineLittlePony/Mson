@@ -5,6 +5,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.network.ClientPlayerLikeEntity;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
+import net.minecraft.client.render.block.entity.state.BlockEntityRenderState;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.EntityRendererFactory.Context;
@@ -42,8 +43,11 @@ final class PendingEntityRendererRegistry implements EntityRendererRegistry {
                     Map.Entry<Predicate<EntityRenderState>, Function<EntityRendererFactory.Context, ? extends EntityRenderer<?, ?>>>
                 > entityState = new PendingRegistrations<>(MsonImpl.id("renderers/entity_render_state"));
     final PendingRegistrations<BlockEntityType<?>,
-                    Function<BlockEntityRendererFactory.Context, ? extends BlockEntityRenderer<?, ?>>
-                > block = new PendingRegistrations<>(MsonImpl.id("renderers/block"));
+                    Map.Entry<Either<Unit, Predicate<BlockEntity>>, Function<BlockEntityRendererFactory.Context, ? extends BlockEntityRenderer<?, ?>>>
+                > block = new PendingRegistrations<>(MsonImpl.id("renderers/block_entity"));
+    final PendingRegistrations<BlockEntityType<?>,
+        Map.Entry<Predicate<BlockEntityRenderState>, Function<BlockEntityRendererFactory.Context, ? extends BlockEntityRenderer<?, ?>>>
+                > blockState = new PendingRegistrations<>(MsonImpl.id("renderers/block_entity_state"));
 
     @SuppressWarnings("unchecked")
     @Override
@@ -74,7 +78,18 @@ final class PendingEntityRendererRegistry implements EntityRendererRegistry {
 
     @Override
     public <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererFactory.Context, R> constructor) {
-        block.register(type, constructor);
+        block.register(type, Map.entry(Either.left(Unit.INSTANCE), constructor));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockRenderer(BlockEntityType<P> type, Predicate<? super P> condition, Function<BlockEntityRendererFactory.Context, R> constructor) {
+        block.register(type, Map.entry(Either.right((Predicate<BlockEntity>)condition), constructor));
+    }
+
+    @Override
+    public <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockStateRenderer(BlockEntityType<P> type, Predicate<BlockEntityRenderState> condition, Function<BlockEntityRendererFactory.Context, R> constructor) {
+        blockState.register(type, Map.entry((Predicate<BlockEntityRenderState>)condition, constructor));
     }
 
     void initialize() {
@@ -83,6 +98,7 @@ final class PendingEntityRendererRegistry implements EntityRendererRegistry {
         entity.reload();
         entityState.reload();
         block.reload();
+        blockState.reload();
     }
 
     public class PendingRegistrations<Key, Entry> {
