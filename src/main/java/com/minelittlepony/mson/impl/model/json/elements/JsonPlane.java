@@ -78,6 +78,6 @@ public record JsonPlane (
             .pos(position.complete(context))
             .size(face.getAxis(), size.complete(context))
             .dilate(dilate.complete(context))
-            .quads(QuadsBuilder.plane(face.mirrored(mirror[0], mirror[1])));
+            .quads(QuadsBuilder.plane(face));
     }
 }

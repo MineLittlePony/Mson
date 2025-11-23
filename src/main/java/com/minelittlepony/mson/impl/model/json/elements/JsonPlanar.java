@@ -158,7 +158,7 @@ public class JsonPlanar extends JsonCompound {
                     .mirror(face.getAxis(), mirror)
                     .pos(position.complete(context))
                     .size(face.getAxis(), size.complete(context))
-                    .quads(QuadsBuilder.plane(face.mirrored(mirror[0], mirror[1])));
+                    .quads(QuadsBuilder.plane(face));
             }
 
             private static Incomplete<Texture> createTexture(Incomplete<Float> u, Incomplete<Float> v) {
