@@ -91,10 +91,10 @@ abstract class MixinModelCuboidData implements JsonBuffer.JsonConvertable {
             exporter.array(json, "dilate", ((MixinDilation)extraSize).getX(), ((MixinDilation)extraSize).getY(), ((MixinDilation)extraSize).getZ());
             if (mirror) json.addProperty("mirror", mirror);
             exporter.object(json, "texture", exporter.of(js -> {
-                if (textureUV.getX() != 0) js.addProperty("u", textureUV.getX());
-                if (textureUV.getY() != 0) js.addProperty("v", textureUV.getY());
-                if (textureScale.getX() != 1) js.addProperty("su", textureScale.getX());
-                if (textureScale.getY() != 1) js.addProperty("sv", textureScale.getY());
+                if (textureUV.x() != 0) js.addProperty("u", textureUV.x());
+                if (textureUV.y() != 0) js.addProperty("v", textureUV.y());
+                if (textureScale.x() != 1) js.addProperty("su", textureScale.x());
+                if (textureScale.y() != 1) js.addProperty("sv", textureScale.y());
             }));
         });
     }
