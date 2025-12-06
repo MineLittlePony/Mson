@@ -1,9 +1,9 @@
 package com.minelittlepony.mson.api.export;
 
-import net.minecraft.client.model.ModelCuboidData;
-import net.minecraft.client.model.ModelData;
-import net.minecraft.client.model.ModelPartData;
-import net.minecraft.client.model.TexturedModelData;
+import net.minecraft.client.model.geom.builders.CubeDefinition;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 
 import org.joml.Vector3fc;
 
@@ -77,19 +77,19 @@ public final class JsonBuffer {
         return arr;
     }
 
-    public JsonElement write(TexturedModelData model) {
+    public JsonElement write(LayerDefinition model) {
         return write((JsonConvertable)(Object)model);
     }
 
-    public JsonElement write(ModelData part) {
+    public JsonElement write(MeshDefinition part) {
         return write(part.getRoot());
     }
 
-    public JsonElement write(ModelPartData part) {
+    public JsonElement write(PartDefinition part) {
         return write((JsonConvertable)(Object)part);
     }
 
-    public JsonElement write(ModelCuboidData part) {
+    public JsonElement write(CubeDefinition part) {
         return write((JsonConvertable)(Object)part);
     }
 

@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.resources.Identifier;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -68,7 +68,7 @@ public record JsonSlot<T> (
             LocalBlock.of(JsonUtil.accept(json, "locals")),
             JsonUtil.accept(json, "texture").map(JsonTexture::of),
             name.isEmpty() ? (name = JsonUtil.require(json, "name", ID, context.locals().modelId()).getAsString()) : name,
-            Identifier.of("dynamic", context.locals().modelId().getPath() + "/" + name)
+            Identifier.fromNamespaceAndPath("dynamic", context.locals().modelId().getPath() + "/" + name)
         );
 
         context.addNamedComponent(this.name, this);

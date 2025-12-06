@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.api.model;
 
-import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.geom.ModelPart;
 
 import com.minelittlepony.mson.impl.fast.FastModelPart;
 
@@ -18,7 +18,7 @@ public class PartBuilder {
 
     public boolean[] mirror = new boolean[3];
 
-    final List<ModelPart.Cuboid> cubes = new ArrayList<>();
+    final List<ModelPart.Cube> cubes = new ArrayList<>();
     final Map<String, ModelPart> children = new HashMap<>();
 
     public boolean hidden;
@@ -32,7 +32,7 @@ public class PartBuilder {
         return addChild(name, child.build());
     }
 
-    public PartBuilder addCube(ModelPart.Cuboid cube) {
+    public PartBuilder addCube(ModelPart.Cube cube) {
         cubes.add(cube);
         return this;
     }

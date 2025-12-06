@@ -1,7 +1,6 @@
 package com.minelittlepony.mson.api.parser;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.model.ModelPart.Cuboid;
+import net.minecraft.client.model.geom.ModelPart;
 
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.export.ModelFileWriter;
@@ -12,11 +11,11 @@ import com.minelittlepony.mson.api.model.BoxBuilder;
  *
  * Consumes data and "exports" a concrete model instance, or a piece of a model.
  */
-public interface ModelBoxComponent extends ModelComponent<ModelPart.Cuboid> {
+public interface ModelBoxComponent extends ModelComponent<ModelPart.Cube> {
     BoxBuilder builder(ModelContext context);
 
     @Override
-    default Cuboid export(ModelContext context) {
+    default ModelPart.Cube export(ModelContext context) {
         return builder(context).build();
     }
 

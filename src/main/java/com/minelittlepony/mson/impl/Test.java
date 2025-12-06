@@ -1,13 +1,13 @@
 package com.minelittlepony.mson.impl;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.network.ClientPlayerLikeEntity;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.PlayerEntityRenderer;
-import net.minecraft.client.render.entity.model.PlayerEntityModel;
-import net.minecraft.entity.PlayerLikeEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.entity.ClientAvatarEntity;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.player.PlayerModel;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Avatar;
 
 import com.google.common.base.Predicates;
 import com.google.gson.JsonParseException;
@@ -29,7 +29,7 @@ import java.util.function.Function;
 
 final class Test {
     static void init() {
-        var ID = Identifier.of("mson_test", "planar_cube");
+        var ID = Identifier.fromNamespaceAndPath("mson_test", "planar_cube");
         var RAYMAN = playerRendererFactor(Mson.getInstance().registerModel(ID, MsonPlayer::new));
         //var PLANE = playerRendererFactor(Mson.getInstance().registerModel(new Identifier("mson_test", "plane"), MsonPlayer::new));
 
@@ -74,8 +74,8 @@ final class Test {
         });
     }
 
-    static <AvatarlikeEntity extends PlayerLikeEntity & ClientPlayerLikeEntity> Function<EntityRendererFactory.Context, PlayerEntityRenderer<AvatarlikeEntity>> playerRendererFactor(ModelKey<? extends PlayerEntityModel> key) {
-        return r -> new PlayerEntityRenderer<>(r, false) {{
+    static <AvatarlikeEntity extends Avatar & ClientAvatarEntity> Function<EntityRendererProvider.Context, AvatarRenderer<AvatarlikeEntity>> playerRendererFactor(ModelKey<? extends PlayerModel> key) {
+        return r -> new AvatarRenderer<>(r, false) {{
             this.model = key.createModel();
         }};
     }

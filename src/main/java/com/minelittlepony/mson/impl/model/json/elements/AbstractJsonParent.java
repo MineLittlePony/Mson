@@ -1,8 +1,7 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.realms.util.JsonUtils;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.resources.Identifier;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -74,7 +73,7 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
         dilate = Local.array(json, "dilate", 3, context.locals().modelId());
         rotate = Local.array(json, "rotate", 3, context.locals().modelId());
         mirror = JsonUtil.acceptBooleans(json, "mirror", 3);
-        visible = JsonUtils.getBooleanOr("visible", json, true);
+        visible = JsonUtil.getBooleanOr("visible", json, true);
         texture = JsonTexture.incomplete(JsonUtil.accept(json, "texture"));
         this.name = JsonUtil.accept(json, "name").map(JsonElement::getAsString).map(n -> {
             context.addNamedComponent(n, this);

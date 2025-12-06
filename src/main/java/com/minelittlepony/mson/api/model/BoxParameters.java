@@ -1,8 +1,8 @@
 package com.minelittlepony.mson.api.model;
 
-import net.minecraft.client.model.ModelPart.Cuboid;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Direction.Axis;
+import net.minecraft.client.model.geom.ModelPart.Cube;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Direction.Axis;
 
 import java.util.Set;
 
@@ -36,8 +36,8 @@ public class BoxParameters {
         return mirror[0] || mirror[1] || mirror[2];
     }
 
-    public Cuboid build(PartBuilder parent, Set<Direction> enabledSides) {
-        return new Cuboid(
+    public Cube build(PartBuilder parent, Set<Direction> enabledSides) {
+        return new Cube(
                 uv.u(), uv.v(),
                 position[0], position[1], position[2],
                 size[0], size[1], size[2],

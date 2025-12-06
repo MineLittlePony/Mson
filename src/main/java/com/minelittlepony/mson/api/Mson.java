@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.api;
 
 import net.minecraft.client.model.Model;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import com.google.gson.JsonElement;
 import com.minelittlepony.mson.api.json.JsonComponent;

@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;

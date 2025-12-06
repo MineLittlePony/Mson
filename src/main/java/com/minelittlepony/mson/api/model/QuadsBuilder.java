@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.api.model;
 
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.Direction;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;

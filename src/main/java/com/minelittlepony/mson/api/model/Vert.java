@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.api.model;
 
-import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.geom.ModelPart;
 
 import org.joml.Quaternionf;
 import org.joml.Vector3f;

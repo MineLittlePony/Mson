@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.api;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.resources.Identifier;
 
 import com.minelittlepony.mson.api.parser.FileContent;
 

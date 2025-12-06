@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.impl.key;
 
-import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Util;
 
 import org.jetbrains.annotations.Nullable;

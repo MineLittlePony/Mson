@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import com.google.common.io.Files;
 

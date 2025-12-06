@@ -1,29 +1,29 @@
 package com.minelittlepony.mson.api.model.biped;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.render.entity.model.PlayerEntityModel;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.player.PlayerModel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
 
 import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.util.PartUtil;
 
 public class MsonPlayer<T extends LivingEntity>
-    extends PlayerEntityModel
+    extends PlayerModel
     implements MsonModel {
 
     private boolean empty;
 
     public MsonPlayer(ModelPart tree) {
         super(tree, false);
-        empty = tree.traverse().stream().noneMatch(p -> !p.isEmpty());
+        empty = tree.getAllParts().stream().noneMatch(p -> !p.isEmpty());
     }
 
     @Override
-    public ModelPart getRandomPart(Random random) {
+    public ModelPart getRandomBodyPart(RandomSource random) {
         if (empty) {
             return PartUtil.EMPTY_PART;
         }
-        return super.getRandomPart(random);
+        return super.getRandomBodyPart(random);
     }
 }

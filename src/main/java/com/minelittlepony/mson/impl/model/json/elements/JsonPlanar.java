@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.Vec3;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -92,7 +92,7 @@ public class JsonPlanar extends JsonCompound {
         }
 
         class Fixtures extends FixtureImpl {
-            private final Map<Axis, List<Vec3d>> lockedVectors = new HashMap<>();
+            private final Map<Axis, List<Vec3>> lockedVectors = new HashMap<>();
 
             Fixtures(ModelContext context) throws FutureAwaitException {
                 for (Axis axis : Axis.values()) {
@@ -100,7 +100,7 @@ public class JsonPlanar extends JsonCompound {
                         for (JsonFace i : elements) {
                             face.getVertices(i.position.complete(context), i.size.complete(context), axis, 0.5F).forEach(vertex -> {
 
-                                List<Vec3d> locked = getLockedVectors(axis);
+                                List<Vec3> locked = getLockedVectors(axis);
 
                                 if (locked.contains(vertex.normal())) {
                                     return;
@@ -118,13 +118,13 @@ public class JsonPlanar extends JsonCompound {
                 }
             }
 
-            List<Vec3d> getLockedVectors(Axis axis) {
+            List<Vec3> getLockedVectors(Axis axis) {
                 return lockedVectors.computeIfAbsent(axis, a -> new ArrayList<>());
             }
 
             @Override
             protected boolean isFixed(Axis axis, float x, float y, float z) {
-                return getLockedVectors(axis).contains(new Vec3d(x, y, z));
+                return getLockedVectors(axis).contains(new Vec3(x, y, z));
             }
         }
 

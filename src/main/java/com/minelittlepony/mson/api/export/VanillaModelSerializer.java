@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.api.export;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.model.TexturedModelData;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -14,7 +14,7 @@ import com.minelittlepony.mson.impl.model.json.MsonModelFormat;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class VanillaModelSerializer extends ModelSerializer<TexturedModelData> {
+public class VanillaModelSerializer extends ModelSerializer<LayerDefinition> {
 
     @Nullable
     private final ModelLoader modelLoader;
@@ -28,17 +28,17 @@ public class VanillaModelSerializer extends ModelSerializer<TexturedModelData> {
     }
 
     public void exportAll(Path root) {
-        ((ModelListAccessor)MinecraftClient.getInstance().getLoadedEntityModels()).getModelParts().forEach((id, model) -> {
+        ((ModelListAccessor)Minecraft.getInstance().getEntityModels()).getModelParts().forEach((id, model) -> {
             try {
-                Path path = root.resolve(id.id().getNamespace()).resolve(id.id().getPath() + ".json");
+                Path path = root.resolve(id.model().getNamespace()).resolve(id.model().getPath() + ".json");
                 writeToFile(path, model);
 
                 if (modelLoader != null) {
-                    ((MsonModelFormat)MsonModelFormat.INSTANCE).loadModel(id.id(), path, modelLoader).ifPresent(content -> {
+                    ((MsonModelFormat)MsonModelFormat.INSTANCE).loadModel(id.model(), path, modelLoader).ifPresent(content -> {
                         BBModelFormat.INSTANCE.createSerializer().ifPresent(serializer -> {
                             try (serializer) {
                                 serializer.writeToFile(
-                                        root.resolve(id.id().getNamespace()).resolve(id.id().getPath() + ".bbmodel").normalize(),
+                                        root.resolve(id.model().getNamespace()).resolve(id.model().getPath() + ".bbmodel").normalize(),
                                         content
                                 );
                             } catch (Exception ex) {
@@ -54,7 +54,7 @@ public class VanillaModelSerializer extends ModelSerializer<TexturedModelData> {
     }
 
     @Override
-    public JsonElement writeToJsonElement(TexturedModelData content) {
+    public JsonElement writeToJsonElement(LayerDefinition content) {
         return JsonBuffer.INSTANCE.write(content);
     }
 

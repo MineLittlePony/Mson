@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.api.model.traversal;
 
-import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.geom.ModelPart;
 
 import java.util.Map;
 

@@ -1,10 +1,9 @@
 package com.minelittlepony.mson.api.model;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.model.ModelPart.*;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.Identifier;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
@@ -111,13 +110,13 @@ public final class BoxBuilder {
         return this;
     }
 
-    public Cuboid build() {
+    public ModelPart.Cube build() {
         if (quads.getId() == QuadsBuilder.CUBE) {
             return quads.getBoxParameters(this).build(parent, quads.getFaces(this));
         }
 
         BoxParameters pars = quads.getBoxParameters(this);
-        Cuboid box = pars.build(parent, quads.getFaces(this));
+        ModelPart.Cube box = pars.build(parent, quads.getFaces(this));
         ((Cube)box).setSides(collectQuads(pars).stream().map(Quad::rect).toArray(Rect[]::new));
         return box;
     }
@@ -142,7 +141,7 @@ public final class BoxBuilder {
                 ModelPart.Vertex[] verts = new ModelPart.Vertex[vertices.length];
                 System.arraycopy(vertices, 0, verts, 0, vertices.length);
 
-                Rect rect = (Rect)(Object)new ModelPart.Quad(
+                Rect rect = (Rect)(Object)new ModelPart.Polygon(
                         remap ? verts : defaultVertices,
                         u,         v,
                         u + w, v + h,
@@ -163,9 +162,9 @@ public final class BoxBuilder {
     }
 
     public interface RenderLayerSetter {
-        Function<Identifier, RenderLayer> getRenderLayerFactory();
+        Function<Identifier, RenderType> getRenderLayerFactory();
 
-        void setRenderLayerFactory(Function<Identifier, RenderLayer> supplier);
+        void setRenderLayerFactory(Function<Identifier, RenderType> supplier);
     }
 
     public record Quad(Rect rect, Direction direction) {}

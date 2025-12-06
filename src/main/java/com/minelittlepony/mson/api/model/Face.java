@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.api.model;
 
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -79,7 +79,7 @@ public enum Face {
      *
      * @return True if the vertex is within the plane's bounds.
      */
-    public boolean isInside(float[] position, float[] dimensions, Vec3d vertex) {
+    public boolean isInside(float[] position, float[] dimensions, Vec3 vertex) {
         float x = position[0];
         float y = position[1];
         float z = position[2];
@@ -110,24 +110,24 @@ public enum Face {
      */
     public Stream<Corner> getVertices(float[] position, float[] dimensions, Axis axis, float dilate) {
 
-        Vec3d min = new Vec3d(position[0], position[1], position[2]);
-        Vec3d max = new Vec3d(
+        Vec3 min = new Vec3(position[0], position[1], position[2]);
+        Vec3 max = new Vec3(
                 getAxis().getWidth().getFloat(dimensions),
                 getAxis().getHeight().getFloat(dimensions),
                 getAxis().getDepth().getFloat(dimensions)
         );
 
-        Vec3d str = dilate == 0 ? Vec3d.ZERO : new Vec3d(
+        Vec3 str = dilate == 0 ? Vec3.ZERO : new Vec3(
                 (axis == Axis.X ? dilate : 0),
                 (axis == Axis.Y ? dilate : 0),
                 (axis == Axis.Z ? dilate : 0)
         );
-        Vec3d stretchedMin = dilate == 0 ? min : min.subtract(str);
-        Vec3d stretchedMax = dilate == 0 ? max : max.add(str.multiply(2));
+        Vec3 stretchedMin = dilate == 0 ? min : min.subtract(str);
+        Vec3 stretchedMax = dilate == 0 ? max : max.add(str.scale(2));
 
         return Arrays.stream(Corner.CORNERS).map(corner -> {
-            Vec3d cornerVec = min.add(max.multiply(corner));
-            Vec3d stretched = dilate == 0 ? cornerVec : stretchedMin.add(stretchedMax.multiply(corner));
+            Vec3 cornerVec = min.add(max.multiply(corner));
+            Vec3 stretched = dilate == 0 ? cornerVec : stretchedMin.add(stretchedMax.multiply(corner));
             return new Corner(cornerVec, stretched);
         }).distinct();
     }

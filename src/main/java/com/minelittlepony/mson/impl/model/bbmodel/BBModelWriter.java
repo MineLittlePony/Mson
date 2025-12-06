@@ -1,8 +1,8 @@
 package com.minelittlepony.mson.impl.model.bbmodel;
 
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
+import net.minecraft.core.Direction;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
@@ -219,7 +219,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             List<Direction> directions = quads.stream().map(BoxBuilder.Quad::direction)
                     .distinct().toList();
 
-            elementJson.addProperty("name", part.isRedundant() ? part.name() : (directions.size() == 1 ? directions.get(0).asString() + "_" : "") + type.getPath());
+            elementJson.addProperty("name", part.isRedundant() ? part.name() : (directions.size() == 1 ? directions.get(0).getSerializedName() + "_" : "") + type.getPath());
             elementJson.addProperty("type", "mesh");
             elementJson.addProperty("uuid", id.toString());
             elementJson.addProperty("rescale", false);
@@ -388,9 +388,9 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
                 ));
                 float[] rotate = rotate();
                 elementJson.add("rotation", buffer.of(
-                       -rotate[0] / MathHelper.RADIANS_PER_DEGREE,
-                        rotate[1] / MathHelper.RADIANS_PER_DEGREE,
-                       -rotate[2] / MathHelper.RADIANS_PER_DEGREE
+                       -rotate[0] / Mth.DEG_TO_RAD,
+                        rotate[1] / Mth.DEG_TO_RAD,
+                       -rotate[2] / Mth.DEG_TO_RAD
                 ));
             }
 

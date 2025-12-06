@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.impl.key;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import com.minelittlepony.mson.api.ModelKey;
 

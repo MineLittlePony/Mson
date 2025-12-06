@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.api;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 public interface CommonLocals {
     /**

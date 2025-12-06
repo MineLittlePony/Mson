@@ -1,15 +1,15 @@
 package com.minelittlepony.mson.impl.fast;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.model.geom.ModelPart;
 
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import com.minelittlepony.mson.api.model.Cube;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,32 +31,32 @@ public class FastModelPart extends ModelPart {
     private ResettableVertex[] normals;
     private Fragment[] fragments;
 
-    public FastModelPart(List<Cuboid> cuboids, Map<String, ModelPart> children, float[] rotate, float[] pivot, boolean hidden) {
+    public FastModelPart(List<Cube> cuboids, Map<String, ModelPart> children, float[] rotate, float[] pivot, boolean hidden) {
         super(cuboids, children);
-        setAngles(rotate[0], rotate[1], rotate[2]);
-        setOrigin(pivot[0], pivot[1], pivot[2]);
-        setDefaultTransform(getTransform());
+        setRotation(rotate[0], rotate[1], rotate[2]);
+        setPos(pivot[0], pivot[1], pivot[2]);
+        setInitialPose(storePose());
         visible = !hidden;
     }
 
     @Override
-    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+    public void render(PoseStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
         computeContents();
 
         if (!visible || empty) {
             return;
         }
 
-        matrices.push();
-        applyTransform(matrices);
-        if (!hidden) {
-            MatrixStack.Entry entry = matrices.peek();
+        matrices.pushPose();
+        translateAndRotate(matrices);
+        if (!skipDraw) {
+            PoseStack.Pose entry = matrices.last();
             fastRenderCuboids(entry, vertices, light, overlay, color);
         }
         for (ModelPart modelPart : parts) {
             modelPart.render(matrices, vertices, light, overlay, color);
         }
-        matrices.pop();
+        matrices.popPose();
     }
 
     private void computeContents() {
@@ -70,15 +70,14 @@ public class FastModelPart extends ModelPart {
         Map<Vector3f, Vector3f> vertices = new HashMap<>();
         Map<Vector3f, Vector3f> normals = new HashMap<>();
         List<Fragment> fragments = new ArrayList<>();
-        for (Cuboid cube : accessor.getCuboids()) {
-            Cube cu = ((Cube)cube);
-            for (int i = 0; i < cu.sideCount(); i++) {
-                Quad quad = (Quad)(Object)cu.getSide(i);
+        for (com.minelittlepony.mson.api.model.Cube cube : accessor.getCuboids()) {
+            for (int i = 0; i < cube.sideCount(); i++) {
+                Polygon quad = (Polygon)cube.getSide(i);
                 for (Vertex vert : quad.vertices()) {
                     fragments.add(new Fragment(
                         vert.u(), vert.v(),
                         vertices.computeIfAbsent(new Vector3f(vert.getPos()), Function.identity()),
-                        normals.computeIfAbsent(new Vector3f(quad.direction()), Function.identity())
+                        normals.computeIfAbsent(new Vector3f(quad.normal()), Function.identity())
                     ));
                 }
             }
@@ -89,9 +88,9 @@ public class FastModelPart extends ModelPart {
         compiled = true;
     }
 
-    private void fastRenderCuboids(MatrixStack.Entry entry, VertexConsumer vertexConsumer, int light, int overlay, int color) {
-        Matrix4f positionMatrix = entry.getPositionMatrix();
-        Matrix3f normalMatrix = entry.getNormalMatrix();
+    private void fastRenderCuboids(PoseStack.Pose entry, VertexConsumer vertexConsumer, int light, int overlay, int color) {
+        Matrix4f positionMatrix = entry.pose();
+        Matrix3f normalMatrix = entry.normal();
         Vector4f position = new Vector4f();
 
         for (ResettableVertex vertex : vertices) {
@@ -103,7 +102,7 @@ public class FastModelPart extends ModelPart {
         for (Fragment frag : fragments) {
             var pos = frag.pos();
             var norm = frag.norm();
-            vertexConsumer.vertex(pos.x, pos.y, pos.z, color, frag.u(), frag.v(), overlay, light, norm.x, norm.y, norm.z);
+            vertexConsumer.addVertex(pos.x, pos.y, pos.z, color, frag.u(), frag.v(), overlay, light, norm.x, norm.y, norm.z);
         }
     }
 

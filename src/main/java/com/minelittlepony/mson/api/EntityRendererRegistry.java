@@ -1,20 +1,21 @@
 package com.minelittlepony.mson.api;
 
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.network.ClientPlayerLikeEntity;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.render.block.entity.state.BlockEntityRenderState;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.PlayerEntityRenderer;
-import net.minecraft.client.render.entity.state.EntityRenderState;
-import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.PlayerLikeEntity;
-import net.minecraft.util.Identifier;
+
+import net.minecraft.client.entity.ClientAvatarEntity;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Avatar;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -30,7 +31,7 @@ public interface EntityRendererRegistry {
      * @param playerPredicate Predicate to determine which players this renderer should be used for.
      * @param constructor The renderer factory
      */
-    <E extends PlayerLikeEntity & ClientPlayerLikeEntity, T extends PlayerEntityRenderer<E>> void registerPlayerRenderer(Identifier skinType, Predicate<? super E> playerPredicate, Function<EntityRendererFactory.Context, T> constructor);
+    <E extends Avatar & ClientAvatarEntity, T extends AvatarRenderer<E>> void registerPlayerRenderer(Identifier skinType, Predicate<? super E> playerPredicate, Function<EntityRendererProvider.Context, T> constructor);
 
     /**
      * Adds a custom player renderer.
@@ -38,21 +39,12 @@ public interface EntityRendererRegistry {
      * @param playerPredicate Predicate to determine which players this renderer should be used for.
      * @param constructor The renderer factory
      */
-    <E extends PlayerLikeEntity & ClientPlayerLikeEntity, T extends PlayerEntityRenderer<E>> void registerPlayerStateRenderer(Identifier skinType, Predicate<PlayerEntityRenderState> statePredicate, Function<EntityRendererFactory.Context, T> constructor);
+    <E extends Avatar & ClientAvatarEntity, T extends AvatarRenderer<E>> void registerPlayerStateRenderer(Identifier skinType, Predicate<AvatarRenderState> statePredicate, Function<EntityRendererProvider.Context, T> constructor);
 
     /**
      * Adds a custom entity renderer.
      */
-    <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRendererFactory.Context, R> constructor);
-
-    /**
-     * Adds a custom entity renderer.
-     *
-     * @param type        Type type of entity
-     * @param condition   Predicate to determine when to use this renderer.
-     * @param constructor The renderer factory
-     */
-    <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Predicate<? super T> condition, Function<EntityRendererFactory.Context, R> constructor);
+    <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Function<EntityRendererProvider.Context, R> constructor);
 
     /**
      * Adds a custom entity renderer.
@@ -61,12 +53,21 @@ public interface EntityRendererRegistry {
      * @param condition   Predicate to determine when to use this renderer.
      * @param constructor The renderer factory
      */
-    <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityStateRenderer(EntityType<T> type, Predicate<EntityRenderState> condition, Function<EntityRendererFactory.Context, R> constructor);
+    <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityRenderer(EntityType<T> type, Predicate<? super T> condition, Function<EntityRendererProvider.Context, R> constructor);
+
+    /**
+     * Adds a custom entity renderer.
+     *
+     * @param type        Type type of entity
+     * @param condition   Predicate to determine when to use this renderer.
+     * @param constructor The renderer factory
+     */
+    <T extends Entity, R extends EntityRenderer<?, ?>> void registerEntityStateRenderer(EntityType<T> type, Predicate<EntityRenderState> condition, Function<EntityRendererProvider.Context, R> constructor);
 
     /**
      * Adds a custom block entity renderer.
      */
-    <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererFactory.Context, R> constructor);
+    <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockRenderer(BlockEntityType<P> type, Function<BlockEntityRendererProvider.Context, R> constructor);
 
     /**
      * Adds a custom block entity renderer.
@@ -75,7 +76,7 @@ public interface EntityRendererRegistry {
      * @param condition   Predicate to determine when to use this renderer.
      * @param constructor The renderer factory
      */
-    <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockRenderer(BlockEntityType<P> type, Predicate<? super P> condition, Function<BlockEntityRendererFactory.Context, R> constructor);
+    <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockRenderer(BlockEntityType<P> type, Predicate<? super P> condition, Function<BlockEntityRendererProvider.Context, R> constructor);
 
     /**
      * Adds a custom block entity renderer.
@@ -84,5 +85,5 @@ public interface EntityRendererRegistry {
      * @param condition   Predicate to determine when to use this renderer.
      * @param constructor The renderer factory
      */
-    <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockStateRenderer(BlockEntityType<P> type, Predicate<BlockEntityRenderState> condition, Function<BlockEntityRendererFactory.Context, R> constructor);
+    <P extends BlockEntity, R extends BlockEntityRenderer<?, ?>> void registerBlockStateRenderer(BlockEntityType<P> type, Predicate<BlockEntityRenderState> condition, Function<BlockEntityRendererProvider.Context, R> constructor);
 }

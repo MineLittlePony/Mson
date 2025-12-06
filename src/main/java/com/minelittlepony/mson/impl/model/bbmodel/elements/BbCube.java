@@ -1,8 +1,8 @@
 package com.minelittlepony.mson.impl.model.bbmodel.elements;
 
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.util.Mth;
 
 import org.joml.Quaternionf;
 
@@ -64,7 +64,7 @@ public record BbCube (
 
         Map<Face, CubeFace> faces
     ) implements ModelBoxComponent, QuadsBuilder {
-    public static final Identifier ID = Identifier.of("blockbench", "cube");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath("blockbench", "cube");
 
     public BbCube(FileContent<JsonElement> context, String name, JsonElement json) {
         this(context, name, json.getAsJsonObject());
@@ -72,13 +72,13 @@ public record BbCube (
 
     public BbCube(FileContent<JsonElement> context, String name, JsonObject json) {
         this(
-            JsonHelper.getBoolean(json, "box_uv", true),
+            GsonHelper.getAsBoolean(json, "box_uv", true),
             JsonUtil.acceptFloats(json, "from", 3),
             JsonUtil.acceptFloats(json, "to", 3),
             JsonUtil.acceptFloats(json, "origin", 3),
             JsonUtil.accept(json, "uuid").map(JsonElement::getAsString).map(UUID::fromString),
             new Texture(JsonUtil.acceptFloats(json, "uv_offset", 2)),
-            readFaces(JsonHelper.getObject(json, "faces", new JsonObject()))
+            readFaces(GsonHelper.getAsJsonObject(json, "faces", new JsonObject()))
         );
     }
 
@@ -86,7 +86,7 @@ public record BbCube (
         return Face.VALUES.stream()
                 .filter(face -> face != Face.NONE)
                 .collect(Collectors.toMap(Function.identity(), face -> {
-                    return new CubeFace(face, JsonHelper.getObject(faces, face.name().toLowerCase(Locale.ROOT)));
+                    return new CubeFace(face, GsonHelper.getAsJsonObject(faces, face.name().toLowerCase(Locale.ROOT)));
                 }, (a, b) -> b, () -> new EnumMap<>(Face.class)));
     }
 
@@ -151,7 +151,7 @@ public record BbCube (
             this(face,
                 JsonUtil.acceptFloats(json, "uv", 4),
                 json.get("texture").getAsInt(),
-                json.get("rotation").getAsFloat() * MathHelper.RADIANS_PER_DEGREE
+                json.get("rotation").getAsFloat() * Mth.DEG_TO_RAD
             );
         }
 

@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.api.parser.locals;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

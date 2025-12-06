@@ -1,10 +1,11 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.resource.ResourceReloader;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.model.geom.ModelPart;
+
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,14 +39,14 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-public class MsonImpl implements Mson, ResourceReloader {
+public class MsonImpl implements Mson, PreparableReloadListener {
     public static final Logger LOGGER = LogManager.getLogger("Mson");
     public static final MsonImpl INSTANCE = new MsonImpl();
 
     public static final Identifier RELOADER_ID = id("models");
 
     public static Identifier id(String name) {
-        return Identifier.of("mson", name);
+        return Identifier.fromNamespaceAndPath("mson", name);
     }
 
     private final PendingEntityRendererRegistry renderers = new PendingEntityRendererRegistry();
@@ -77,8 +78,8 @@ public class MsonImpl implements Mson, ResourceReloader {
 
     public void onVanillaModelsApplied() {
         synchronized (this) {
-            ((ModelListAccessor)MinecraftClient.getInstance().getLoadedEntityModels()).getModelParts().forEach((layer, vanilla) -> {
-                Identifier id = layer.id().withPath(p -> String.format("mson/%s", p));
+            ((ModelListAccessor)Minecraft.getInstance().getEntityModels()).getModelParts().forEach((layer, vanilla) -> {
+                Identifier id = layer.model().withPath(p -> String.format("mson/%s", p));
                 ((MsonImpl.KeyHolder)vanilla).setKey(registeredModels.computeIfAbsent(id, VanillaKey::new));
             });
 
@@ -88,11 +89,11 @@ public class MsonImpl implements Mson, ResourceReloader {
         }
     }
 
-    private CompletableFuture<Void> requireVanillaModels(ResourceReloader.Store store, Executor computeExecutor, Synchronizer sync, Executor applyExecutor) {
+    private CompletableFuture<Void> requireVanillaModels(SharedState store, Executor computeExecutor, PreparationBarrier sync, Executor applyExecutor) {
         synchronized (this) {
             if (vanillaModelsReloadTask == null) {
                 LOGGER.info("Vanilla models are not ready, preparing them ourselves...");
-                MinecraftClient.getInstance().getBakedModelManager().reload(store, computeExecutor, sync, applyExecutor);
+                Minecraft.getInstance().getModelManager().reload(store, computeExecutor, sync, applyExecutor);
                 if (vanillaModelsReloadTask == null) {
                     LOGGER.info("Vanilla models did not prepare. Some errors may occur");
                     return CompletableFuture.completedFuture((Void)null);
@@ -107,11 +108,11 @@ public class MsonImpl implements Mson, ResourceReloader {
     }
 
     @Override
-    public CompletableFuture<Void> reload(ResourceReloader.Store store, Executor computeExecutor, Synchronizer sync, Executor applyExecutor) {
+    public CompletableFuture<Void> reload(SharedState store, Executor computeExecutor, PreparationBarrier sync, Executor applyExecutor) {
         ModelFoundry loadingFoundry = new ModelFoundry(this).setWorker(LoadWorker.async(computeExecutor));
 
         return loadingFoundry.load()
-                .thenCompose(sync::whenPrepared)
+                .thenCompose(sync::wait)
                 .thenComposeAsync(v -> requireVanillaModels(store, computeExecutor, sync, applyExecutor), computeExecutor)
                 .thenRunAsync(() -> {
                     foundry.set(loadingFoundry.setWorker(LoadWorker.sync()));

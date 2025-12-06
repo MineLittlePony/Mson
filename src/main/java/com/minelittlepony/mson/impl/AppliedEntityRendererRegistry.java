@@ -1,15 +1,16 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.client.network.ClientPlayerLikeEntity;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.PlayerEntityRenderer;
-import net.minecraft.client.render.entity.state.EntityRenderState;
-import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.PlayerLikeEntity;
-import net.minecraft.util.Identifier;
+
+import net.minecraft.client.entity.ClientAvatarEntity;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Avatar;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,12 +19,12 @@ import java.util.function.Predicate;
 
 public class AppliedEntityRendererRegistry {
     private final Map<EntityType<?>, Map<Predicate<EntityRenderState>, EntityRenderer<? extends Entity, ?>>> customEntityStateRenderers = new HashMap<>();
-    private final Map<Identifier, Map.Entry<Predicate<?>, PlayerEntityRenderer<?>>> customStateRenderers = new HashMap<>();
+    private final Map<Identifier, Map.Entry<Predicate<?>, AvatarRenderer<?>>> customStateRenderers = new HashMap<>();
 
     private final Map<EntityType<?>, Map<Predicate<Entity>, EntityRenderer<? extends Entity, ?>>> customEntityRenderers = new HashMap<>();
-    private final Map<Identifier, Map.Entry<Predicate<? super ClientPlayerLikeEntity>, PlayerEntityRenderer<?>>> customModelRenderers = new HashMap<>();
+    private final Map<Identifier, Map.Entry<Predicate<? super ClientAvatarEntity>, AvatarRenderer<?>>> customModelRenderers = new HashMap<>();
 
-    public AppliedEntityRendererRegistry(Map<EntityType<?>, EntityRenderer<? extends Entity, ?>> renderers, EntityRendererFactory.Context context) {
+    public AppliedEntityRendererRegistry(Map<EntityType<?>, EntityRenderer<? extends Entity, ?>> renderers, EntityRendererProvider.Context context) {
         var pendingRegistrations = MsonImpl.INSTANCE.getEntityRendererRegistry();
         pendingRegistrations.player.publish((id, entry) -> {
             try {
@@ -47,20 +48,20 @@ public class AppliedEntityRendererRegistry {
                     customEntityRenderers.computeIfAbsent(type, t -> new HashMap<>()).put(condition, entry.getValue().apply(context));
                 });
             } catch (Exception e) {
-                MsonImpl.LOGGER.error("Error whilst updating entity renderer with custom condition for entity type " + EntityType.getId(type) + ": " + e.getMessage(), e);
+                MsonImpl.LOGGER.error("Error whilst updating entity renderer with custom condition for entity type " + EntityType.getKey(type) + ": " + e.getMessage(), e);
             }
         });
         pendingRegistrations.entityState.publish((type, entry) -> {
             try {
                 customEntityStateRenderers.computeIfAbsent(type, t -> new HashMap<>()).put(entry.getKey(), entry.getValue().apply(context));
             } catch (Exception e) {
-                MsonImpl.LOGGER.error("Error whilst updating entity renderer with custom condition for entity render state " + EntityType.getId(type) + ": " + e.getMessage(), e);
+                MsonImpl.LOGGER.error("Error whilst updating entity renderer with custom condition for entity render state " + EntityType.getKey(type) + ": " + e.getMessage(), e);
             }
         });
     }
 
     public Optional<EntityRenderer<?, ?>> getRenderer(Entity entity) {
-        if (entity instanceof PlayerLikeEntity player && player instanceof ClientPlayerLikeEntity p) {
+        if (entity instanceof Avatar player && player instanceof ClientAvatarEntity p) {
             if (!customModelRenderers.isEmpty()) {
                 return customModelRenderers.values().stream()
                     .filter(entry -> entry.getKey().test(p))
@@ -78,7 +79,7 @@ public class AppliedEntityRendererRegistry {
 
     @SuppressWarnings("unchecked")
     public <S extends EntityRenderState> Optional<EntityRenderer<?, ?>> getRenderer(S state) {
-        if (state instanceof PlayerEntityRenderState && (state.entityType == EntityType.PLAYER || state.entityType == EntityType.MANNEQUIN)) {
+        if (state instanceof AvatarRenderState && (state.entityType == EntityType.PLAYER || state.entityType == EntityType.MANNEQUIN)) {
             if (!customStateRenderers.isEmpty()) {
                 return customStateRenderers.values().stream()
                     .filter(entry -> ((Predicate<EntityRenderState>)entry.getKey()).test(state))

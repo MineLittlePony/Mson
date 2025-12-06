@@ -1,8 +1,8 @@
 package com.minelittlepony.mson.impl.model;
 
 import net.minecraft.client.model.Model;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.resources.Identifier;
 
 import org.jetbrains.annotations.Nullable;
 

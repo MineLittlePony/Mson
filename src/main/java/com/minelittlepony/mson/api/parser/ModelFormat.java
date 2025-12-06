@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.api.parser;
 
-import net.minecraft.resource.Resource;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.Resource;
 
 import com.minelittlepony.mson.api.export.ModelSerializer;
 import com.minelittlepony.mson.impl.MsonImpl;
@@ -26,7 +26,7 @@ public interface ModelFormat<Data> {
     /**
      * BlockBench *.bbmodel files
      */
-    Identifier BBMODEL = Identifier.of("blockbench", "bbmodel");
+    Identifier BBMODEL = Identifier.fromNamespaceAndPath("blockbench", "bbmodel");
 
     /**
      * The file extension that this format is capable of parsing.

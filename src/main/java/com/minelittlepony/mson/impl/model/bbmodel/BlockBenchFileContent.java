@@ -1,8 +1,8 @@
 package com.minelittlepony.mson.impl.model.bbmodel;
 
 import net.minecraft.client.model.Model;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.GsonHelper;
 
 import com.google.common.base.Strings;
 import com.google.gson.JsonElement;
@@ -176,8 +176,8 @@ class BlockBenchFileContent implements JsonContext {
                         return new Texture(
                                 0,
                                 0,
-                                JsonHelper.getInt(resolution, "width", 64),
-                                JsonHelper.getInt(resolution, "height", 64)
+                                GsonHelper.getAsInt(resolution, "width", 64),
+                                GsonHelper.getAsInt(resolution, "height", 64)
                         );
                     }).orElse(Texture.EMPTY)),
                     CompletableFuture.completedFuture(new float[] {1,1,1})

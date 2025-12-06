@@ -1,24 +1,24 @@
 package com.minelittlepony.mson.api.model;
 
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 public record Corner(
         /**
          * The untransformed (original) position of the corner vertex.
          */
-        Vec3d normal,
+        Vec3 normal,
         /**
          * The transformed (effective) position of the corner vertex after applying dilation.
          */
-        Vec3d stretched) {
-    public static final Vec3d[] CORNERS = new Vec3d[] {
-        Vec3d.ZERO,
-        new Vec3d(0, 0, 1),
-        new Vec3d(0, 1, 0),
-        new Vec3d(0, 1, 1),
-        new Vec3d(1, 0, 0),
-        new Vec3d(1, 0, 1),
-        new Vec3d(1, 1, 0),
-        new Vec3d(1, 1, 1)
+        Vec3 stretched) {
+    public static final Vec3[] CORNERS = new Vec3[] {
+        Vec3.ZERO,
+        new Vec3(0, 0, 1),
+        new Vec3(0, 1, 0),
+        new Vec3(0, 1, 1),
+        new Vec3(1, 0, 0),
+        new Vec3(1, 0, 1),
+        new Vec3(1, 1, 0),
+        new Vec3(1, 1, 1)
     };
 }

@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Texture;
-import net.minecraft.client.realms.util.JsonUtils;
+import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -60,10 +60,10 @@ public class JsonTexture {
     private static Texture of(JsonElement json, Texture inherited) {
         JsonObject tex = json.getAsJsonObject();
         return new Texture(
-            JsonUtils.getIntOr("u", tex, inherited.u()),
-            JsonUtils.getIntOr("v", tex, inherited.v()),
-            JsonUtils.getIntOr("w", tex, inherited.width()),
-            JsonUtils.getIntOr("h", tex, inherited.height())
+            JsonUtil.getIntOr("u", tex, inherited.u()),
+            JsonUtil.getIntOr("v", tex, inherited.v()),
+            JsonUtil.getIntOr("w", tex, inherited.width()),
+            JsonUtil.getIntOr("h", tex, inherited.height())
         );
     }
 }

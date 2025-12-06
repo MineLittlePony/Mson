@@ -50,6 +50,22 @@ public class JsonUtil {
         return def;
     }
 
+    public static int getIntOr(String member, JsonObject json, int def) {
+        JsonElement el = json.get(member);
+        if (el != null && el.isJsonPrimitive() && !el.isJsonNull()) {
+            return el.getAsInt();
+        }
+        return def;
+    }
+
+    public static boolean getBooleanOr(String member, JsonObject json, boolean def) {
+        JsonElement el = json.get(member);
+        if (el != null && el.isJsonPrimitive() && !el.isJsonNull()) {
+            return el.getAsBoolean();
+        }
+        return def;
+    }
+
     private static float[] getAsFloats(JsonElement json, float[] output) {
         if (!json.isJsonArray()) {
             Arrays.fill(output, json.getAsFloat());

@@ -1,13 +1,13 @@
 package com.minelittlepony.mson.impl.mixin;
 
-import net.minecraft.client.model.Dilation;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(Dilation.class)
+@Mixin(CubeDeformation.class)
 public interface MixinDilation {
-    @Accessor("radiusX") float getX();
-    @Accessor("radiusY") float getY();
-    @Accessor("radiusZ") float getZ();
+    @Accessor("growX") float getX();
+    @Accessor("growY") float getY();
+    @Accessor("growZ") float getZ();
 }

@@ -1,9 +1,9 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.resource.Resource;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -39,12 +39,12 @@ class ModelFoundry implements ModelLoader {
 
     @Override
     public ResourceManager getResourceManager() {
-        return MinecraftClient.getInstance().getResourceManager();
+        return Minecraft.getInstance().getResourceManager();
     }
 
     CompletableFuture<Void> load() {
         Set<String> extensions = mson.handlersByExtension.keySet();
-        getResourceManager().findResources("models/entity", id -> {
+        getResourceManager().listResources("models/entity", id -> {
             String path = id.getPath();
             return extensions.stream().anyMatch(extension -> path.endsWith("." + extension));
         }).entrySet().stream().map(this::loadModel);
@@ -111,9 +111,9 @@ class ModelFoundry implements ModelLoader {
                 return loadedFiles.get(modelId);
             }
         }
-        Identifier file = Identifier.of(modelId.getNamespace(), "models/entity/" + modelId.getPath());
+        Identifier file = modelId.withPrefix("models/entity/");
 
-        Map<Identifier, Resource> resources = getResourceManager().findResources("models/entity", id -> {
+        Map<Identifier, Resource> resources = getResourceManager().listResources("models/entity", id -> {
             return id.getNamespace().equals(file.getNamespace())
                     && PathUtil.removeExtension(id).contentEquals(PathUtil.removeExtension(file));
         });

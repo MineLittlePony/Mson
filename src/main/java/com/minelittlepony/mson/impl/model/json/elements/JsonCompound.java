@@ -1,8 +1,8 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.model.ModelPart.Cuboid;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.ModelPart.Cube;
+import net.minecraft.resources.Identifier;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -79,7 +79,7 @@ public class JsonCompound extends AbstractJsonParent {
                builder.addChild(c.getKey(), part);
             });
         });
-        cubes.forEach(c -> c.tryExport(context, Cuboid.class).ifPresent(builder::addCube));
+        cubes.forEach(c -> c.tryExport(context, Cube.class).ifPresent(builder::addCube));
     }
 
     @Override

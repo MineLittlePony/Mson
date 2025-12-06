@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.impl.model.json;
 
 import net.minecraft.client.model.Model;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import com.google.common.base.Strings;
 import com.google.gson.JsonElement;
@@ -51,7 +51,7 @@ public class JsonFileContent implements JsonContext {
         this.format = format;
         parent = JsonUtil.accept(json, "parent")
             .map(JsonElement::getAsString)
-            .map(Identifier::of)
+            .map(Identifier::parse)
             .map(parentId -> loader.loadModel(parentId, format))
             .orElseGet(() -> CompletableFuture.completedFuture(EmptyFileContent.INSTANCE));
 
@@ -120,11 +120,11 @@ public class JsonFileContent implements JsonContext {
     public CompletableFuture<FileContent<?>> resolve(JsonElement json) {
 
         if (json.isJsonPrimitive()) {
-            return loader.loadModel(Identifier.of(json.getAsString()), format);
+            return loader.loadModel(Identifier.parse(json.getAsString()), format);
         }
 
         Identifier id = locals().modelId();
-        Identifier autoGen = id.withSuffixedPath("_dynamic");
+        Identifier autoGen = id.withSuffix("_dynamic");
 
         if (json.getAsJsonObject().has("data")) {
             throw new JsonParseException("Dynamic model files should not have a nested data block");

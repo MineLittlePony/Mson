@@ -1,10 +1,9 @@
 package com.minelittlepony.mson.impl.model.bbmodel;
 
-import net.minecraft.resource.Resource;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.GsonHelper;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
@@ -20,6 +19,7 @@ import com.minelittlepony.mson.impl.model.bbmodel.elements.BbCube;
 import com.minelittlepony.mson.impl.model.bbmodel.elements.BbPart;
 
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -63,10 +63,10 @@ public class BBModelFormat implements ModelFormat<JsonElement> {
 
     @Override
     public Optional<FileContent<JsonElement>> loadModel(Identifier modelId, Identifier file, Resource resource, boolean failHard, ModelLoader loader) {
-        try (var reader = new InputStreamReader(resource.getInputStream(), Charsets.UTF_8)) {
+        try (var reader = new InputStreamReader(resource.open(), StandardCharsets.UTF_8)) {
             JsonObject json = GSON.fromJson(reader, JsonObject.class);
-            JsonObject meta = JsonHelper.getObject(json, "meta", new JsonObject());
-            String modelFormat = JsonHelper.getString(meta, "model_format", "").toLowerCase(Locale.ROOT);
+            JsonObject meta = GsonHelper.getAsJsonObject(json, "meta", new JsonObject());
+            String modelFormat = GsonHelper.getAsString(meta, "model_format", "").toLowerCase(Locale.ROOT);
 
             if (!acceptableModelFormats.contains(modelFormat)) {
                 return Optional.empty();
@@ -96,11 +96,11 @@ public class BBModelFormat implements ModelFormat<JsonElement> {
         }
 
         JsonObject json = data.getAsJsonObject();
-        Identifier id = Identifier.of(json.get("type").getAsString());
+        Identifier id = Identifier.parse(json.get("type").getAsString());
         final String fname = Strings.nullToEmpty(name).trim();
 
         if (id.getNamespace().equalsIgnoreCase("minecraft")) {
-            id = Identifier.of("blockbench", id.getPath());
+            id = Identifier.fromNamespaceAndPath("blockbench", id.getPath());
         }
 
         return Optional.ofNullable(componentTypes.get(id)).map(c -> (ModelComponent<T>)c.load(context, fname, json));

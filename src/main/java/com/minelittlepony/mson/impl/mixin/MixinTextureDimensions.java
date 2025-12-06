@@ -1,12 +1,12 @@
 package com.minelittlepony.mson.impl.mixin;
 
-import net.minecraft.client.model.TextureDimensions;
+import net.minecraft.client.model.geom.builders.MaterialDefinition;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(TextureDimensions.class)
+@Mixin(MaterialDefinition.class)
 public interface MixinTextureDimensions {
-    @Accessor("width") int getWidth();
-    @Accessor("height") int getHeight();
+    @Accessor("xTexSize") int getWidth();
+    @Accessor("yTexSize") int getHeight();
 }

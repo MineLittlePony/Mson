@@ -1,10 +1,11 @@
 package com.minelittlepony.mson.impl;
 
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.render.block.entity.state.BlockEntityRenderState;
+
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +17,7 @@ public class AppliedBlockEntityRendererRegistry {
     private final Map<BlockEntityType<?>, Map<Predicate<BlockEntity>, BlockEntityRenderer<? extends BlockEntity, ?>>> customBlockEntityRenderers = new HashMap<>();
     private final Map<BlockEntityType<?>, Map<Predicate<BlockEntityRenderState>, BlockEntityRenderer<? extends BlockEntity, ?>>> customBlockEntityStateRenderers = new HashMap<>();
 
-    public AppliedBlockEntityRendererRegistry(Map<BlockEntityType<?>, BlockEntityRenderer<?, ?>> renderers, BlockEntityRendererFactory.Context context) {
+    public AppliedBlockEntityRendererRegistry(Map<BlockEntityType<?>, BlockEntityRenderer<?, ?>> renderers, BlockEntityRendererProvider.Context context) {
 
         MsonImpl.INSTANCE.getEntityRendererRegistry().block.publish((type, entry) -> {
             try {
@@ -27,14 +28,14 @@ public class AppliedBlockEntityRendererRegistry {
                 });
 
             } catch (Exception e) {
-                MsonImpl.LOGGER.error("Error whilst updating block entity renderer " + BlockEntityType.getId(type) + ": " + e.getMessage());
+                MsonImpl.LOGGER.error("Error whilst updating block entity renderer " + BlockEntityType.getKey(type) + ": " + e.getMessage());
             }
         });
         MsonImpl.INSTANCE.getEntityRendererRegistry().blockState.publish((type, entry) -> {
             try {
                 customBlockEntityStateRenderers.computeIfAbsent(type, t -> new HashMap<>()).put(entry.getKey(), entry.getValue().apply(context));
             } catch (Exception e) {
-                MsonImpl.LOGGER.error("Error whilst updating block entity renderer " + BlockEntityType.getId(type) + ": " + e.getMessage());
+                MsonImpl.LOGGER.error("Error whilst updating block entity renderer " + BlockEntityType.getKey(type) + ": " + e.getMessage());
             }
         });
     }
@@ -50,8 +51,8 @@ public class AppliedBlockEntityRendererRegistry {
     }
 
     public <S extends BlockEntityRenderState> Optional<BlockEntityRenderer<?, ?>> getRenderer(S state) {
-        if (!customBlockEntityStateRenderers.isEmpty() && state.type != null) {
-            return customBlockEntityStateRenderers.getOrDefault(state.type, Map.of()).entrySet().stream()
+        if (!customBlockEntityStateRenderers.isEmpty() && state.blockEntityType != null) {
+            return customBlockEntityStateRenderers.getOrDefault(state.blockEntityType, Map.of()).entrySet().stream()
                 .filter(entry -> entry.getKey().test(state))
                 .findFirst()
                 .map(Map.Entry::getValue);

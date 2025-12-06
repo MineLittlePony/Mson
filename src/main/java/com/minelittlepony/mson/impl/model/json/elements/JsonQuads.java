@@ -1,9 +1,8 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
-import net.minecraft.client.model.ModelPart.Cuboid;
-import net.minecraft.client.realms.util.JsonUtils;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.model.geom.ModelPart.Cube;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.Direction;
 
 import com.google.common.collect.Streams;
 import com.google.gson.JsonArray;
@@ -29,7 +28,7 @@ import java.util.List;
  * @author Sollace
  * @apiNote Experimental. This feature may disappear in the future.
  */
-public record JsonQuads (List<JsonQuad> quads, int texU, int texV) implements ModelComponent<Cuboid>, QuadsBuilder {
+public record JsonQuads (List<JsonQuad> quads, int texU, int texV) implements ModelComponent<Cube>, QuadsBuilder {
     public static final Identifier ID = MsonImpl.id("quads");
 
     public JsonQuads(FileContent<JsonElement> context, String name, JsonElement json) {
@@ -59,7 +58,7 @@ public record JsonQuads (List<JsonQuad> quads, int texU, int texV) implements Mo
     }
 
     @Override
-    public Cuboid export(ModelContext context) {
+    public Cube export(ModelContext context) {
         return builder(context).build();
     }
 
@@ -82,10 +81,10 @@ public record JsonQuads (List<JsonQuad> quads, int texU, int texV) implements Mo
         static JsonQuad fromJson(FileContent<JsonElement> context, List<JsonVertex> vertices, JsonElement json) {
             JsonObject o = json.getAsJsonObject();
             return new JsonQuad(
-                JsonUtils.getIntOr("x", o, 0),
-                JsonUtils.getIntOr("y", o, 0),
-                JsonUtils.getIntOr("w", o, 0),
-                JsonUtils.getIntOr("h", o, 0),
+                JsonUtil.getIntOr("x", o, 0),
+                JsonUtil.getIntOr("y", o, 0),
+                JsonUtil.getIntOr("w", o, 0),
+                JsonUtil.getIntOr("h", o, 0),
                 Streams.stream(JsonUtil.require(o, "vertices", ID, context.locals().modelId()).getAsJsonArray())
                     .map(JsonElement::getAsInt)
                     .map(vertices::get)
@@ -113,8 +112,8 @@ public record JsonQuads (List<JsonQuad> quads, int texU, int texV) implements Mo
                 JsonUtil.getFloatOr("x", o, 0),
                 JsonUtil.getFloatOr("y", o, 0),
                 JsonUtil.getFloatOr("z", o, 0),
-                JsonUtils.getIntOr("u", o, 0),
-                JsonUtils.getIntOr("v", o, 0)
+                JsonUtil.getIntOr("u", o, 0),
+                JsonUtil.getIntOr("v", o, 0)
             );
         }
 

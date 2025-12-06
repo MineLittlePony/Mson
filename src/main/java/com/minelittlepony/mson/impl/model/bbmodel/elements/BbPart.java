@@ -1,10 +1,10 @@
 package com.minelittlepony.mson.impl.model.bbmodel.elements;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.model.ModelPart.Cuboid;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.ModelPart.Cube;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.util.Mth;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -61,7 +61,7 @@ import java.util.concurrent.ExecutionException;
  * }
  */
 public class BbPart implements ModelComponent<ModelPart> {
-    public static final Identifier ID = Identifier.of("blockbench", "part");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath("blockbench", "part");
 
     private final float[] origin;
     private final float[] rotation;
@@ -78,10 +78,10 @@ public class BbPart implements ModelComponent<ModelPart> {
     }
 
     public BbPart(FileContent<JsonElement> context, String name, JsonObject json) {
-        this.name = JsonHelper.getString(json, "name", name);
+        this.name = GsonHelper.getAsString(json, "name", name);
         origin = JsonUtil.acceptFloats(json, "origin", 3);
         rotation = JsonUtil.acceptFloats(json, "rotation", 3);
-        visibility = JsonHelper.getBoolean(json, "visibility", true);
+        visibility = GsonHelper.getAsBoolean(json, "visibility", true);
 
         JsonUtil.accept(json, "children").map(JsonElement::getAsJsonArray)
             .stream()
@@ -121,9 +121,9 @@ public class BbPart implements ModelComponent<ModelPart> {
         final PartBuilder builder = new PartBuilder().hidden(!visibility)
                 .pivot(origin)
                 .rotate(
-                    rotation[0] * MathHelper.RADIANS_PER_DEGREE,
-                    rotation[1] * MathHelper.RADIANS_PER_DEGREE,
-                    rotation[2] * MathHelper.RADIANS_PER_DEGREE)
+                    rotation[0] * Mth.DEG_TO_RAD,
+                    rotation[1] * Mth.DEG_TO_RAD,
+                    rotation[2] * Mth.DEG_TO_RAD)
                 .tex(context.getLocals().getTexture());
 
         return builder;
@@ -135,7 +135,7 @@ public class BbPart implements ModelComponent<ModelPart> {
                builder.addChild(c.getKey(), part);
             });
         });
-        cubes.forEach(c -> c.tryExport(context, Cuboid.class).ifPresent(builder::addCube));
+        cubes.forEach(c -> c.tryExport(context, Cube.class).ifPresent(builder::addCube));
         return builder;
     }
 

@@ -1,6 +1,6 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

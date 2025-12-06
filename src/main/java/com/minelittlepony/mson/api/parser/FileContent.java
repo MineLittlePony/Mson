@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.api.parser;
 
 import net.minecraft.client.model.Model;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import com.minelittlepony.mson.api.CommonLocals;
 import com.minelittlepony.mson.api.Incomplete;

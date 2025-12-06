@@ -1,7 +1,7 @@
 package com.minelittlepony.mson.api.parser;
 
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 import org.jetbrains.annotations.Nullable;
 

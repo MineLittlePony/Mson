@@ -1,21 +1,22 @@
 package com.minelittlepony.mson.util;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.model.geom.ModelPart;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 public interface RenderList {
-    void accept(MatrixStack stack, VertexConsumer vertices, int overlay, int light, int color);
+    void accept(PoseStack stack, VertexConsumer vertices, int overlay, int light, int color);
 
     default RenderList add(RenderList part) {
         return this;
     }
 
-    default RenderList add(Consumer<MatrixStack> action) {
+    default RenderList add(Consumer<PoseStack> action) {
         return add((stack, vertices, overlay, light, color) -> action.accept(stack));
     }
 
@@ -72,7 +73,7 @@ public interface RenderList {
         }
 
         @Override
-        public void accept(MatrixStack stack, VertexConsumer vertices, int overlay, int light, int color) {
+        public void accept(PoseStack stack, VertexConsumer vertices, int overlay, int light, int color) {
             for (RenderList part : parts) {
                 part.accept(stack, vertices, overlay, light, color);
             }
