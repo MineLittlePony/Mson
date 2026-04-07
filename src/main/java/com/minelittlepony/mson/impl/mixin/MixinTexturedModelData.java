@@ -22,14 +22,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelKey;
 import com.minelittlepony.mson.api.export.JsonBuffer;
-import com.minelittlepony.mson.impl.MsonImpl;
+import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Mixin(LayerDefinition.class)
-abstract class MixinTexturedModelData implements MsonImpl.KeyHolder, JsonBuffer.JsonConvertable {
+abstract class MixinTexturedModelData implements AbstractModelKeyImpl.Holder, JsonBuffer.JsonConvertable {
     private Optional<ModelKey<?>> key = Optional.empty();
 
     @Shadow private @Final MeshDefinition mesh;

@@ -19,7 +19,6 @@ public class AppliedBlockEntityRendererRegistry {
 
     @SuppressWarnings("deprecation")
     public AppliedBlockEntityRendererRegistry(Map<BlockEntityType<?>, BlockEntityRenderer<?, ?>> renderers, BlockEntityRendererProvider.Context context) {
-
         MsonImpl.INSTANCE.getEntityRendererRegistry().block.publish((type, entry) -> {
             try {
                 entry.getKey().ifLeft(_ -> {

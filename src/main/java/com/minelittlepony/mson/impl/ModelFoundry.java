@@ -14,6 +14,7 @@ import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.parser.ModelFormat;
 import com.minelittlepony.mson.api.parser.ModelLoader;
+import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
-class ModelFoundry implements ModelLoader {
+class ModelFoundry implements ModelLoader, AbstractModelKeyImpl.ModelDataSupplier {
 
     private final AtomicReference<LoadWorker<FileContent<?>>> worker = new AtomicReference<>(LoadWorker.sync());
 
@@ -61,6 +62,7 @@ class ModelFoundry implements ModelLoader {
         return worker.get();
     }
 
+    @Override
     public Optional<FileContent<?>> getOrLoadModelData(ModelKey<?> key) throws InterruptedException, ExecutionException, FutureAwaitException {
         return getModelData(key).or((FutureSupplier<Optional<FileContent<?>>>)(() -> {
             return Optional.ofNullable(loadModel(key.getId(), mson.getDefaultFormatHandler()).get());
