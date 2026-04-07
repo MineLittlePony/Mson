@@ -3,15 +3,14 @@ package com.minelittlepony.mson.impl.mixin;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
@@ -39,15 +38,13 @@ abstract class MixinBlockEntityRenderDispatcher {
     @Shadow
     private @Final Supplier<EntityModelSet> entityModelSet;
     @Shadow
-    private @Final BlockRenderDispatcher blockRenderDispatcher;
+    private @Final BlockModelResolver blockModelResolver;
     @Shadow
     private @Final ItemModelResolver itemModelResolver;
     @Shadow
-    private @Final ItemRenderer itemRenderer;
-    @Shadow
     private @Final EntityRenderDispatcher entityRenderer;
     @Shadow
-    private @Final MaterialSet materials;
+    private @Final SpriteGetter sprites;
     @Shadow
     private @Final PlayerSkinRenderCache playerSkinRenderCache;
 
@@ -59,13 +56,12 @@ abstract class MixinBlockEntityRenderDispatcher {
         renderers = new HashMap<>(renderers);
         mson_registry = new AppliedBlockEntityRendererRegistry(renderers, new BlockEntityRendererProvider.Context(
                 (BlockEntityRenderDispatcher)(Object)this,
-                blockRenderDispatcher,
+                blockModelResolver,
                 itemModelResolver,
-                itemRenderer,
                 entityRenderer,
                 entityModelSet.get(),
                 font,
-                materials,
+                sprites,
                 playerSkinRenderCache
         ));
     }

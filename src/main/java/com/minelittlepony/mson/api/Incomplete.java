@@ -22,7 +22,7 @@ public interface Incomplete<T> {
      */
     static <T> Incomplete<T> completed(T value) {
         Objects.requireNonNull(value);
-        return locals -> value;
+        return _ -> value;
     }
 
     /**

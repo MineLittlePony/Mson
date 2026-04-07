@@ -18,7 +18,6 @@ import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.export.VanillaModelSerializer;
 import com.minelittlepony.mson.api.model.biped.MsonPlayer;
 import com.minelittlepony.mson.api.parser.ModelLoader;
-import com.minelittlepony.mson.impl.key.AbstractModelKeyImpl;
 import com.minelittlepony.mson.impl.model.bbmodel.BBModelFormat;
 
 import java.io.IOException;
@@ -45,7 +44,7 @@ final class Test {
         }
     }
 
-    static void exportBbModels(Iterable<? extends AbstractModelKeyImpl<?>> keys) {
+    static void exportBbModels(Iterable<? extends ModelKey<?>> keys) {
         Path basePath = FabricLoader.getInstance().getGameDir().resolve("debug_model_export").resolve("bbmodels");
         List<Exception> exceptions = new ArrayList<>();
         BBModelFormat.INSTANCE.createSerializer().ifPresent(serializer -> {

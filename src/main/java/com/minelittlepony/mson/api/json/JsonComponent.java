@@ -18,8 +18,10 @@ public interface JsonComponent<T> extends ModelComponent<T> {
         /**
          * Accepts the json context and json to parse and return a new component instance.
          */
+        @Deprecated(forRemoval = true)
         ModelComponent<? extends T> load(JsonContext context, String name, JsonObject data);
 
+        @Deprecated(forRemoval = true)
         @Override
         default ModelComponent<? extends T> load(FileContent<JsonElement> context, String name, JsonElement data) {
             return load((JsonContext)context, name, data.getAsJsonObject());

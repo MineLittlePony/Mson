@@ -119,7 +119,7 @@ public class JsonPlanar extends JsonCompound {
             }
 
             List<Vec3> getLockedVectors(Axis axis) {
-                return lockedVectors.computeIfAbsent(axis, a -> new ArrayList<>());
+                return lockedVectors.computeIfAbsent(axis, _ -> new ArrayList<>());
             }
 
             @Override

@@ -113,7 +113,7 @@ public class MsonImpl implements Mson, PreparableReloadListener {
 
         return loadingFoundry.load()
                 .thenCompose(sync::wait)
-                .thenComposeAsync(v -> requireVanillaModels(store, computeExecutor, sync, applyExecutor), computeExecutor)
+                .thenComposeAsync(_ -> requireVanillaModels(store, computeExecutor, sync, applyExecutor), computeExecutor)
                 .thenRunAsync(() -> {
                     foundry.set(loadingFoundry.setWorker(LoadWorker.sync()));
                     renderers.initialize();
@@ -138,7 +138,7 @@ public class MsonImpl implements Mson, PreparableReloadListener {
         checkNamespace(id.getNamespace());
         Preconditions.checkArgument(!registeredModels.containsKey(id), "A model with the id `%s` was already registered", id);
 
-        return (ModelKey<T>)registeredModels.computeIfAbsent(id, i -> new Key<>(id, constructor));
+        return (ModelKey<T>)registeredModels.computeIfAbsent(id, _ -> new Key<>(id, constructor));
     }
 
     public static void checkNamespace(String namespace) {
@@ -165,7 +165,7 @@ public class MsonImpl implements Mson, PreparableReloadListener {
             return (T)formatHandlers.get(id);
         }
         formatHandlers.put(id, format);
-        handlersByExtension.computeIfAbsent(format.getFileExtension(), e -> new HashSet<>()).add(format);
+        handlersByExtension.computeIfAbsent(format.getFileExtension(), _ -> new HashSet<>()).add(format);
         return format;
     }
 

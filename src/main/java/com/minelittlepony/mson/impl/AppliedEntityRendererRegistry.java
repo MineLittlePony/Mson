@@ -42,10 +42,10 @@ public class AppliedEntityRendererRegistry {
         });
         pendingRegistrations.entity.publish((type, entry) -> {
             try {
-                entry.getKey().ifLeft(unit -> {
+                entry.getKey().ifLeft(_ -> {
                     renderers.put(type, entry.getValue().apply(context));
                 }).ifRight(condition -> {
-                    customEntityRenderers.computeIfAbsent(type, t -> new HashMap<>()).put(condition, entry.getValue().apply(context));
+                    customEntityRenderers.computeIfAbsent(type, _ -> new HashMap<>()).put(condition, entry.getValue().apply(context));
                 });
             } catch (Exception e) {
                 MsonImpl.LOGGER.error("Error whilst updating entity renderer with custom condition for entity type " + EntityType.getKey(type) + ": " + e.getMessage(), e);
@@ -53,7 +53,7 @@ public class AppliedEntityRendererRegistry {
         });
         pendingRegistrations.entityState.publish((type, entry) -> {
             try {
-                customEntityStateRenderers.computeIfAbsent(type, t -> new HashMap<>()).put(entry.getKey(), entry.getValue().apply(context));
+                customEntityStateRenderers.computeIfAbsent(type, _ -> new HashMap<>()).put(entry.getKey(), entry.getValue().apply(context));
             } catch (Exception e) {
                 MsonImpl.LOGGER.error("Error whilst updating entity renderer with custom condition for entity render state " + EntityType.getKey(type) + ": " + e.getMessage(), e);
             }

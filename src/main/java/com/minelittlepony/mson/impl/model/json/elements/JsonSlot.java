@@ -99,17 +99,17 @@ public record JsonSlot<T> (
         if (implementation.filter(i -> i.isCompatible(customType)).isPresent()) {
             return Optional.ofNullable((K)compiled.result());
         }
-        return Optional.ofNullable(customType.createInstance(compiled.sourceContext(), ctx -> compiled.tree()));
+        return Optional.ofNullable(customType.createInstance(compiled.sourceContext(), _ -> compiled.tree()));
     }
 
     private CompiledSlot<T> compile(ModelContext context) {
-        return context.computeIfAbsent(name, key -> {
+        return context.computeIfAbsent(name, _ -> {
             ModelContext subContext = context.extendWith(data.get(),
                 parent -> parent.extendWith(id, Optional.of(locals.bind(context.getLocals())), texture)
             );
 
             ModelPart tree = subContext.toTree();
-            T result = implementation.map(type -> type.createInstance(subContext, ctx -> tree)).orElse(null);
+            T result = implementation.map(type -> type.createInstance(subContext, _ -> tree)).orElse(null);
 
             return new CompiledSlot<>(result, tree, subContext);
         });

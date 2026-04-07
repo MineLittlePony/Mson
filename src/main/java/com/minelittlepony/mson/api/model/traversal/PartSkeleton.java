@@ -5,27 +5,13 @@ import net.minecraft.client.model.geom.ModelPart;
 import java.util.Map;
 
 public interface PartSkeleton extends Traversable<ModelPart> {
-    /**
-     * @deprecated Will be removed in MC1.22
-     */
-    @Deprecated(forRemoval = true)
-    static PartSkeleton of(ModelPart part) {
-        return part;
-    }
-
     ModelPart getSelf();
 
     Map<String, ModelPart> getChildren();
 
-    /**
-     * @deprecated Will be removed in MC1.22
-     */
-    @Deprecated(forRemoval = true)
-    int getTotalDirectCubes();
-
     @Override
     default void traverse(Traverser<ModelPart> traverser) {
-        getChildren().forEach((key, value) -> {
+        getChildren().forEach((_, value) -> {
             traverser.accept(getSelf(), value);
             value.traverse(traverser);
         });

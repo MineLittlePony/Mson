@@ -8,10 +8,4 @@ import java.util.List;
 
 public interface PartAccessor extends PartSkeleton {
     List<ModelPart.Cube> getCuboids();
-
-    @Deprecated
-    @Override
-    default int getTotalDirectCubes() {
-        return getCuboids().size();
-    }
 }

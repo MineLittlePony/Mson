@@ -159,7 +159,7 @@ public interface QuadsBuilder {
             );
 
             return pars;
-        }, ctx -> Set.of(face.getNormal()));
+        }, _ -> Set.of(face.getNormal()));
     }
 
     /**
@@ -205,7 +205,7 @@ public interface QuadsBuilder {
     }
 
     static QuadsBuilder of(Identifier id, QuadGenerator constructor) {
-        return of(id, constructor, ctx -> ctx.parameters, ctx -> BoxBuilder.ALL_DIRECTIONS);
+        return of(id, constructor, ctx -> ctx.parameters, _ -> BoxBuilder.ALL_DIRECTIONS);
     }
 
     interface QuadGenerator {

@@ -62,7 +62,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
                 resolution.addProperty("width", context.getLocals().getTexture().width());
                 resolution.addProperty("height", context.getLocals().getTexture().height());
             }));
-            writePart("root", new PartBuilder(), (writer, p) -> {
+            writePart("root", new PartBuilder(), (_, _) -> {
                 writeTree(context, content);
                 root.add("outliner", buffer.of(stack.part().children().stream().map(part -> part.toJson(buffer))));
             });
@@ -132,7 +132,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             @Override
             public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert... vertices) {
                 mirroring[0] |= mirror;
-                faces.computeIfAbsent(direction, d -> new ArrayList<>()).add(buffer -> buffer.of(face -> {
+                faces.computeIfAbsent(direction, _ -> new ArrayList<>()).add(buffer -> buffer.of(face -> {
                     face.add("uv", buffer.of(u - box.parameters.uv.u(), v - box.parameters.uv.v(), w - box.parameters.uv.u(), h - box.parameters.uv.v()));
                     face.addProperty("texture", 0);
                 }));
@@ -230,7 +230,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             Map<Vert, UUID> verticesCache = quads.stream()
                 .flatMap(quad -> Arrays.stream(quad.rect().getVertices()))
                 .distinct()
-                .collect(Collectors.toMap(Function.identity(), vv -> UUID.randomUUID()));
+                .collect(Collectors.toMap(Function.identity(), _ -> UUID.randomUUID()));
 
             buffer.object(elementJson, "faces", buffer.of(facesJson -> {
                 buffer.object(facesJson, UUID.randomUUID().toString(), buffer.of(faceJson -> {
@@ -264,7 +264,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
 
     @Override
     public ModelFileWriter writeTree(String name, FileContent<?> content, ModelContext context) {
-        return writePart(name, new PartBuilder(), (writer, part) -> writeTree(context, content));
+        return writePart(name, new PartBuilder(), (_, _) -> writeTree(context, content));
     }
 
     private final void writeTree(ModelContext context, FileContent<?> content) {

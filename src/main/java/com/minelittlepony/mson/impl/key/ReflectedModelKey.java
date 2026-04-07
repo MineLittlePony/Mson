@@ -35,8 +35,8 @@ public record ReflectedModelKey<T> (
 
         var supplier = MethodHandles.createInstanceSupplier(type);
         var key = new ReflectedModelKey<>(
-                MethodHandles.createInstanceFactory(type, ModelContext.class).or(() -> supplier.map(c -> ctx -> c.get())),
-                MethodHandles.createInstanceFactory(type, ModelPart.class).or(() -> supplier.map(c -> tree -> c.get())),
+                MethodHandles.createInstanceFactory(type, ModelContext.class).or(() -> supplier.map(c -> _ -> c.get())),
+                MethodHandles.createInstanceFactory(type, ModelPart.class).or(() -> supplier.map(c -> _ -> c.get())),
                 type
         );
         if (key.contextFactory().isEmpty() && key.partFactory().isEmpty()) {

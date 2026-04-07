@@ -40,7 +40,7 @@ public interface LocalBlock {
             @Override
             public Optional<CompletableFuture<Incomplete<Float>>> get(String name) {
                 return self.get(name).map(local -> local.thenApply(incomplete -> {
-                    return ctx -> incomplete.complete(locals);
+                    return _ -> incomplete.complete(locals);
                 }));
             }
         };

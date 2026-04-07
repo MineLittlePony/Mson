@@ -5,15 +5,15 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
+import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.Entity;
@@ -41,11 +41,11 @@ abstract class MixinEntityRenderDispatcher {
     private Map<EntityType<?>, EntityRenderer<? extends Entity, ?>> renderers;
 
     @Shadow
+    private @Final BlockModelResolver blockModelResolver;
+    @Shadow
     private @Final ItemModelResolver itemModelResolver;
     @Shadow
     private @Final MapRenderer mapRenderer;
-    @Shadow
-    private @Final BlockRenderDispatcher blockRenderDispatcher;
     @Shadow
     private @Final AtlasManager atlasManager;
     @Shadow
@@ -65,9 +65,9 @@ abstract class MixinEntityRenderDispatcher {
         renderers = new HashMap<>(renderers);
         mson_registry = new AppliedEntityRendererRegistry(renderers, new EntityRendererProvider.Context(
                 (EntityRenderDispatcher)(Object)this,
+                blockModelResolver,
                 itemModelResolver,
                 mapRenderer,
-                blockRenderDispatcher,
                 manager,
                 entityModels.get(),
                 equipmentAssets,

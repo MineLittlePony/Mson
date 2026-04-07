@@ -10,7 +10,7 @@ public final class MsonMod implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(MsonImpl.RELOADER_ID, MsonImpl.INSTANCE);
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(MsonImpl.RELOADER_ID, MsonImpl.INSTANCE);
         if (FabricLoader.getInstance().isModLoaded("physicsmod")) {
             FabricLoader.getInstance().getEntrypoints("mson:api/physicsmod", ClientModInitializer.class).forEach(item -> {
                 item.onInitializeClient();

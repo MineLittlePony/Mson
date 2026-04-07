@@ -4,7 +4,7 @@ buildscript {
     }
 }
 plugins {
-    id "net.fabricmc.fabric-loom-no-remap" version "1.14.0-alpha.20"
+    id "net.fabricmc.fabric-loom" version "1.15-SNAPSHOT"
     id 'maven-publish'
     id 'com.modrinth.minotaur' version '2.+'
     id 'org.ajoberstar.reckon' version '0.13.1'
@@ -13,14 +13,17 @@ apply plugin: 'io.github.dexman545.outlet'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
     withSourcesJar()
 }
 
 group = project.group
 description = project.displayname
-archivesBaseName = project.name
+
+base {
+    archivesName = project.name
+}
 
 loom {
     accessWidenerPath = file('src/main/resources/mson.aw')
@@ -28,7 +31,7 @@ loom {
 
 reckon {
     scopeFromProp()
-    stageFromProp('beta', 'rc', 'final', 'unobf')
+    stageFromProp('beta', 'rc', 'final')
 }
 
 outlet {
@@ -60,7 +63,7 @@ dependencies {
     api fabricApi.module("fabric-resource-loader-v0", project.fabric_version)
 
     // modmenu
-    compileOnly fabricApi.module("fabric-key-binding-api-v1", project.fabric_version)
+    compileOnly fabricApi.module("fabric-key-mapping-api-v1", project.fabric_version)
     compileOnly fabricApi.module("fabric-screen-api-v1", project.fabric_version)
     compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
@@ -88,7 +91,7 @@ tasks.withType(JavaCompile) {
 tasks.modrinth {
     onlyIf {
       def stage = version.version.stage.value
-      (stage == null || (stage.name != 'beta' && stage != 'unobf')) && version.toString().indexOf("unobf") == -1
+      stage == null || stage.name != 'beta'
     }
 }
 
@@ -97,7 +100,7 @@ modrinth {
     projectId = project.modrinth_project_id
     //featured = true
     versionNumber = version.toString()
-    versionName = archivesBaseName + '-' + version
+    versionName = project.name + '-' + version
     changelog = "[Changelog](https://github.com/MineLittlePony/Mson/releases/tag/${version.toString()})"
     loaders = ['fabric', 'quilt']
     uploadFile = jar

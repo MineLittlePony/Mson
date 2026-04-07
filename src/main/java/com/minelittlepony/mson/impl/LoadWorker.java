@@ -30,7 +30,7 @@ public interface LoadWorker<T> {
     }
 
     public static <T> LoadWorker<T> sync() {
-        return (loadFunc, loadMessage) -> {
+        return (loadFunc, _) -> {
             return CompletableFuture.completedFuture(loadFunc.get());
         };
     }

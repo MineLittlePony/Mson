@@ -87,7 +87,7 @@ public record BbCube (
                 .filter(face -> face != Face.NONE)
                 .collect(Collectors.toMap(Function.identity(), face -> {
                     return new CubeFace(face, GsonHelper.getAsJsonObject(faces, face.name().toLowerCase(Locale.ROOT)));
-                }, (a, b) -> b, () -> new EnumMap<>(Face.class)));
+                }, (_, b) -> b, () -> new EnumMap<>(Face.class)));
     }
 
     @Override

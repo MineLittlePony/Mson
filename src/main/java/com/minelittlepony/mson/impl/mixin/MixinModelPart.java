@@ -62,7 +62,7 @@ abstract class MixinQuad implements Rect {
     @Shadow @Mutable
     private @Final ModelPart.Vertex[] vertices;
 
-    @Accessor("direction")
+    @Accessor("normal")
     @Override
     public abstract Vector3fc getNormal();
 

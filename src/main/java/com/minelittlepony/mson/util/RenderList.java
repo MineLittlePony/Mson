@@ -17,7 +17,7 @@ public interface RenderList {
     }
 
     default RenderList add(Consumer<PoseStack> action) {
-        return add((stack, vertices, overlay, light, color) -> action.accept(stack));
+        return add((stack, _, _, _, _) -> action.accept(stack));
     }
 
     default RenderList add(ModelPart...parts) {

@@ -36,7 +36,7 @@ public interface InstanceCreator<T> {
     }
 
     public static <T> InstanceCreator<T> ofSupplier(Class<T> type, Supplier<T> supplier) {
-        return new ReflectedModelKey<>(Optional.of(ctx -> supplier.get()), Optional.of(tree -> supplier.get()), type);
+        return new ReflectedModelKey<>(Optional.of(_ -> supplier.get()), Optional.of(_ -> supplier.get()), type);
     }
 
     @Nullable

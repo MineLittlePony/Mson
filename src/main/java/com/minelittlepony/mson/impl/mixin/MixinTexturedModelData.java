@@ -6,6 +6,7 @@ import net.minecraft.client.model.geom.builders.CubeDefinition;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MaterialDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.model.geom.builders.UVPair;
 
@@ -31,7 +32,7 @@ import java.util.Optional;
 abstract class MixinTexturedModelData implements MsonImpl.KeyHolder, JsonBuffer.JsonConvertable {
     private Optional<ModelKey<?>> key = Optional.empty();
 
-    @Shadow private @Final PartDefinition mesh;
+    @Shadow private @Final MeshDefinition mesh;
     @Shadow private @Final MaterialDefinition material;
 
     @Override
@@ -47,7 +48,7 @@ abstract class MixinTexturedModelData implements MsonImpl.KeyHolder, JsonBuffer.
     @Override
     public JsonElement toJson(JsonBuffer exporter) {
         return exporter.of(json -> {
-            exporter.object(json, "data", ((JsonObject)exporter.write(mesh)).get("children"));
+            exporter.object(json, "data", ((JsonObject)exporter.write(mesh.getRoot())).get("children"));
             exporter.object(json, "texture", exporter.of(js -> {
                 js.addProperty("w", ((MixinTextureDimensions)material).getWidth());
                 js.addProperty("h", ((MixinTextureDimensions)material).getHeight());

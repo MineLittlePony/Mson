@@ -111,7 +111,7 @@ public class BbPart implements ModelComponent<ModelPart> {
 
     @Override
     public ModelPart export(ModelContext context) {
-        return context.computeIfAbsent(name, key -> {
+        return context.computeIfAbsent(name, _ -> {
             var builder = createBuilder(context);
             return export(context.bind(builder), builder).build();
         });

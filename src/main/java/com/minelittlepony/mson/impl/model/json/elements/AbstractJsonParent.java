@@ -83,7 +83,7 @@ public abstract class AbstractJsonParent implements ModelComponent<ModelPart> {
 
     @Override
     public ModelPart export(ModelContext context) {
-        return context.computeIfAbsent(name, key -> {
+        return context.computeIfAbsent(name, _ -> {
             final PartBuilder builder = createBuilder(context);
             export(context.bind(builder, Locals::new), builder);
             return builder.build();

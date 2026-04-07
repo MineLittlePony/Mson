@@ -17,25 +17,26 @@ public class AppliedBlockEntityRendererRegistry {
     private final Map<BlockEntityType<?>, Map<Predicate<BlockEntity>, BlockEntityRenderer<? extends BlockEntity, ?>>> customBlockEntityRenderers = new HashMap<>();
     private final Map<BlockEntityType<?>, Map<Predicate<BlockEntityRenderState>, BlockEntityRenderer<? extends BlockEntity, ?>>> customBlockEntityStateRenderers = new HashMap<>();
 
+    @SuppressWarnings("deprecation")
     public AppliedBlockEntityRendererRegistry(Map<BlockEntityType<?>, BlockEntityRenderer<?, ?>> renderers, BlockEntityRendererProvider.Context context) {
 
         MsonImpl.INSTANCE.getEntityRendererRegistry().block.publish((type, entry) -> {
             try {
-                entry.getKey().ifLeft(left -> {
+                entry.getKey().ifLeft(_ -> {
                     renderers.put(type, entry.getValue().apply(context));
                 }).ifRight(predicate -> {
-                    customBlockEntityRenderers.computeIfAbsent(type, t -> new HashMap<>()).put(predicate, entry.getValue().apply(context));
+                    customBlockEntityRenderers.computeIfAbsent(type, _ -> new HashMap<>()).put(predicate, entry.getValue().apply(context));
                 });
 
             } catch (Exception e) {
-                MsonImpl.LOGGER.error("Error whilst updating block entity renderer " + BlockEntityType.getKey(type) + ": " + e.getMessage());
+                MsonImpl.LOGGER.error("Error whilst updating block entity renderer " + type.builtInRegistryHolder().getRegisteredName() + ": " + e.getMessage());
             }
         });
         MsonImpl.INSTANCE.getEntityRendererRegistry().blockState.publish((type, entry) -> {
             try {
-                customBlockEntityStateRenderers.computeIfAbsent(type, t -> new HashMap<>()).put(entry.getKey(), entry.getValue().apply(context));
+                customBlockEntityStateRenderers.computeIfAbsent(type, _ -> new HashMap<>()).put(entry.getKey(), entry.getValue().apply(context));
             } catch (Exception e) {
-                MsonImpl.LOGGER.error("Error whilst updating block entity renderer " + BlockEntityType.getKey(type) + ": " + e.getMessage());
+                MsonImpl.LOGGER.error("Error whilst updating block entity renderer " + type.builtInRegistryHolder().getRegisteredName() + ": " + e.getMessage());
             }
         });
     }

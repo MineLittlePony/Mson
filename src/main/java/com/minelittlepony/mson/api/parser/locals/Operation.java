@@ -14,7 +14,7 @@ public enum Operation implements BiFunction<Float, Float, Float> {
     DIVIDE("/", (one, two) -> one / two),
     MODULUS("%", (one, two) -> one % two),
     EXPONENT("^", (one, two) -> (float)Math.pow(one, two)),
-    VAR("", (one, two) -> {throw new RuntimeException("Impossible Operation");});
+    VAR("", (_, _) -> {throw new RuntimeException("Impossible Operation");});
 
     static List<Operation> VALUES = Lists.newArrayList(values());
     static Map<String, Operation> REGISTRY = new HashMap<>();
