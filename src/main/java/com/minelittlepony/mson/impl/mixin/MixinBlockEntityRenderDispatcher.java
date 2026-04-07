@@ -51,7 +51,7 @@ abstract class MixinBlockEntityRenderDispatcher {
     @Nullable
     private AppliedBlockEntityRendererRegistry mson_registry;
 
-    @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
+    @Inject(method = "onResourceManagerReload(Lnet/minecraft/server/packs/resources/ResourceManager;)V", at = @At("RETURN"))
     private void onInit(CallbackInfo info) {
         renderers = new HashMap<>(renderers);
         mson_registry = new AppliedBlockEntityRendererRegistry(renderers, new BlockEntityRendererProvider.Context(

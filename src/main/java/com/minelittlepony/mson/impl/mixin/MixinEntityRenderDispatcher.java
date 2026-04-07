@@ -60,7 +60,7 @@ abstract class MixinEntityRenderDispatcher {
     @Nullable
     private AppliedEntityRendererRegistry mson_registry;
 
-    @Inject(method = "reload(Lnet/minecraft/resource/ResourceManager;)V", at = @At("RETURN"))
+    @Inject(method = "onResourceManagerReload(Lnet/minecraft/server/packs/resources/ResourceManager;)V", at = @At("RETURN"))
     private void onRegisterRenderers(ResourceManager manager, CallbackInfo info) {
         renderers = new HashMap<>(renderers);
         mson_registry = new AppliedEntityRendererRegistry(renderers, new EntityRendererProvider.Context(
