@@ -8,7 +8,8 @@ import org.joml.Vector3fc;
 
 public interface Vert {
     default Vector3fc getPos() {
-        return new Vector3f(((ModelPart.Vertex)this).x(), ((ModelPart.Vertex)this).y(), ((ModelPart.Vertex)this).z());
+        var self = (ModelPart.Vertex)this;
+        return new Vector3f(self.x(), self.y(), self.z());
     }
 
     default float getU() {
@@ -24,7 +25,11 @@ public interface Vert {
     }
 
     default Vert rotate(Quaternionf rotation) {
-        Vector3f pos = new Vector3f(((ModelPart.Vertex)this).x(), ((ModelPart.Vertex)this).y(), ((ModelPart.Vertex)this).z()).rotate(rotation);
+        Vector3f pos = getPos().rotate(rotation, new Vector3f());
         return new ModelPart.Vertex(pos.x, pos.y, pos.z, getU(), getV());
+    }
+
+    default Vert remap(float u, float v) {
+        return ((ModelPart.Vertex)this).remap(u, v);
     }
 }

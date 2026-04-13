@@ -130,7 +130,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             }
 
             @Override
-            public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert... vertices) {
+            public void quad(Direction direction, float u, float v, float w, float h, boolean mirror, boolean preserveNormal, @Nullable Quaternionf rotation, Vert... vertices) {
                 mirroring[0] |= mirror;
                 faces.computeIfAbsent(direction, _ -> new ArrayList<>()).add(buffer -> buffer.of(face -> {
                     face.add("uv", buffer.of(u - box.parameters.uv.u(), v - box.parameters.uv.v(), w - box.parameters.uv.u(), h - box.parameters.uv.v()));

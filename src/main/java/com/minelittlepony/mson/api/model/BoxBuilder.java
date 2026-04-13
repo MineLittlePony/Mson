@@ -128,34 +128,18 @@ public final class BoxBuilder {
     private List<Quad> collectQuads(BoxParameters pars) {
         List<Quad> quads = new ArrayList<>();
         this.quads.build(pars, this, new QuadsBuilder.QuadBuffer() {
-            private final ModelPart.Vertex emptyVertex = new ModelPart.Vertex(0, 0, 0, 0, 0);
-            private final ModelPart.Vertex[] defaultVertices = {emptyVertex, emptyVertex, emptyVertex, emptyVertex};
-
             @Override
             public boolean getDefaultMirror() {
                 return parameters.mirror[0];
             }
 
             @Override
-            public void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert... vertices) {
-                ModelPart.Vertex[] verts = new ModelPart.Vertex[vertices.length];
-                System.arraycopy(vertices, 0, verts, 0, vertices.length);
-
-                Rect rect = (Rect)(Object)new ModelPart.Polygon(
-                        remap ? verts : defaultVertices,
-                        u,         v,
-                        u + w, v + h,
-                        parent.texture.width(), parent.texture.height(),
-                        mirror,
-                        direction);
-                if (!remap) {
-                    rect.setVertices(mirror, vertices);
-                }
-                if (rotation != null) {
-                    rect.rotate(rotation);
-                }
-
-                quads.add(new Quad(rect, direction));
+            public void quad(Direction direction, float u, float v, float w, float h, boolean mirror, boolean preserveNormal, @Nullable Quaternionf rotation, Vert... vertices) {
+                Rect.remapUVs(vertices, u, v, u + w, v + h, parent.texture.width(), parent.texture.height());
+                quads.add(new Quad(new ModelPart.Polygon(
+                        (ModelPart.Vertex[])Rect.copyVertexArray(new ModelPart.Vertex[vertices.length], vertices, mirror, rotation),
+                        Rect.mirrorFacing(!preserveNormal && mirror, direction).getUnitVec3f()
+                ), direction));
             }
         });
         return quads;

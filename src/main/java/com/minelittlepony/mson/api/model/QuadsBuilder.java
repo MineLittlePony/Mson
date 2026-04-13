@@ -216,19 +216,18 @@ public interface QuadsBuilder {
 
         boolean getDefaultMirror();
 
-        default void quad(Direction direction, float u, float v, float w, float h, boolean mirror, boolean remap, Vert ...vertices) {
-            quad(u, v, w, h, direction, mirror, remap, null, vertices);
-        }
-
-        default void quad(Direction direction, float u, float v, float w, float h, boolean mirror, Vert ...vertices) {
-            quad(direction, u, v, w, h, mirror, true, vertices);
-        }
-
         default void quad(Direction direction, float u, float v, float w, float h, Vert ...vertices) {
             quad(direction, u, v, w, h, getDefaultMirror(), vertices);
         }
 
-        void quad(float u, float v, float w, float h, Direction direction, boolean mirror, boolean remap, @Nullable Quaternionf rotation, Vert ...vertices);
+        default void quad(Direction direction, float u, float v, float w, float h, boolean mirror, Vert ...vertices) {
+            quad(direction, u, v, w, h, mirror, null, vertices);
+        }
 
+        default void quad(Direction direction, float u, float v, float w, float h, boolean mirror, @Nullable Quaternionf rotation, Vert ...vertices) {
+            quad(direction, u, v, w, h, mirror, false, rotation, vertices);
+        }
+
+        void quad(Direction direction, float u, float v, float w, float h, boolean mirror, boolean preserveNormal, @Nullable Quaternionf rotation, Vert ...vertices);
     }
 }

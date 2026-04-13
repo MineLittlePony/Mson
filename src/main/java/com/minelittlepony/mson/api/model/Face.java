@@ -59,10 +59,6 @@ public enum Face {
         };
     }
 
-    public Face mirrored(boolean x, boolean y) {
-        return x != y ? getOpposite() : this;
-    }
-
     /**
      * The perpendicular axis of the plane parallel to this face.
      */

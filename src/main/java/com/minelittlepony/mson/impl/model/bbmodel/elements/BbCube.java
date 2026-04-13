@@ -158,7 +158,7 @@ public record BbCube (
         public void createRect(BoxBuilder builder, QuadsBuilder.QuadBuffer buffer, Vert a, Vert b, Vert c, Vert d) {
             Face.Axis axis = face.getAxis();
 
-            buffer.quad(uv[0], uv[1], uv[2], uv[3], face.getNormal(), builder.parameters.mirror[0], true, new Quaternionf().rotateXYZ(
+            buffer.quad(face.getNormal(), uv[0], uv[1], uv[2], uv[3], builder.parameters.mirror[0], new Quaternionf().rotateXYZ(
                 axis == Face.Axis.X ? rotation : 0,
                 axis == Face.Axis.Y ? rotation : 0,
                 axis == Face.Axis.Z ? rotation : 0
