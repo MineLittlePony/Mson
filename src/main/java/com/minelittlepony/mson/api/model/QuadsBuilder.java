@@ -123,6 +123,8 @@ public interface QuadsBuilder {
                     ctx.parameters.size[vertexIndices[4]],
                     ctx.parameters.size[vertexIndices[5]],
                     mirror,
+                    true,
+                    null,
                     ctx.vert(VERTEX_MATRIX[vertexIndices[0]], positionMatrix),
                     ctx.vert(VERTEX_MATRIX[vertexIndices[1]], positionMatrix),
                     ctx.vert(VERTEX_MATRIX[vertexIndices[2]], positionMatrix),
