@@ -85,6 +85,22 @@ processResources {
     from 'LICENSE'
 }
 
+task apiJar(type: Jar) {
+    archiveClassifier = 'api'
+    dependsOn jar
+    from 'LICENSE'
+    from zipTree(jar.archiveFile)
+    include 'fabric.mod.json'
+    include 'mson_logo.png'
+    include 'mson.aw'
+    include 'mson.mixin.json'
+    include 'com/minelittlepony/mson/api/**'
+    include 'com/minelittlepony/mson/util/**'
+}
+
+tasks.named("build").configure {
+    dependsOn(apiJar)
+}
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
