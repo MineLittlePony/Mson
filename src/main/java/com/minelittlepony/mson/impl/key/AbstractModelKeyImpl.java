@@ -37,6 +37,8 @@ public abstract class AbstractModelKeyImpl<T> implements ModelKey<T> {
 
     public interface ModelDataSupplier {
         public Optional<FileContent<?>> getOrLoadModelData(ModelKey<?> key) throws InterruptedException, ExecutionException, FutureAwaitException;
+
+        public boolean contains(ModelKey<?> key);
     }
 
     public interface Holder {
@@ -72,7 +74,7 @@ public abstract class AbstractModelKeyImpl<T> implements ModelKey<T> {
 
         @Override
         public Optional<ModelPart> createTree() {
-            return getModelData().map(context -> {
+            return getOrLoadModelData().map(context -> {
                 return context.createContext(null, null, context.locals().bake()).toTree();
             });
         }
@@ -81,7 +83,7 @@ public abstract class AbstractModelKeyImpl<T> implements ModelKey<T> {
         public <V extends T> V createModel(MsonModel.Factory<V> factory) {
             Preconditions.checkNotNull(factory, "Factory should not be null");
 
-            return getModelData().map(context -> {
+            return getOrLoadModelData().map(context -> {
                 ModelContext ctx = context.createContext(null, null, context.locals().bake());
 
                 ModelPart root = ctx.toTree();
@@ -101,13 +103,24 @@ public abstract class AbstractModelKeyImpl<T> implements ModelKey<T> {
             .orElseThrow(() -> new IllegalStateException("Model file for " + getId() + " was not loaded!"));
         }
 
+        @Deprecated
         @Override
         public Optional<FileContent<?>> getModelData() {
+            return getOrLoadModelData();
+        }
+
+        @Override
+        public Optional<FileContent<?>> getOrLoadModelData() {
             try {
                 return foundry.get().getOrLoadModelData(this);
             } catch (InterruptedException | ExecutionException | FutureAwaitException e) {
                 throw new RuntimeException("Could not create model", e);
             }
+        }
+
+        @Override
+        public boolean isBound() {
+            return foundry.get().contains(this);
         }
     }
 }

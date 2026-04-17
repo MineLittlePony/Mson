@@ -42,6 +42,30 @@ public interface ModelKey<T> {
      * referenced when loading this model.
      *
      * @throws IllegalStateException if called before resource loading (aka client startup) has completed.
+     * @deprecated Use {@link ModelKey#getOrLoadModelData()}
      */
+    @Deprecated
     Optional<FileContent<?>> getModelData();
+
+    /**
+     * Retrieves or loads the JSON context used to construct models.
+     * The context returned presents a managed view of the raw json file(s)
+     * referenced when loading this model.
+     *
+     * @throws IllegalStateException if called before resource loading (aka client startup) has completed.
+     */
+    @SuppressWarnings("deprecation")
+    default Optional<FileContent<?>> getOrLoadModelData() {
+        return getModelData();
+    }
+
+    /**
+     * Checks whether this model key has data bound to it.
+     * Use this to check whether it's safe to use this key to create a model.
+     *
+     * @return False if the model file for this key does not exist or has not been loaded yet.
+     */
+    default boolean isBound() {
+        return getOrLoadModelData().isPresent();
+    }
 }

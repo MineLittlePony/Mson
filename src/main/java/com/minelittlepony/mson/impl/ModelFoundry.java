@@ -137,4 +137,19 @@ class ModelFoundry implements ModelLoader, AbstractModelKeyImpl.ModelDataSupplie
         }
         return loadModel(modelId, first, resources.get(first));
     }
+
+    @Override
+    public boolean contains(ModelKey<?> key) {
+        synchronized (loadedFiles) {
+            if (loadedFiles.containsKey(key.getId())) {
+                return loadedFiles.get(key.getId()) != EMPTY_FILE;
+            }
+
+            Identifier file = key.getId().withPrefix("models/entity/");
+            return !getResourceManager().listResources("models/entity", id -> {
+                return id.getNamespace().equals(key.getId().getNamespace())
+                        && PathUtil.removeExtension(id).contentEquals(PathUtil.removeExtension(file));
+            }).isEmpty();
+        }
+    }
 }

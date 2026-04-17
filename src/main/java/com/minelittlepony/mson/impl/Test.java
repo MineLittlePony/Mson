@@ -50,7 +50,7 @@ final class Test {
         BBModelFormat.INSTANCE.createSerializer().ifPresent(serializer -> {
             try (serializer) {
                 keys.forEach(key -> {
-                    key.getModelData().ifPresent(content -> {
+                    key.getOrLoadModelData().ifPresent(content -> {
                         try {
                             serializer.writeToFile(
                                     basePath.resolve(key.getId().getNamespace()).resolve(key.getId().getPath() + ".bbmodel").normalize(),
