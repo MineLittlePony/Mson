@@ -11,6 +11,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -79,7 +80,7 @@ public class AppliedEntityRendererRegistry {
 
     @SuppressWarnings("unchecked")
     public <S extends EntityRenderState> Optional<EntityRenderer<?, ?>> getRenderer(S state) {
-        if (state instanceof AvatarRenderState && (state.entityType == EntityType.PLAYER || state.entityType == EntityType.MANNEQUIN)) {
+        if (state instanceof AvatarRenderState && (state.entityType == EntityTypes.PLAYER || state.entityType == EntityTypes.MANNEQUIN)) {
             if (!customStateRenderers.isEmpty()) {
                 return customStateRenderers.values().stream()
                     .filter(entry -> ((Predicate<EntityRenderState>)entry.getKey()).test(state))
