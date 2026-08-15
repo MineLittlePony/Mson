@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * A builder for building boxes.
@@ -82,6 +83,22 @@ public final class BoxBuilder {
         return this;
     }
 
+    public BoxBuilder encompass(BoxBuilder box) {
+        return size(
+                Math.max(parameters.size[0], box.parameters.size[0]),
+                Math.max(parameters.size[1], box.parameters.size[1]),
+                Math.max(parameters.size[2], box.parameters.size[2])
+        ).dilate(
+                Math.max(parameters.dilation[0], box.parameters.dilation[0]),
+                Math.max(parameters.dilation[1], box.parameters.dilation[1]),
+                Math.max(parameters.dilation[2], box.parameters.dilation[2])
+        ).pos(
+                Math.max(parameters.position[0], box.parameters.position[0]),
+                Math.max(parameters.position[1], box.parameters.position[1]),
+                Math.max(parameters.position[2], box.parameters.position[2])
+        );
+    }
+
     public BoxBuilder mirror(Axis axis, boolean... mirror) {
         parameters.mirror[0] = axis.getWidth().getBoolean(mirror);
         parameters.mirror[1] = axis.getHeight().getBoolean(mirror);
@@ -117,15 +134,15 @@ public final class BoxBuilder {
 
         BoxParameters pars = quads.getBoxParameters(this);
         ModelPart.Cube box = pars.build(parent, quads.getFaces(this));
-        ((Cube)box).setSides(collectQuads(pars).stream().map(Quad::rect).toArray(Rect[]::new));
+        ((Cube)box).setSides(collectQuads(pars).map(Quad::rect).toArray(Rect[]::new));
         return box;
     }
 
-    public List<Quad> collectQuads() {
+    public Stream<Quad> collectQuads() {
         return collectQuads(this.quads.getBoxParameters(this));
     }
 
-    private List<Quad> collectQuads(BoxParameters pars) {
+    private Stream<Quad> collectQuads(BoxParameters pars) {
         List<Quad> quads = new ArrayList<>();
         this.quads.build(pars, this, new QuadsBuilder.QuadBuffer() {
             @Override
@@ -136,13 +153,18 @@ public final class BoxBuilder {
             @Override
             public void quad(Direction direction, float u, float v, float w, float h, boolean mirror, boolean preserveNormal, @Nullable Quaternionf rotation, Vert... vertices) {
                 Rect.remapUVs(vertices, u, v, u + w, v + h, parent.texture.width(), parent.texture.height());
-                quads.add(new Quad(new ModelPart.Polygon(
+                quad(new Quad(new ModelPart.Polygon(
                         (ModelPart.Vertex[])Rect.copyVertexArray(new ModelPart.Vertex[vertices.length], vertices, mirror, rotation),
                         Rect.mirrorFacing(!preserveNormal && mirror, direction).getUnitVec3f()
                 ), direction));
             }
+
+            @Override
+            public void quad(Quad quad) {
+                quads.add(quad);
+            }
         });
-        return quads;
+        return quads.stream();
     }
 
     public interface RenderLayerSetter {

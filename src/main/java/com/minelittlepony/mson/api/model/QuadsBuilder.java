@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 
+import com.minelittlepony.mson.api.model.BoxBuilder.Quad;
 import com.minelittlepony.mson.api.model.Face.Axis;
 import com.minelittlepony.mson.impl.MsonImpl;
 
@@ -40,14 +41,18 @@ public interface QuadsBuilder {
         { 0, 1, 1, 8, 0 }
     };
 
-    static QuadsBuilder BOX = of(CUBE, cone(0)::build);
+    static QuadsBuilder BOX = cube(BoxBuilder.ALL_DIRECTIONS);
+
+    static QuadsBuilder cube(Set<Direction> faces) {
+        return of(CUBE, cone(0, faces)::build);
+    }
 
     /**
      * Otherwise known as a truncated square pyramid.
      *
      * This produces a square polygon with tapered sides ending in a flat top.
      */
-    static QuadsBuilder cone(float tipInset) {
+    static QuadsBuilder cone(float tipInset, Set<Direction> faces) {
         return of(CONE, (pars, ctx, buffer) -> {
             float xMax = pars.position[0] + pars.size[0] + pars.dilation[0];
             float yMax = pars.position[1] + pars.size[1] + pars.dilation[1];
@@ -101,7 +106,7 @@ public interface QuadsBuilder {
             buffer.quad(Direction.EAST,  col3, row2, dZ,  dY, _5, _1, _2, _6);
             buffer.quad(Direction.NORTH, col2, row2, dX,  dY, _1, _0, _3, _2);
             buffer.quad(Direction.SOUTH, col4, row2, dX,  dY, _4, _5, _6, _7);
-        });
+        }, ctx -> ctx.parameters, _ -> faces);
     }
 
     /**
@@ -171,13 +176,9 @@ public interface QuadsBuilder {
 
     Identifier getId();
 
-    default Set<Direction> getFaces(BoxBuilder ctx) {
-        return Set.of();
-    }
+    Set<Direction> getFaces(BoxBuilder ctx);
 
-    default BoxParameters getBoxParameters(BoxBuilder ctx) {
-        return ctx.parameters;
-    }
+    BoxParameters getBoxParameters(BoxBuilder ctx);
 
     static QuadsBuilder of(Identifier id,
             QuadGenerator constructor,
@@ -231,5 +232,7 @@ public interface QuadsBuilder {
         }
 
         void quad(Direction direction, float u, float v, float w, float h, boolean mirror, boolean preserveNormal, @Nullable Quaternionf rotation, Vert ...vertices);
+
+        void quad(Quad quad);
     }
 }

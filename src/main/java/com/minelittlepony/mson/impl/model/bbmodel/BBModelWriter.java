@@ -18,6 +18,7 @@ import com.minelittlepony.mson.api.export.JsonBuffer.JsonConvertable;
 import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.export.ModelSerializer;
 import com.minelittlepony.mson.api.model.BoxBuilder;
+import com.minelittlepony.mson.api.model.BoxBuilder.Quad;
 import com.minelittlepony.mson.api.model.PartBuilder;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.QuadsBuilder.QuadBuffer;
@@ -137,6 +138,10 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
                     face.addProperty("texture", 0);
                 }));
             }
+
+            @Override
+            public void quad(Quad quad) {
+            }
         });
 
         faces.values().stream().mapToInt(List::size).max().ifPresent(maxCubes -> {
@@ -214,7 +219,7 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
 
         elements.add(buffer -> buffer.of(elementJson -> {
 
-            List<BoxBuilder.Quad> quads = box.collectQuads();
+            List<BoxBuilder.Quad> quads = box.collectQuads().toList();
 
             List<Direction> directions = quads.stream().map(BoxBuilder.Quad::direction)
                     .distinct().toList();

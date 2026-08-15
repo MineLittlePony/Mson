@@ -1,12 +1,19 @@
 package com.minelittlepony.mson.util;
 
+import org.jetbrains.annotations.Nullable;
+
+import com.google.common.base.MoreObjects;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class JsonUtil {
     public static Optional<JsonElement> accept(JsonObject json, String member) {
@@ -99,5 +106,24 @@ public class JsonUtil {
             output[i] = arr.get(i).getAsBoolean();
         }
         return output;
+    }
+
+    public static <T> Optional<Set<T>> acceptSet(JsonElement json, Function<JsonElement, T> serializerFunc, @Nullable T exclude) {
+        if (!json.isJsonArray()) {
+            return Optional.empty();
+        }
+        return Optional.of(json.getAsJsonArray().asList().stream().map(serializerFunc)
+                .filter(i -> i != exclude)
+                .collect(Collectors.toUnmodifiableSet()))
+                .filter(set -> !set.isEmpty());
+    }
+
+    public static <T extends Enum<T>> Function<JsonElement, T> enumSerializaerFunc(Function<String, T> lookup, T def) {
+        return json -> {
+            if (!json.isJsonPrimitive()) {
+                return def;
+            }
+            return MoreObjects.firstNonNull(lookup.apply(json.getAsString().toUpperCase(Locale.ROOT)), def);
+        };
     }
 }

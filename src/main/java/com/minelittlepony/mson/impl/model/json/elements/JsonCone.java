@@ -6,7 +6,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.Incomplete;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.parser.FileContent;
 import com.minelittlepony.mson.api.parser.locals.Local;
 import com.minelittlepony.mson.impl.MsonImpl;
@@ -36,7 +35,7 @@ public class JsonCone extends JsonBox {
     }
 
     @Override
-    public BoxBuilder builder(ModelContext context) {
-        return super.builder(context).quads(QuadsBuilder.cone(taper.complete(context)));
+    protected QuadsBuilder quads(ModelContext context) {
+        return QuadsBuilder.cone(taper.complete(context), enabledSides());
     }
 }

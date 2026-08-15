@@ -1,6 +1,5 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
-import net.minecraft.client.model.geom.ModelPart.Cube;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.Direction;
 
@@ -9,18 +8,18 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.minelittlepony.mson.api.ModelContext;
-import com.minelittlepony.mson.api.export.ModelFileWriter;
 import com.minelittlepony.mson.api.model.BoxBuilder;
 import com.minelittlepony.mson.api.model.BoxParameters;
 import com.minelittlepony.mson.api.model.QuadsBuilder;
 import com.minelittlepony.mson.api.model.Texture;
 import com.minelittlepony.mson.api.model.Vert;
-import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.impl.MsonImpl;
 import com.minelittlepony.mson.api.parser.FileContent;
+import com.minelittlepony.mson.api.parser.ModelBoxComponent;
 import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a custom structure where the quads and vertices are manually defined.
@@ -28,7 +27,7 @@ import java.util.List;
  * @author Sollace
  * @apiNote Experimental. This feature may disappear in the future.
  */
-public record JsonQuads (List<JsonQuad> quads, int texU, int texV) implements ModelComponent<Cube>, QuadsBuilder {
+public record JsonQuads (List<JsonQuad> quads, int texU, int texV) implements ModelBoxComponent, QuadsBuilder {
     public static final Identifier ID = MsonImpl.id("quads");
 
     public JsonQuads(FileContent<JsonElement> context, String name, JsonElement json) {
@@ -51,20 +50,11 @@ public record JsonQuads (List<JsonQuad> quads, int texU, int texV) implements Mo
         );
     }
 
+    @Override
     public BoxBuilder builder(ModelContext context) {
         return new BoxBuilder(context)
                 .tex(new Texture(texU, texV, 0, 0))
                 .quads(this);
-    }
-
-    @Override
-    public Cube export(ModelContext context) {
-        return builder(context).build();
-    }
-
-    @Override
-    public void write(ModelContext context, ModelFileWriter writer) {
-        writer.writeBox(builder(context));
     }
 
     @Override
@@ -75,6 +65,16 @@ public record JsonQuads (List<JsonQuad> quads, int texU, int texV) implements Mo
     @Override
     public Identifier getId() {
         return ID;
+    }
+
+    @Override
+    public Set<Direction> getFaces(BoxBuilder ctx) {
+        return Set.of();
+    }
+
+    @Override
+    public BoxParameters getBoxParameters(BoxBuilder ctx) {
+        return ctx.parameters;
     }
 
     record JsonQuad (int x, int y, int w, int h, List<JsonVertex> verts) {

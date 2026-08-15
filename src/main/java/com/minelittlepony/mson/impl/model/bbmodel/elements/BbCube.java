@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.impl.model.bbmodel.elements;
 
+import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
@@ -23,6 +24,7 @@ import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -96,6 +98,16 @@ public record BbCube (
     }
 
     @Override
+    public Set<Direction> getFaces(BoxBuilder ctx) {
+        return faces.keySet().stream().map(face -> face.getNormal()).collect(Collectors.toUnmodifiableSet());
+    }
+
+    @Override
+    public BoxParameters getBoxParameters(BoxBuilder ctx) {
+        return ctx.parameters;
+    }
+
+    @Override
     public BoxBuilder builder(ModelContext context) {
         if (boxUv) {
             return new BoxBuilder(context)
@@ -165,5 +177,4 @@ public record BbCube (
             ), a, b, c, d);
         }
     }
-
 }

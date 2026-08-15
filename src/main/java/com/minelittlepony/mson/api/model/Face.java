@@ -5,11 +5,14 @@ import net.minecraft.world.phys.Vec3;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import com.google.gson.JsonElement;
+import com.minelittlepony.mson.util.JsonUtil;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public enum Face {
@@ -26,6 +29,7 @@ public enum Face {
 
     public static final Set<Face> VALUES = ImmutableSet.copyOf(values());
     private static final Map<String, Face> REGISTRY = new HashMap<>();
+    public static final Function<JsonElement, Face> JSON_FUNC = JsonUtil.enumSerializaerFunc(REGISTRY::get, NONE);
 
     static {
         VALUES.forEach(f -> REGISTRY.put(f.name(), f));
