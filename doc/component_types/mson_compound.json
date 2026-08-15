@@ -46,9 +46,9 @@ compound:
         }
         [optional] cubes: [
           /**
-            * default type for components (if omitted): mson:box
-            * allowed types: <mson:box|mson:cone|mson:link|mson:quads|mson:plane|mson:slot>
+            * default type for cubes (if omitted): mson:box
+            * allowed types: <mson:box|mson:planar_cube|mson:cone|mson:link|mson:quads|mson:plane|mson:slot>
             */
-          <component>
+          <cube>
         ]
     }

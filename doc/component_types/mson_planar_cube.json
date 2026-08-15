@@ -1,0 +1,28 @@
+/**
+ * Below is a simple definition of the structure of a Mson file
+ * for anyone with a technical mind.
+ * This file contains the structure of the root file, sans any sub-components.
+ * For those parts see their like-named files adjacent to this one.
+ * This is for documentation and examples. It is not a valid json file.
+ */
+planar_cube:
+    {
+        /**
+          * A list of planes grouped by their facing.
+          */
+        <facing>: [
+            /**
+              * Each plane is represented by an array with either 4 or 6 elements.
+              */
+            [
+                /* First 3 are the position*/
+                <x>, <y>, <z>,
+                /* Next two are the size */
+                <width>, <height>,
+                /* Last two are an optional texture coordinate. If not given, the parent's texture will be used. */
+                [optional] <u>, <v>
+                /* Whether to flip the texture vertically and horizontally */
+                [optional] <mirror-x>, <mirror-y>
+            ]
+        ]
+    }

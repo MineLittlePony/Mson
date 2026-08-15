@@ -18,4 +18,8 @@ box:
         [optional] texture: <texture>
         [optional] [default=false] mirror: [<mirror-x>, <mirror-y>, <mirror-z>]
         [optional] dilate: [<stretch-x>, <stretch-y>, <stretch-z>]
+        /**
+          * Which faces of the cube should be visible
+          */
+        [optional] faces: [<up|down|east|west|north|south>]
     }

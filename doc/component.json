@@ -19,20 +19,44 @@ component:
         {
             /**
               * The type of the component. Supported values for this property are listed below.
-              * Note that other mods may register their own component types.
+              * Note that other mods may register their own types.
               * For those, it's recommended to refer to the respective mod's documentation.
               */
             type: <mson:compound
-                |mson:box
-                |mson:plane
                 |mson:planar
+                |mson:slot>
+            /**
+              * The type-specific properties. This can vary based on what is selected above.
+              */
+            <component-properties>
+        }
+cube:
+        /**
+          * A direct reference or "alias" for another component.
+          * The other component has to either be in the root "data" block of the containing
+          * model file, or have a "name" set on it directly.
+          *
+          * When building the model the named component will take the place of link in the
+          * resulting model tree.
+          */
+        <link>
+    or
+        {
+            /**
+              * The type of the cube. Supported values for this property are listed below.
+              * Note that other mods may register their own types.
+              * For those, it's recommended to refer to the respective mod's documentation.
+              */
+            type: <mson:box
+                |mson:plane
+                |mson:planar_cube
                 |mson:slot
                 |mson:cone
                 |mson:quads>
             /**
               * The type-specific properties. This can vary based on what is selected above.
               */
-            <component-properties>
+            <cube-properties>
         }
 link:
     '#'<component-name>
