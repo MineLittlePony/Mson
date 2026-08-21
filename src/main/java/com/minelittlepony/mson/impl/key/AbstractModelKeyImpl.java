@@ -11,8 +11,10 @@ import com.minelittlepony.mson.api.MsonModel;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 import com.minelittlepony.mson.api.model.traversal.SkeletonisedModel;
 import com.minelittlepony.mson.api.parser.FileContent;
+import com.minelittlepony.mson.impl.fast.UnloadedModelPart;
 import com.minelittlepony.mson.impl.model.RootContext;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -87,7 +89,13 @@ public abstract class AbstractModelKeyImpl<T> implements ModelKey<T> {
                 ModelContext ctx = context.createContext(null, null, context.locals().bake());
 
                 ModelPart root = ctx.toTree();
-                V t = factory.create(root);
+                V t;
+                try {
+                    t = factory.create(root);
+                } catch (NoSuchElementException noElement) {
+                    root = new UnloadedModelPart(root, getId().toString());
+                    t = factory.create(root);
+                }
 
                 if (t instanceof SkeletonisedModel sk) {
                     sk.setSkeleton(context.skeleton().map(root::ordered).orElse(root));

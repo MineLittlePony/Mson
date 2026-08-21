@@ -7,13 +7,17 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import com.minelittlepony.mson.impl.MsonImpl;
+import com.minelittlepony.mson.util.PartUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -31,12 +35,28 @@ public class FastModelPart extends ModelPart {
     private ResettableVertex[] normals;
     private Fragment[] fragments;
 
+    private Set<String> warnedPartNames;
+
     public FastModelPart(List<Cube> cuboids, Map<String, ModelPart> children, float[] rotate, float[] pivot, boolean hidden) {
         super(cuboids, children);
         setRotation(rotate[0], rotate[1], rotate[2]);
         setPos(pivot[0], pivot[1], pivot[2]);
         setInitialPose(storePose());
         visible = !hidden;
+    }
+
+    @Override
+    public ModelPart getChild(final String name) {
+        if (!hasChild(name)) {
+            if (warnedPartNames == null) {
+                warnedPartNames = new HashSet<>();
+            }
+            if (warnedPartNames.add(name)) {
+                MsonImpl.LOGGER.warn("Model does not contain required named part: " + name);
+            }
+            return PartUtil.EMPTY_PART;
+        }
+        return super.getChild(name);
     }
 
     @Override
