@@ -10,9 +10,12 @@ import org.joml.Quaternionf;
 
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.model.Face.Axis;
+import com.minelittlepony.mson.util.VectorUtil;
+import com.mojang.datafixers.util.Pair;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +38,8 @@ public final class BoxBuilder {
 
     public QuadsBuilder quads = QuadsBuilder.BOX;
 
+    public ParametersTransformation coordinateSpace = ParametersTransformation.UNIT;
+
     public BoxBuilder(PartBuilder parent) {
         this.parent = parent;
     }
@@ -48,13 +53,18 @@ public final class BoxBuilder {
         System.arraycopy(parent.mirror, 0, parameters.mirror, 0, 3);
     }
 
+    public BoxBuilder coordinateSpace(ParametersTransformation coordinateSpace) {
+        this.coordinateSpace = coordinateSpace;
+        return this;
+    }
+
     public BoxBuilder fix(CoordinateFixture fixture) {
         this.fixture = fixture;
         return this;
     }
 
     public BoxBuilder pos(float... pos) {
-        System.arraycopy(pos, 0, parameters.position, 0, 3);
+        VectorUtil.copy(pos, parameters.position);
         return this;
     }
 
@@ -64,7 +74,7 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder size(float... size) {
-        System.arraycopy(size, 0, parameters.size, 0, 3);
+        VectorUtil.copy(size, parameters.size);
         return this;
     }
 
@@ -77,26 +87,8 @@ public final class BoxBuilder {
     }
 
     public BoxBuilder dilate(float... dilate) {
-        parameters.dilation[0] += dilate[0];
-        parameters.dilation[1] += dilate[1];
-        parameters.dilation[2] += dilate[2];
+        VectorUtil.apply(dilate, parameters.dilation, VectorUtil.VecFunc.SUM);
         return this;
-    }
-
-    public BoxBuilder encompass(BoxBuilder box) {
-        return size(
-                Math.max(parameters.size[0], box.parameters.size[0]),
-                Math.max(parameters.size[1], box.parameters.size[1]),
-                Math.max(parameters.size[2], box.parameters.size[2])
-        ).dilate(
-                Math.max(parameters.dilation[0], box.parameters.dilation[0]),
-                Math.max(parameters.dilation[1], box.parameters.dilation[1]),
-                Math.max(parameters.dilation[2], box.parameters.dilation[2])
-        ).pos(
-                Math.max(parameters.position[0], box.parameters.position[0]),
-                Math.max(parameters.position[1], box.parameters.position[1]),
-                Math.max(parameters.position[2], box.parameters.position[2])
-        );
     }
 
     public BoxBuilder mirror(Axis axis, boolean... mirror) {
@@ -128,6 +120,8 @@ public final class BoxBuilder {
     }
 
     public ModelPart.Cube build() {
+        this.coordinateSpace.getBoxParameters(this);
+
         if (quads.getId() == QuadsBuilder.CUBE) {
             return quads.getBoxParameters(this).build(parent, quads.getFaces(this));
         }
@@ -139,6 +133,7 @@ public final class BoxBuilder {
     }
 
     public Stream<Quad> collectQuads() {
+        this.coordinateSpace.getBoxParameters(this);
         return collectQuads(this.quads.getBoxParameters(this));
     }
 
@@ -165,6 +160,52 @@ public final class BoxBuilder {
             }
         });
         return quads.stream();
+    }
+
+    public static BoxBuilder union(ModelContext context, Stream<Pair<Face, BoxBuilder>> boxes, Identifier id) {
+        var range = new Object() {
+            float[] min;
+            float[] max;
+        };
+
+        var faces = new HashSet<Direction>();
+        var vertices = boxes.map(pair -> {
+            faces.add(pair.getFirst().getNormal());
+            return pair.getSecond();
+        }).map(plane -> {
+            float[] min = plane.parameters.position;
+            float[] max = VectorUtil.create(i -> min[i] + plane.parameters.size[i]);
+            range.min = VectorUtil.applyIfPresent(min, range.min, VectorUtil.VecFunc.MIN);
+            range.max = VectorUtil.applyIfPresent(max, range.max, VectorUtil.VecFunc.MAX);
+            return plane;
+        }).toList();
+
+        return new BoxBuilder(context)
+                .pos(range.min)
+                .size(range.max[0] - range.min[0], range.max[1] - range.min[1], range.max[2] - range.min[2])
+                .quads(new QuadsBuilder() {
+            @Override
+            public void build(BoxParameters params, BoxBuilder ctx, QuadBuffer buffer) {
+                vertices.forEach(box -> {
+                    box.coordinateSpace(ctx.coordinateSpace).collectQuads().forEach(buffer::quad);
+                });
+            }
+
+            @Override
+            public Set<Direction> getFaces(BoxBuilder ctx) {
+                return faces;
+            }
+
+            @Override
+            public BoxParameters getBoxParameters(BoxBuilder ctx) {
+                return ctx.parameters;
+            }
+
+            @Override
+            public Identifier getId() {
+                return id;
+            }
+        });
     }
 
     public interface RenderLayerSetter {

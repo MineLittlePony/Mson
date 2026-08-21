@@ -28,6 +28,7 @@ import com.minelittlepony.mson.api.parser.FileContent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -36,8 +37,6 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.UUID;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFileWriter {
 
@@ -206,13 +205,16 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
         PartStack.Part part = stack.part();
         float[] pivot = part.pivot();
 
-        // fix coordinates
-        float[] size = { box.parameters.size[0], box.parameters.size[1], box.parameters.size[2] };
-        box.pos(
-                box.parameters.position[0] + pivot[0],
-               -box.parameters.position[1] - size[1] - pivot[1],
-                box.parameters.position[2] + pivot[2]
-        );
+        box.coordinateSpace(ctx -> {
+            // fix coordinates
+            float[] size = { ctx.parameters.size[0], ctx.parameters.size[1], ctx.parameters.size[2] };
+            ctx.pos(
+                    ctx.parameters.position[0] + pivot[0],
+                   -ctx.parameters.position[1] - size[1] - pivot[1],
+                    ctx.parameters.position[2] + pivot[2]
+            );
+            return ctx.parameters;
+        });
 
         var id = UUID.randomUUID();
         part.meshes().add(id);
@@ -232,35 +234,44 @@ class BBModelWriter extends ModelSerializer<FileContent<?>> implements ModelFile
             elementJson.addProperty("visibility", !part.hidden());
             elementJson.add("uv_offset", buffer.of(box.parameters.uv.u(), box.parameters.uv.v()));
 
-            Map<Vert, UUID> verticesCache = quads.stream()
-                .flatMap(quad -> Arrays.stream(quad.rect().getVertices()))
-                .distinct()
-                .collect(Collectors.toMap(Function.identity(), _ -> UUID.randomUUID()));
+            Map<Vert, UUID> verticesCache = new HashMap<>();
+            List<List<Map.Entry<Vert, UUID>>> rectangles = quads.stream()
+                    .map(quad -> Arrays.stream(quad.rect().getVertices())
+                            .map(vert -> Map.entry(vert, verticesCache.computeIfAbsent(vert, _ -> UUID.randomUUID())))
+                            .toList()
+                    ).toList();
+
 
             buffer.object(elementJson, "faces", buffer.of(facesJson -> {
-                buffer.object(facesJson, UUID.randomUUID().toString(), buffer.of(faceJson -> {
-                    buffer.object(faceJson, "uv", buffer.of(uvJson -> {
-                        verticesCache.forEach((vert, vertId) -> {
-                            uvJson.add(vertId.toString(), buffer.of(
-                                    vert.getU() * box.parent.texture.width(),
-                                    vert.getV() * box.parent.texture.height()
-                            ));
-                        });
+                rectangles.forEach(vertices -> {
+                    buffer.object(facesJson, UUID.randomUUID().toString(), buffer.of(faceJson -> {
+                        buffer.object(faceJson, "uv", buffer.of(uvJson -> {
+                            for (var vert : vertices) {
+                                uvJson.add(vert.getValue().toString(), buffer.of(
+                                        vert.getKey().getU() * box.parent.texture.width(),
+                                        vert.getKey().getV() * box.parent.texture.height()
+                                ));
+                            }
+                        }));
+
+                        faceJson.add("vertices", buffer.of(vertices.stream().map(Map.Entry::getValue).map(UUID::toString).map(JsonPrimitive::new)));
+                        faceJson.addProperty("texture", 0);
                     }));
-                    faceJson.add("vertices", buffer.of(verticesCache.values().stream().map(UUID::toString).map(JsonPrimitive::new)));
-                    faceJson.addProperty("texture", 0);
-                }));
+                });
+
             }));
             buffer.object(elementJson, "vertices", buffer.of(verticesJson -> {
-                verticesCache.forEach((vert, vertId) -> {
-                    if (part.isRedundant()) {
-                        verticesJson.add(vertId.toString(), buffer.of(
-                                vert.getPos().x() + part.part().pivot[0],
-                                vert.getPos().y() + part.part().pivot[1],
-                                vert.getPos().z() + part.part().pivot[2]
-                        ));
-                    } else {
-                        verticesJson.add(vertId.toString(), buffer.of(vert.getPos().x(), vert.getPos().y(), vert.getPos().z()));
+                rectangles.forEach(vertices -> {
+                    for (var vert : vertices) {
+                        if (part.isRedundant()) {
+                            verticesJson.add(vert.getValue().toString(), buffer.of(
+                                    vert.getKey().getPos().x() + part.part().pivot[0],
+                                    vert.getKey().getPos().y() + part.part().pivot[1],
+                                    vert.getKey().getPos().z() + part.part().pivot[2]
+                            ));
+                        } else {
+                            verticesJson.add(vert.getValue().toString(), buffer.of(vert.getKey().getPos().x(), vert.getKey().getPos().y(), vert.getKey().getPos().z()));
+                        }
                     }
                 });
             }));

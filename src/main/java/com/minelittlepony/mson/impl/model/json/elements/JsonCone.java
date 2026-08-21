@@ -26,11 +26,11 @@ public class JsonCone extends JsonBox {
     private final Incomplete<Float> taper;
 
     public JsonCone(FileContent<JsonElement> context, String name, JsonElement json) {
-        this(context, name, json.getAsJsonObject());
+        this(context, json.getAsJsonObject());
     }
 
-    public JsonCone(FileContent<JsonElement> context, String name, JsonObject json) {
-        super(context, name, json);
+    public JsonCone(FileContent<JsonElement> context, JsonObject json) {
+        super(context, json);
         taper = Local.ref(json, "taper", context.locals().modelId());
     }
 

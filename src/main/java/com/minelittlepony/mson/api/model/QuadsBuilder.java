@@ -16,7 +16,7 @@ import java.util.function.Function;
 /**
  * A builder for creating box quads.
  */
-public interface QuadsBuilder {
+public interface QuadsBuilder extends ParametersTransformation {
     static Identifier CONE = MsonImpl.id("cone");
     static Identifier PLANE = MsonImpl.id("plane");
     static Identifier CUBE = MsonImpl.id("cube");
@@ -177,8 +177,6 @@ public interface QuadsBuilder {
     Identifier getId();
 
     Set<Direction> getFaces(BoxBuilder ctx);
-
-    BoxParameters getBoxParameters(BoxBuilder ctx);
 
     static QuadsBuilder of(Identifier id,
             QuadGenerator constructor,

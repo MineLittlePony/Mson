@@ -31,18 +31,18 @@ public record JsonQuads (List<JsonQuad> quads, int texU, int texV) implements Mo
     public static final Identifier ID = MsonImpl.id("quads");
 
     public JsonQuads(FileContent<JsonElement> context, String name, JsonElement json) {
-        this(context, name, json.getAsJsonObject());
+        this(context, json.getAsJsonObject());
     }
 
-    public JsonQuads(FileContent<JsonElement> context, String name, JsonObject json) {
-        this(context, name, json,
+    public JsonQuads(FileContent<JsonElement> context, JsonObject json) {
+        this(context, json,
             Streams.stream(JsonUtil.require(json, "vertices", ID, context.locals().modelId()).getAsJsonArray()).map(JsonVertex::fromJson).toList(),
             JsonUtil.require(json, "u", ID, context.locals().modelId()).getAsInt(),
             JsonUtil.require(json, "v", ID, context.locals().modelId()).getAsInt()
         );
     }
 
-    public JsonQuads(FileContent<JsonElement> context, String name, JsonObject json, List<JsonVertex> vertices, int texU, int texV) {
+    public JsonQuads(FileContent<JsonElement> context, JsonObject json, List<JsonVertex> vertices, int texU, int texV) {
         this(
             Streams.stream(JsonUtil.require(json, "faces", ID, context.locals().modelId()).getAsJsonArray()).map(v -> JsonQuad.fromJson(context, vertices, v)).toList(),
             texU,

@@ -56,10 +56,10 @@ public record JsonPlane (
     public static final Identifier ID = MsonImpl.id("plane");
 
     public JsonPlane(FileContent<JsonElement> context, String name, JsonElement json) {
-        this(context, name, json.getAsJsonObject());
+        this(context, json.getAsJsonObject());
     }
 
-    public JsonPlane(FileContent<JsonElement> context, String name, JsonObject json) {
+    public JsonPlane(FileContent<JsonElement> context, JsonObject json) {
         this(
             Local.array(json, "position", 3, context.locals().modelId()),
             Local.array(json, "size", 2, context.locals().modelId()),

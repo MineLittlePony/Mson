@@ -64,10 +64,10 @@ public class JsonBox implements ModelBoxComponent {
     protected final Optional<Set<Face>> faces;
 
     public JsonBox(FileContent<JsonElement> context, String name, JsonElement json) {
-        this(context, name, json.getAsJsonObject());
+        this(context, json.getAsJsonObject());
     }
 
-    public JsonBox(FileContent<JsonElement> context, String name, JsonObject json) {
+    public JsonBox(FileContent<JsonElement> context, JsonObject json) {
         from = Local.array(json, "from", 3, context.locals().modelId());
         size = Local.array(json, "size", 3, context.locals().modelId());
         texture = JsonTexture.incomplete(JsonUtil.accept(json, "texture"));

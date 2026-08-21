@@ -39,6 +39,7 @@ public class MsonModelFormat implements ModelFormat<JsonElement> {
         componentTypes.put(JsonBox.ID, JsonBox::new);
         componentTypes.put(JsonPlane.ID, JsonPlane::new);
         componentTypes.put(JsonPlanar.ID, JsonPlanar::new);
+        componentTypes.put(JsonPlanarCube.ID, JsonPlanarCube::new);
         componentTypes.put(JsonSlot.ID, JsonSlot::new);
         componentTypes.put(JsonCone.ID, JsonCone::new);
         componentTypes.put(JsonQuads.ID, JsonQuads::new);
