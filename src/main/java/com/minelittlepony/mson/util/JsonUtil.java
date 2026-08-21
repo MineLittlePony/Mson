@@ -108,8 +108,8 @@ public class JsonUtil {
         return output;
     }
 
-    public static <T> Optional<Set<T>> acceptSet(JsonElement json, Function<JsonElement, T> serializerFunc, @Nullable T exclude) {
-        if (!json.isJsonArray()) {
+    public static <T> Optional<Set<T>> acceptSet(@Nullable JsonElement json, Function<JsonElement, T> serializerFunc, @Nullable T exclude) {
+        if (json == null || !json.isJsonArray()) {
             return Optional.empty();
         }
         return Optional.of(json.getAsJsonArray().asList().stream().map(serializerFunc)
