@@ -15,24 +15,20 @@ import com.minelittlepony.mson.util.JsonUtil;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-public class Local implements Incomplete<Float> {
-    private final Incomplete<Float> left;
-    private final Operation operation;
-    private final Incomplete<Float> right;
+public record Local(Incomplete<Float> left, Operation operation, Incomplete<Float> right) implements Incomplete<Float> {
 
-    private Local(JsonArray tokens) {
+    private static Local math(JsonArray tokens) {
         if (tokens.size() != 3) {
             throw new JsonParseException(String.format("Saw a local of %d members. Expected 3 of (left, op, right).", tokens.size()));
         }
 
-        operation = Operation.of(tokens.get(1).getAsString());
+        var operation = Operation.of(tokens.get(1).getAsString());
 
         if (operation == Operation.VAR) {
             throw new JsonParseException("Invalid operation. One of [+,-,*,/]");
         }
 
-        left = create(tokens.get(0));
-        right = create(tokens.get(2));
+        return new Local(create(tokens.get(0)), operation, create(tokens.get(2)));
     }
 
     @Override
@@ -45,7 +41,7 @@ public class Local implements Incomplete<Float> {
             return ref(json.getAsJsonPrimitive());
         }
         if (json.isJsonArray()) {
-            return new Local(json.getAsJsonArray());
+            return math(json.getAsJsonArray());
         }
 
         throw new JsonParseException("Unsupported local type. A local must be either a value (number) string (#variable) or an array");
@@ -60,8 +56,7 @@ public class Local implements Incomplete<Float> {
         if (prim.isString()) {
             String variableName = prim.getAsString();
             if (variableName.startsWith("#")) {
-                String name = variableName.substring(1);
-                return local -> local.getLocal(name, 0F);
+                return new Incomplete.FloatReference(variableName.substring(1), 0F);
             }
             return Incomplete.ZERO;
         }
@@ -71,7 +66,7 @@ public class Local implements Incomplete<Float> {
 
     @SuppressWarnings("unchecked")
     public static Incomplete<float[]> array(JsonPrimitive... arr) {
-        return toFloats(
+        return new Union(
                 (Incomplete<Float>[])Stream.of(arr)
                 .map(Local::ref)
                 .toArray(Incomplete[]::new)
@@ -79,23 +74,23 @@ public class Local implements Incomplete<Float> {
     }
 
     public static Incomplete<float[]> array(JsonObject json, String member, int len, Identifier modelId) {
-        return toFloats(JsonUtil.accept(json, member).map(js -> {
-                Incomplete<Float>[] output = zeros(len);
+        Incomplete<Float>[] output = zeros(len);
+        JsonUtil.accept(json, member).ifPresent(js -> {
+            if (!js.isJsonArray()) {
+                Arrays.fill(output, ref(js.getAsJsonPrimitive()));
+            } else {
+                JsonArray arr = js.getAsJsonArray();
+                int max = Math.min(len, arr.size());
 
-                if (!js.isJsonArray()) {
-                    Arrays.fill(output, Local.ref(js.getAsJsonPrimitive()));
-                } else {
-                    JsonArray arr = js.getAsJsonArray();
-
-                    for (int i = 0; i < len && i < arr.size(); i++) {
-                        if (!arr.get(i).isJsonPrimitive()) {
-                            throw new JsonParseException(String.format("Non-primitive type found in array for model %s. Can only be values (Number) or variable references (#variable). %s", modelId, arr));
-                        }
-                        output[i] = Local.ref(arr.get(i).getAsJsonPrimitive());
+                for (int i = 0; i < max; i++) {
+                    if (!arr.get(i).isJsonPrimitive()) {
+                        throw new JsonParseException(String.format("Non-primitive type found in array for model %s. Can only be values (Number) or variable references (#variable). %s", modelId, arr));
                     }
+                    output[i] = ref(arr.get(i).getAsJsonPrimitive());
                 }
-                return output;
-            }).orElseGet(() -> zeros(len)));
+            }
+        });
+        return new Union(output);
     }
 
     public static Incomplete<Float> ref(JsonObject json, String member, Identifier modelId) {
@@ -104,7 +99,7 @@ public class Local implements Incomplete<Float> {
         if (!js.isJsonPrimitive()) {
             throw new JsonParseException(String.format("Non-primitive type found in member %s for model %s. Can only be values (Number) or variable references (#variable). %s", member, modelId, js));
         }
-        return Local.ref(js.getAsJsonPrimitive());
+        return ref(js.getAsJsonPrimitive());
     }
 
     private static Incomplete<Float>[] zeros(int len) {
@@ -114,13 +109,14 @@ public class Local implements Incomplete<Float> {
         return output;
     }
 
-    private static Incomplete<float[]> toFloats(Incomplete<Float>[] input) {
-        return locals -> {
+    private record Union(Incomplete<Float>[] input) implements Incomplete<float[]> {
+        @Override
+        public float[] complete(Locals locals) throws FutureAwaitException {
             float[] result = new float[input.length];
             for (int i = 0; i < input.length; i++) {
                 result[i] = input[i].complete(locals);
             }
             return result;
-        };
+        }
     }
 }

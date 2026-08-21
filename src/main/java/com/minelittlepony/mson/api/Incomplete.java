@@ -1,5 +1,6 @@
 package com.minelittlepony.mson.api;
 
+import com.minelittlepony.mson.api.ModelView.Locals;
 import com.minelittlepony.mson.api.exception.FutureAwaitException;
 
 import java.util.Objects;
@@ -21,8 +22,7 @@ public interface Incomplete<T> {
      * Returns a completed Incomplete that resolves to a fixed constant value.
      */
     static <T> Incomplete<T> completed(T value) {
-        Objects.requireNonNull(value);
-        return _ -> value;
+        return new Constant<>(value);
     }
 
     /**
@@ -37,5 +37,22 @@ public interface Incomplete<T> {
      */
     default T complete(ModelContext context) throws FutureAwaitException {
         return complete(context.getLocals());
+    }
+
+    record Constant<T>(T value) implements Incomplete<T> {
+        public Constant {
+            Objects.requireNonNull(value);
+        }
+        @Override
+        public T complete(Locals locals) throws FutureAwaitException {
+            return value;
+        }
+    }
+
+    record FloatReference(String name, float def) implements Incomplete<Float> {
+        @Override
+        public Float complete(Locals locals) throws FutureAwaitException {
+            return locals.getLocal(name, def);
+        }
     }
 }

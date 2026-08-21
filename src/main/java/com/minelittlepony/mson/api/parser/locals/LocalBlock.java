@@ -46,13 +46,7 @@ public interface LocalBlock {
         };
     }
 
-    class Impl implements LocalBlock {
-        private final Map<String, Incomplete<Float>> locals;
-
-        Impl(Map<String, Incomplete<Float>> locals) {
-            this.locals = locals;
-        }
-
+    record Impl(Map<String, Incomplete<Float>> locals) implements LocalBlock {
         @Override
         public Set<String> appendKeys(Set<String> output) {
             output.addAll(locals.keySet());
