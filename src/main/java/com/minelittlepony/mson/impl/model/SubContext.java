@@ -6,13 +6,15 @@ import net.minecraft.client.model.geom.ModelPart;
 import com.minelittlepony.mson.api.FutureFunction;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.ModelView;
+import com.minelittlepony.mson.api.SlotKey;
+import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.impl.ModelContextImpl;
 
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.Optional;
 
 class SubContext implements ModelContextImpl {
 
@@ -57,8 +59,13 @@ class SubContext implements ModelContextImpl {
     }
 
     @Override
-    public <T> T findByName(ModelContext context, String name, @Nullable Function<ModelPart, T> function, @Nullable Class<T> rootType) {
-        return parent.findByName(context, name, function, rootType);
+    public @Nullable ModelComponent<?> getComponent(String name) {
+        return parent.getComponent(name);
+    }
+
+    @Override
+    public <T> Optional<T> findByName(ModelContext context, String name, SlotKey<T> type) {
+        return parent.findByName(context, name, type);
     }
 
     @Override

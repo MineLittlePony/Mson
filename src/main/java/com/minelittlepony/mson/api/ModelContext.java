@@ -5,6 +5,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import org.jetbrains.annotations.Nullable;
 
 import com.minelittlepony.mson.api.parser.FileContent;
+import com.minelittlepony.mson.api.parser.ModelComponent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +39,12 @@ public interface ModelContext extends ModelView {
      * Will always return a new instance if the name is empty or null.
      */
     <T> T computeIfAbsent(@Nullable String name, FutureFunction<T> factory);
+
+    /**
+     * Gets a component by its name
+     */
+    @Nullable
+    ModelComponent<?> getComponent(String name);
 
     /**
      * Binds this model context to a new object.

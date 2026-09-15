@@ -15,6 +15,11 @@ public interface ModelBoxComponent extends ModelComponent<ModelPart.Cube> {
     BoxBuilder builder(ModelContext context);
 
     @Override
+    default Class<?> outputType(ModelContext context) {
+        return ModelPart.Cube.class;
+    }
+
+    @Override
     default ModelPart.Cube export(ModelContext context) {
         return builder(context).build();
     }

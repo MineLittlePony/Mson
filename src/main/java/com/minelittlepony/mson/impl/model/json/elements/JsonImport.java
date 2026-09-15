@@ -54,6 +54,11 @@ public record JsonImport(
     }
 
     @Override
+    public Class<?> outputType(ModelContext context) {
+        return ModelPart.class;
+    }
+
+    @Override
     public ModelPart export(ModelContext context) {
         return context.computeIfAbsent(name, _ -> convertContextToTree(context.extendWith(file.get(),
             parent -> parent.extendWith(parent.modelId(), locals.map(l -> l.bind(context.getLocals())), Optional.empty())

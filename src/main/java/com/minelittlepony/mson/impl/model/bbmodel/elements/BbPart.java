@@ -110,6 +110,11 @@ public class BbPart implements ModelComponent<ModelPart> {
     }
 
     @Override
+    public Class<?> outputType(ModelContext context) {
+        return ModelPart.class;
+    }
+
+    @Override
     public ModelPart export(ModelContext context) {
         return context.computeIfAbsent(name, _ -> {
             var builder = createBuilder(context);

@@ -7,8 +7,8 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Strings;
 import com.minelittlepony.mson.api.FutureFunction;
-import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.SlotKey;
 import com.minelittlepony.mson.api.parser.ModelComponent;
 import com.minelittlepony.mson.impl.ModelContextImpl;
 import com.minelittlepony.mson.util.Maps;
@@ -16,7 +16,7 @@ import com.minelittlepony.mson.util.Maps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.Optional;
 
 public class RootContext implements ModelContextImpl {
 
@@ -68,7 +68,7 @@ public class RootContext implements ModelContextImpl {
     public void getTree(ModelContext context, Map<String, ModelPart> tree) {
         elements.entrySet().forEach(entry -> {
             if (!tree.containsKey(entry.getKey())) {
-                entry.getValue().tryExportTreeNodes(context, ModelPart.class).ifPresent(part -> {
+                entry.getValue().tryExportTreeNodes(context).ifPresent(part -> {
                     tree.put(entry.getKey(), part);
                 });
             }
@@ -78,16 +78,13 @@ public class RootContext implements ModelContextImpl {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T findByName(ModelContext context, String name, @Nullable Function<ModelPart, T> function, @Nullable Class<T> rootType) {
-        if (!elements.containsKey(name)) {
-            return inherited.findByName(context, name, function, rootType);
+    public <T> Optional<T> findByName(ModelContext context, String name, @Nullable SlotKey<T> type) {
+        var element = (ModelComponent<T>)getComponent(name);
+        if (element == null || !element.canConvertTo(context, type.factory().type())) {
+            return Optional.empty();
         }
 
-        if (function == null && rootType == null) {
-            return (T)elements.get(name).export(context);
-        }
-
-        return (T)elements.get(name).export(context, InstanceCreator.ofFunction(rootType, function));
+        return Optional.of(element.export(context));
     }
 
     @SuppressWarnings("unchecked")
@@ -100,6 +97,15 @@ public class RootContext implements ModelContextImpl {
         }
 
         return (T)Maps.computeIfAbsent(objectCache, name, supplier);
+    }
+
+    @Nullable
+    @Override
+    public ModelComponent<?> getComponent(String name) {
+        if (!elements.containsKey(name)) {
+            return inherited.getComponent(name);
+        }
+        return elements.get(name);
     }
 
     @Override

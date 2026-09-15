@@ -38,6 +38,16 @@ public interface Mson {
     <T extends Model<?>> ModelKey<T> registerModel(Identifier id, MsonModel.Factory<T> constructor);
 
     /**
+     * Registers a type to use within mson:slot components.
+     *
+     * @param <T>          The type of the implementing class the slot should produce instances of
+     * @param id           The identifier to refer to this type in the "implementation" field of slot elements
+     * @param constructor  An InstanceCreator for generating the requested instances.
+     * @return A key representing this slot type.
+     */
+    <T> SlotKey<T> registerSlotType(Identifier id, InstanceCreator<T> constructor);
+
+    /**
      * Gets the format handler responsible for loading MSON json models.
      */
     ModelFormat<JsonElement> getDefaultFormatHandler();

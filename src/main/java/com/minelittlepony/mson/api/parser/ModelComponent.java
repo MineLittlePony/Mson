@@ -1,5 +1,7 @@
 package com.minelittlepony.mson.api.parser;
 
+import net.minecraft.client.model.geom.ModelPart;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.minelittlepony.mson.api.InstanceCreator;
@@ -15,12 +17,22 @@ import java.util.Optional;
  */
 public interface ModelComponent<T> extends ModelFileWriter.Writeable {
 
+    static boolean canConvertTo(Class<?> type, Class<?> clazz) {
+        return type == null || InstanceCreator.isCompatible(type, clazz);
+    }
+
+    default boolean canConvertTo(ModelContext context, @Nullable Class<?> type) {
+        return canConvertTo(type, outputType(context));
+    }
+
+    Class<?> outputType(ModelContext context);
+
     /**
      * Tries to export this component to the chosen type.
      * Returns an optional containing the result for a successful conversion.
      */
-    default <K> Optional<K> tryExportTreeNodes(ModelContext context, Class<K> type) {
-        return tryExport(context, type);
+    default Optional<ModelPart> tryExportTreeNodes(ModelContext context) {
+        return tryExport(context, ModelPart.class);
     }
 
     /**
@@ -29,6 +41,9 @@ public interface ModelComponent<T> extends ModelFileWriter.Writeable {
      */
     @SuppressWarnings("unchecked")
     default <K> Optional<K> tryExport(ModelContext context, Class<K> type) {
+        if (!canConvertTo(context, type)) {
+            return Optional.empty();
+        }
         Object s;
         try {
             s = export(context);
@@ -36,10 +51,7 @@ public interface ModelComponent<T> extends ModelFileWriter.Writeable {
             return Optional.empty();
         }
 
-        if (s != null && type.isAssignableFrom(s.getClass())) {
-            return Optional.of((K)s);
-        }
-        return Optional.empty();
+        return Optional.ofNullable((K)s);
     }
 
     /**
@@ -47,13 +59,6 @@ public interface ModelComponent<T> extends ModelFileWriter.Writeable {
      */
     @Nullable
     T export(ModelContext context);
-
-    /**
-     * Creates a custom object from the contents of this component.
-     */
-    default <K> Optional<K> export(ModelContext context, InstanceCreator<K> customType) {
-        return Optional.empty();
-    }
 
     /**
      * Constructor for creating a component.

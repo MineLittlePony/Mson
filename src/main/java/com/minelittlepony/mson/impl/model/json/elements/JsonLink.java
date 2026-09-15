@@ -1,5 +1,7 @@
 package com.minelittlepony.mson.impl.model.json.elements;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.ModelContext;
 import com.minelittlepony.mson.api.export.ModelFileWriter;
@@ -54,6 +56,17 @@ public record JsonLink (String linkName) implements ModelComponent<Object> {
         }
 
         linkName = linkName.substring(1);
+    }
+
+    @Override
+    public boolean canConvertTo(ModelContext context, @Nullable Class<?> type) {
+        return context.getComponent(linkName).canConvertTo(context, type);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<Object> outputType(ModelContext context) {
+        return (Class<Object>)context.getComponent(linkName).outputType(context);
     }
 
     @Override

@@ -63,7 +63,7 @@ public record JsonSlot<T> (
 
     public JsonSlot(FileContent<JsonElement> context, String name, JsonObject json) {
         this(
-            JsonUtil.accept(json, "implementation").map(JsonElement::getAsString).map(InstanceCreator::byName),
+            JsonUtil.accept(json, "implementation").map(JsonElement::getAsString).map(MsonImpl.INSTANCE::getSlotImplementation),
             context.resolve(json.get("data")),
             LocalBlock.of(JsonUtil.accept(json, "locals")),
             JsonUtil.accept(json, "texture").map(JsonTexture::of),
@@ -75,31 +75,25 @@ public record JsonSlot<T> (
     }
 
     @Override
-    public <K> Optional<K> tryExportTreeNodes(ModelContext context, Class<K> type) {
-        if (implementation.isPresent() && !implementation.get().isCompatible(type)) {
-            return Optional.empty();
-        }
-        Optional<K> value = tryExport(context, type);
-        if (!implementation.isPresent()) {
-            return Optional.empty();
-        }
-        return value;
+    public Optional<ModelPart> tryExportTreeNodes(ModelContext context) {
+        Optional<ModelPart> value = tryExport(context, ModelPart.class);
+        return implementation.isPresent() ? value : Optional.empty();
+    }
+
+    @Override
+    public boolean canConvertTo(ModelContext context, @Nullable Class<?> type) {
+        return type != null && implementation.isPresent() && !implementation.get().isCompatible(type);
+    }
+
+    @Override
+    public Class<?> outputType(ModelContext context) {
+        return implementation.isPresent() ? implementation.get().type() : null;
     }
 
     @Nullable
     @Override
     public T export(ModelContext context) {
-        return compile(context).result();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <K> Optional<K> export(ModelContext context, InstanceCreator<K> customType) {
-        CompiledSlot<T> compiled = compile(context);
-        if (implementation.filter(i -> i.isCompatible(customType)).isPresent()) {
-            return Optional.ofNullable((K)compiled.result());
-        }
-        return Optional.ofNullable(customType.createInstance(compiled.sourceContext(), _ -> compiled.tree()));
+        return compile(context).result().orElse(null);
     }
 
     private CompiledSlot<T> compile(ModelContext context) {
@@ -109,7 +103,7 @@ public record JsonSlot<T> (
             );
 
             ModelPart tree = subContext.toTree();
-            T result = implementation.map(type -> type.createInstance(subContext, _ -> tree)).orElse(null);
+            Optional<T> result = implementation.map(type -> type.createInstance(subContext, _ -> tree));
 
             return new CompiledSlot<>(result, tree, subContext);
         });
@@ -127,6 +121,6 @@ public record JsonSlot<T> (
         }
     }
 
-    record CompiledSlot<T>(@Nullable T result, ModelPart tree, ModelContext sourceContext) {}
+    record CompiledSlot<T>(Optional<T> result, ModelPart tree, ModelContext sourceContext) {}
 
 }

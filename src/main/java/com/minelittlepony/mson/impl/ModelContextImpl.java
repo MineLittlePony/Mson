@@ -5,8 +5,10 @@ import net.minecraft.client.model.geom.ModelPart;
 import org.jetbrains.annotations.Nullable;
 
 import com.minelittlepony.mson.api.ModelContext;
+import com.minelittlepony.mson.api.SlotKey;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 public interface ModelContextImpl extends ModelContext {
@@ -24,20 +26,19 @@ public interface ModelContextImpl extends ModelContext {
 
     @Override
     default <T> T findByName(String name) {
-        return findByName(this, name, null, null);
+        return findByName(this, name);
     }
 
     @Override
-    default <T> T findByName(String name, @Nullable Function<ModelPart, T> function) {
-        return findByName(this, name, function, null);
+    default <T> Optional<T> findByName(String name, SlotKey<T> type) {
+        return findByName(this, name, type);
     }
 
-    @Override
-    default <T> T findByName(String name, @Nullable Function<ModelPart, T> function, @Nullable Class<T> rootType) {
-        return findByName(this, name, function, rootType);
+    default <T> T findByName(ModelContext context, String name) {
+        return this.<T>findByName(context, name, null).orElseThrow(() -> new IllegalArgumentException(String.format("Key not found `%s`", name)));
     }
 
-    <T> T findByName(ModelContext context, String name, @Nullable Function<ModelPart, T> function, @Nullable Class<T> rootType);
+    <T> Optional<T> findByName(ModelContext context, String name, @Nullable SlotKey<T> type);
 
     @Override
     default ModelContext bind(Object thisObj, Function<Locals, Locals> inheritedLocals) {

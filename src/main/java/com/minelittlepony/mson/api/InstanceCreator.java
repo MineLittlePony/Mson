@@ -5,7 +5,8 @@ import net.minecraft.client.model.geom.ModelPart;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.minelittlepony.mson.impl.key.ReflectedModelKey;
+import com.minelittlepony.mson.impl.key.InstanceCreatorImpl;
+import com.minelittlepony.mson.impl.key.ReflectedInstanceCreator;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -19,36 +20,43 @@ public interface InstanceCreator<T> {
         return (InstanceCreator<T>)DEFAULT;
     }
 
+    @Deprecated
     public static <T> InstanceCreator<T> byName(String className) {
-        return ReflectedModelKey.byName(className);
-    }
-
-    public static <T> InstanceCreator<T> ofType(Class<T> type) {
-        return ReflectedModelKey.byType(type);
+        return ReflectedInstanceCreator.byName(className);
     }
 
     public static <T> InstanceCreator<T> ofFunction(Class<T> type, Function<ModelPart, T> function) {
-        return new ReflectedModelKey<>(Optional.empty(), Optional.of(function), type);
+        return new InstanceCreatorImpl<>(Optional.empty(), Optional.of(function), type);
     }
 
-    public static <T> InstanceCreator<T> ofFactory(Class<T> type, Function<ModelContext, T> factory) {
-        return new ReflectedModelKey<>(Optional.of(factory), Optional.empty(), type);
+    public static <T> InstanceCreator<T> ofFactory(Class<T> type, Function<ModelView, T> factory) {
+        return new InstanceCreatorImpl<>(Optional.of(factory), Optional.empty(), type);
     }
 
     public static <T> InstanceCreator<T> ofSupplier(Class<T> type, Supplier<T> supplier) {
-        return new ReflectedModelKey<>(Optional.of(_ -> supplier.get()), Optional.of(_ -> supplier.get()), type);
+        return new InstanceCreatorImpl<>(Optional.of(_ -> supplier.get()), Optional.of(_ -> supplier.get()), type);
     }
 
     @Nullable
-    Class<T> type();
-
-    boolean isCompatible(Class<?> toType);
-
-    default boolean isCompatible(InstanceCreator<?> toType) {
-        return isCompatible(toType.type());
+    default Class<T> type() {
+        return null;
     }
 
-    T createInstance(ModelContext context);
+    static boolean isCompatible(Class<?> fromType, Class<?> toType) {
+        return fromType != null && toType != null && (toType == fromType || toType.isAssignableFrom(fromType));
+    }
+
+    default boolean isCompatible(Class<?> toType) {
+        return isCompatible(type(), toType);
+    }
+
+    default boolean isCompatible(InstanceCreator<?> toType) {
+        return this == toType || isCompatible(toType.type());
+    }
+
+    default T createInstance(ModelContext context) {
+        return createInstance(context, ModelContext::toTree);
+    }
 
     T createInstance(ModelContext context, Function<ModelContext, ModelPart> converter);
 }
