@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.sprite.AtlasManager;
+import net.minecraft.client.resources.palette.PalettedTextureManager;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.Entity;
@@ -56,6 +57,8 @@ abstract class MixinEntityRenderDispatcher {
     private @Final EquipmentAssetManager equipmentAssets;
     @Shadow
     private @Final PlayerSkinRenderCache playerSkinRenderCache;
+    @Shadow
+    private @Final PalettedTextureManager palettedTextures;
 
     @Nullable
     private AppliedEntityRendererRegistry mson_registry;
@@ -73,7 +76,8 @@ abstract class MixinEntityRenderDispatcher {
                 equipmentAssets,
                 atlasManager,
                 font,
-                playerSkinRenderCache
+                playerSkinRenderCache,
+                palettedTextures
         ));
     }
 
