@@ -41,13 +41,15 @@ public interface ModelComponent<T> extends ModelFileWriter.Writeable {
      */
     @SuppressWarnings("unchecked")
     default <K> Optional<K> tryExport(ModelContext context, Class<K> type) {
-        if (!canConvertTo(context, type)) {
-            return Optional.empty();
-        }
         Object s;
         try {
             s = export(context);
         } catch (Exception e) {
+            return Optional.empty();
+        }
+
+        // TODO: Export has side-effects so we can't skip it
+        if (!canConvertTo(context, type)) {
             return Optional.empty();
         }
 

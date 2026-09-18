@@ -76,13 +76,16 @@ public record JsonSlot<T> (
 
     @Override
     public Optional<ModelPart> tryExportTreeNodes(ModelContext context) {
+        if (!canConvertTo(context, ModelPart.class)) {
+            return Optional.empty();
+        }
         Optional<ModelPart> value = tryExport(context, ModelPart.class);
         return implementation.isPresent() ? value : Optional.empty();
     }
 
     @Override
     public boolean canConvertTo(ModelContext context, @Nullable Class<?> type) {
-        return type != null && implementation.isPresent() && !implementation.get().isCompatible(type);
+        return type == null || !implementation.isPresent() || implementation.get().isCompatible(type);
     }
 
     @Override
