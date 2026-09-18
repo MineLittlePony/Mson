@@ -80,7 +80,7 @@ public class RootContext implements ModelContextImpl {
     @Override
     public <T> Optional<T> findByName(ModelContext context, String name, @Nullable SlotKey<T> type) {
         var element = (ModelComponent<T>)getComponent(name);
-        if (element == null || !element.canConvertTo(context, type.factory().type())) {
+        if (element == null || (type != null && !element.canConvertTo(context, type.factory().type()))) {
             return Optional.empty();
         }
 
