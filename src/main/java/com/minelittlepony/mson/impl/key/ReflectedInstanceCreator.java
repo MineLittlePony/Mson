@@ -6,6 +6,7 @@ import net.minecraft.util.Util;
 import com.google.gson.JsonParseException;
 import com.minelittlepony.mson.api.InstanceCreator;
 import com.minelittlepony.mson.api.ModelView;
+import com.minelittlepony.mson.impl.MsonImpl;
 
 import java.util.function.Function;
 
@@ -21,6 +22,7 @@ public final class ReflectedInstanceCreator {
     });
     @Deprecated
     private static final Function<Class<Object>, InstanceCreator<Object>> TYPE_LOOKUP = Util.memoize(type -> {
+        MsonImpl.LOGGER.warn("Specifying slot implementation by class name is being phased out. Register your slot with Mson.registerSlotType to continue using it by id. Type: " + type.getCanonicalName());
         if (ModelPart.class.isAssignableFrom(type)) {
             return InstanceCreator.ofPart();
         }

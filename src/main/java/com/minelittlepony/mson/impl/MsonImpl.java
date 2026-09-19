@@ -62,7 +62,6 @@ public class MsonImpl implements Mson {
     public <T> InstanceCreator<T> getSlotImplementation(String name) {
         Identifier id = Identifier.tryParse(name);
         if (id == null || !slotImplementations.containsKey(id)) {
-            LOGGER.warn("Specifying slot implementation by class name is being phased out. Register your slot with Mson.registerSlotType to continue using it by id");
             return InstanceCreator.byName(name);
         }
         return (InstanceCreator<T>)slotImplementations.get(id).factory();
